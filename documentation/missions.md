@@ -6,4 +6,4 @@
 [Operation Mole Cricket](http://theurltothemissionrepo)
 
 ## Example missions
-[Mission 1](http://theurltothemissionrepo)
+[Moose Super Carrier 101](https://github.com/51st-Vfw/moose_supercarrier_example)
