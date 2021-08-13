@@ -22,6 +22,10 @@ Missions should:
 |**Heli**|
 |Pontiac 1-1|46Y|142.25||   |Chevy 1-1|47Y|142.75||
 
+## Todo
+- [] Atis freqs
+- [] Add mids and tacan overlap documentation (don't mix the freqs!)
+- [] Standard comms ladder per aircraft?
 
 ## Misc
 ### Create a pull request!
