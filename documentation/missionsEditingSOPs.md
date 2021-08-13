@@ -1,10 +1,29 @@
-# Mission Editing Standard Operating Procesures
+# Mission Editing Standard Operating Procedures
 
 Missions should:
-- Do This
-- Do that
-- Don't do this
-- Don't do That
+- Typically follow the standard comms plan below.
 
-# Create a pull request!
+
+
+
+## Default Comms Plan
+|Purpose(Type)|Tacan|Frequency|Notes|   |Purpose(Type)|Tacan|Frequency|Notes|
+|---|---|---|---|---|---|---|---|---|
+|Tactical Common||270.0|
+|Darkstar 1-1||240.0|
+|**Tankers**|
+|Texaco 1-1(KC-135)|25Y|251.00|FL250|   |Shell 1-1(KC-135)|15Y|251.0|FL150
+|Arco 1-1(KC-135 MPRS)|20Y|253.00|FL200|   |Arco 1-2(KC-135 MPRS)|15Y|254.0|FL210
+|Arco 1-1(KC-135 MPRS)|20Y|253.00|FL210|   |Arco 1-2(KC-135 MPRS)|15Y|254.0|FL210
+|**Fixed Wing**|
+|Colt 1-1(F-16)|38Y|138.25||   |Uzi 1-1(F-16)|39Y|138.75||
+|Enfield 1-1(F/A-18)|40Y|139.25||   |Springfield 1-1(F/A-18)|41Y|139.75||
+|Dodge 1-1(F-14)|42Y|140.25||
+|Hawg 1-1(A-10)|44Y|141.25||   |Pig 1-1(A-10)|45Y|141.75||
+|**Heli**|
+|Pontiac 1-1|46Y|142.25||   |Chevy 1-1|47Y|142.75||
+
+
+## Misc
+### Create a pull request!
     - Don't commit to master unless you are the main owner/delegated.
