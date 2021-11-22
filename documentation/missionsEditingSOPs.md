@@ -31,16 +31,20 @@ Need to add
 
 #### F/A-18
 [ref](https://forums.eagle.ru/topic/269325-navy-radio-channel-list/?do=findComment&comment=4639849)
-|Button||Purpose|
-|--|--|--|
+|Button||Purpose|Notes|
+|--|--|--|--|
 |1||Tower/Paddles|
-|2||Departure|
-|3||Strike|
-|4||Red Crown|
-|5-9||Various Tactical/Mission/CVW discrete freqs|
-|10||Squadron Tower/CATCC rep| 
-|15||Approach 1|
-|16||Marshall|
+|2||Departure|N/A|
+|3||Strike|N/A|
+|4||Red Crown|N/A|
+|5||Various Tactical/Mission/CVW discrete freqs|Recovery Tanker?|
+|6||Various Tactical/Mission/CVW discrete freqs|Mission?|
+|7||Various Tactical/Mission/CVW discrete freqs||
+|8||Various Tactical/Mission/CVW discrete freqs||
+|9||Various Tactical/Mission/CVW discrete freqs||
+|10||Squadron Tower/CATCC rep|N/A|
+|15||Approach 1|N/A|
+|16||Marshall|N/A-But maybe with moose rework|
 |17||Approach 2 (if more than one was needed or discrete for emerg. aircraft)|
 |20||Squadron Common|
 
