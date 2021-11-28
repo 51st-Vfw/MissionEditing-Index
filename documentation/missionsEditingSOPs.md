@@ -28,5 +28,7 @@ Missions should:
 - [] Standard comms ladder per aircraft?
 
 ## Misc
+### Loadout references
+- [Desert Storm Era](https://www.dstorm.eu/pages/loadout/loadout.html)
 ### Create a pull request!
     - Don't commit to master unless you are the main owner/delegated.
