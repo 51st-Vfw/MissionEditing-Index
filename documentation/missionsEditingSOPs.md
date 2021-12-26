@@ -30,5 +30,13 @@ Missions should:
 ## Misc
 ### Loadout references
 - [Desert Storm Era](https://www.dstorm.eu/pages/loadout/loadout.html)
+### Tanker speeds
+|Reciever type|Speeds|
+|---|---|
+|A-10|220|
+|F-16|315|
+|F/A-18|275-285|
+
+- [ref](https://forums.eagle.ru/topic/260542-looking-for-actualrecommened-aerial-refueling-speeds/)
 ### Create a pull request!
     - Don't commit to master unless you are the main owner/delegated.
