@@ -73,7 +73,7 @@ SUPPORTUNITS[ "Texaco1" ] = { CALLSIGN.Tanker.Texaco,  1, ENUMS.UnitType.TANKER,
 SUPPORTUNITS[ "Texaco2" ] = { CALLSIGN.Tanker.Texaco,  2, ENUMS.UnitType.TANKER,  252.00, 52, ENUMS.TacanBand.Y, "TX2", nil, nil, 15000, 200, 252, ENUMS.RefuelingSystem.BOOM,  ENUMS.SupportUnitTemplate.BOOMTANKER }
 SUPPORTUNITS[ "Arco1" ]   = { CALLSIGN.Tanker.Arco,    1, ENUMS.UnitType.TANKER,  253.00, 53, ENUMS.TacanBand.Y, "AR1", nil, nil, 20000, 285, 253, ENUMS.RefuelingSystem.PROBE, ENUMS.SupportUnitTemplate.PROBETANKER }
 SUPPORTUNITS[ "Arco2" ]   = { CALLSIGN.Tanker.Arco,    2, ENUMS.UnitType.TANKER,  254.00, 54, ENUMS.TacanBand.Y, "AR2", nil, nil, 21000, 285, 254, ENUMS.RefuelingSystem.PROBE, ENUMS.SupportUnitTemplate.PROBETANKER }
-SUPPORTUNITS[ "Shell1" ]  = { CALLSIGN.Tanker.Shell,   1, ENUMS.UnitType.TANKER,  255.00, 55, ENUMS.TacanBand.Y, "SH1", nil, nil, 20000, 285, 255, ENUMS.RefuelingSystem.PROBE, ENUMS.SupportUnitTemplate.NAVYTANKER }
+SUPPORTUNITS[ "Shell1" ]  = { CALLSIGN.Tanker.Shell,   1, ENUMS.UnitType.TANKER,  255.00, 55, ENUMS.TacanBand.Y, "SH1", nil, nil,  6000, 285, 255, ENUMS.RefuelingSystem.PROBE, ENUMS.SupportUnitTemplate.NAVYTANKER }
 
 -- AWACS
 SUPPORTUNITS[ "Overlord1" ] = { CALLSIGN.AWACS.Overlord,    1, ENUMS.UnitType.AWACS,  240.00, nil, nil, nil, nil, nil, 30000, 310, 240, nil, ENUMS.SupportUnitTemplate.AWACS }

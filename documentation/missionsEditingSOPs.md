@@ -28,7 +28,7 @@ The following table lists the default comms plan for support and squadron aircra
 |**Tankers**|
 |Texaco 1-1<br>*Boom*|51Y|251.00|FL250<br>310KIAS|    |Texaco 2-1<br>*Boom*|52Y|252.00|FL150<br>200KIAS
 |Arco 1-1<br>*Probe & Drogue*|53Y|253.00|FL200<br>285KIAS|    |Arco 2-1<br>*Probe & Drogue*|54Y|254.00|FL210<br>285KIAS|
-|Shell 1-1<br>*Carrier Probe & Drogue*|55Y|255.00|FL200<br>285KIAS|
+|Shell 1-1<br>*Carrier Probe & Drogue*|55Y|255.00|FL060<br>285KIAS|
 |**Squadrons / Flights**|
 |Colt 1<br>*F-16C*|38Y<br>101Y|138.25||    |Uzi 1<br>*F-16C*|39Y<br>102Y|138.75||
 |Enfield 1<br>*F/A-18C*|40Y<br>103Y|139.25||    |Springfield 1<br>*F/A-18C*|41Y<br>104Y|139.75||
