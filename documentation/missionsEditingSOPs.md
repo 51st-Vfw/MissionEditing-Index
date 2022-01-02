@@ -4,7 +4,7 @@
 
 TACAN frequencies in the mission should be assigned according to the following diagram.
 
-![](https://github.com/51st-Vfw/MissionEditing-Index/documentation/images/TACAN_usage.png)
+![](images/TACAN_usage.png)
 
 Channels marked "unavailable" or "degraded" should be avoided. Default assignments for
 TACAN channels are detailed below and are consistent with these assignments.
@@ -28,7 +28,7 @@ The following table lists the default comms plan for support and squadron aircra
 |**Tankers**|
 |Texaco 1-1<br>*Boom*|51Y|251.00|FL250<br>310KIAS|    |Texaco 2-1<br>*Boom*|52Y|252.00|FL150<br>200KIAS
 |Arco 1-1<br>*Probe & Drogue*|53Y|253.00|FL200<br>285KIAS|    |Arco 2-1<br>*Probe & Drogue*|54Y|254.00|FL210<br>285KIAS|
-|Shell 1-1<br>*Carrier Probe & Drogue*|55Y|255.00|FL060<br>285KIAS|
+|Shell 1-1<br>*Carrier Probe & Drogue*|55Y|255.00|6000 MSL<br>285KIAS|
 |**Squadrons / Flights**|
 |Colt 1<br>*F-16C*|38Y<br>101Y|138.25||    |Uzi 1<br>*F-16C*|39Y<br>102Y|138.75||
 |Enfield 1<br>*F/A-18C*|40Y<br>103Y|139.25||    |Springfield 1<br>*F/A-18C*|41Y<br>104Y|139.75||
@@ -37,8 +37,8 @@ The following table lists the default comms plan for support and squadron aircra
 |Pontiac 1<br>*Helicopter, AV-8B*|46Y<br>109Y|142.25||    |Chevy 1<br>*Helicopter, AV-8B*|47Y<br>110Y|142.75||
 |Ford 1<br>*F-15E*|48Y<br>110Y|143.25||    |Ford 2<br>*F-15E*|49Y<br>111Y|143.75||
 
-The TACAN pairs in the squadrons indicate the A2A yardstick setup: the lead uses the lower channel
-of the pair while the wingmen use the higher channel of the pair.
+The TACAN pairs in the squadrons indicate the A2A yardstick setup: the lead uses the lower numbered
+channel of the pair while the wingmen use the higher numbered channel of the pair.
 
 The following table lists the default comms plan for naval units.
 
