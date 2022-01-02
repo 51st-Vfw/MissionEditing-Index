@@ -8,6 +8,8 @@ It may contain our SOP for mission editing best practices and coding standards.
 
 [Mission Editing SOPs](./documentation/missionsEditingSOPs.md)
 
+[MapSOP Script](./51stMapSOP/readme.md)
+
 [Missions](./documentation/missions.md)
 
 [Reference Scripts](./documentation/referenceScripts.md)

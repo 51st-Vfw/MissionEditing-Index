@@ -47,6 +47,8 @@
 
         ![Optionally create a 'Red IADS' zone](images/RedIADS.png)
 
+    2. **(OPTIONAL)** If you want a Red AWACS unit to act as a EWR, name the AWACS group `Red AWACS`.
+
     2. Name Red early warning radar groups with a name starting with `Red EWR`:
 
         ![Give Red EWR groups names starting with 'Red EWR'](images/RedEWR.png)
