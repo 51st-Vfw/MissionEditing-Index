@@ -1,18 +1,26 @@
-# 51st Vfw Mission Editing
+# 51st VFW Mission Editing
 
-WIP
+This project provides mission editing and creation SOPs for the wing along with an index of
+missions available through 51st VFW Git repositories.
 
-This project will house an index of available git repos for our missions.
+Here, you will find,
 
-It may contain our SOP for mission editing best practices and coding standards.
+- [Mission Editing SOPs](./documentation/missionsEditingSOPs.md) discuses SOPs and best
+  practices for mission creation and construction in the wing.
+- [MapSOP Script](./51stMapSOP/readme.md) provides TODO.
+- [Missions](./documentation/missions.md) provides a repository for missions that have been
+  made availble for reference via Git.
+- [Reference Scripts](./documentation/referenceScripts.md) provides a repository for scripts
+  and other code that may be useful for mission designers.
 
-[Mission Editing SOPs](./documentation/missionsEditingSOPs.md)
+In addition, ED API documentation can be found in your DCS installation at
 
-[MapSOP Script](./51stMapSOP/readme.md)
+```
+API/DCS_ControlAPI.html
+```
 
-[Missions](./documentation/missions.md)
+For example,
 
-[Reference Scripts](./documentation/referenceScripts.md)
-
-Ed api documentation can be found in install dir/api/DCS_ControlAPI.html
-e.g. file:///C:/Program%20Files/Eagle%20Dynamics/DCS%20World%20OpenBeta/API/DCS_ControlAPI.html
+```
+file:///C:/Program Files/Eagle Dynamics/DCS World OpenBeta/API/DCS_ControlAPI.html
+```
