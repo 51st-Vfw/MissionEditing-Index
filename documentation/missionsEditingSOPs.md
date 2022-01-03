@@ -1,5 +1,42 @@
 # Mission Editing Standard Operating Procedures
 
+This section covers a number of SOPs mission designers should employ around mission elements
+such as communications, navigation, and operational support. These SOPs are built around the
+airframes the 51st VFW currently supports: A-10C, AV-8B, F-14B, F-16C, and F/A-18C.
+
+## Tanker Altitude and Airspeed Guidelines
+This thread from the [ED DCS Forums](https://forums.eagle.ru/topic/260542-looking-for-actualrecommened-aerial-refueling-speeds/)
+discusses tanker altitude and airspeed guidelines for AAR units based on the the KC-135
+airframe. The following table summarizes the guidelines relevant to the airframes the 51st
+VFW operaties.
+
+|Airframe|Speed (KIAS)|Altitude|Notes|
+|---|:---:|:---:|---|
+|AV-8B|275|FL150-FL200|
+|A-10C|220|FL150|
+|F-14B|275-285|FL300|Source has no data, assumed to match F/A-18C
+|F-16C|315|FL300|
+|F/A-18C|275-285|FL300|
+
+The 51st VFW SOPs track these guidelines with some adjustments as our missions may use
+airframes other than the KC-135 for AAR tasking or adjust altitudes.
+
+The following table lists the set of tankers typically found in a mission along with the
+default altitude and airspeeds the 51st VFW SOPs assume. As the DCS Mission Editor specifies
+speeds using ground speed, not KIAS, the following table lists the ground speeds necessary in
+ the DCS Mission Editor to achieve the default KIAS at the default altitude in calm conditions.
+
+|Tanker|Airframes|Altitude|Speed (KIAS)|Speed (GS, ME)|Purpose|
+|---|:---:|:---:|:---:|:---:|---|
+|KC-135|F-16C|FL250|300|475|Boom, High Speed
+|KC-135|A-10C|FL150|220|276|Boom, Low Speed
+|KC-135 MPRS|AV8-B, F-14B, F/A-18C|FL200|285|384|Probe & Drogue
+|KC-135 MPRS|AV8-B, F-14B, F/A-18C|FL210|285|388|Probe & Drogue
+|S-3B Tanker|AV8-B, F-14B, F/A-18C|6000 MSL|285|309|Carrier
+
+Keep in mind that ground speed may change based on altitude or other factors and may need to be
+adjusted accordingly in the mission editor based on the specific scenario.
+
 ## TACAN Usage
 
 TACAN frequencies in the mission should be assigned according to the following diagram.
@@ -14,23 +51,25 @@ TACAN channels are detailed below and are consistent with these assignments.
 For consistency, missions should follow the default comms plan to the extent possible. These
 defaults are intended to support a wide range of missions, but specific msisions may not need
 to support all units in the plan or may have additional communications needs not comprehended
-here. The comms plan is broken up into two parts: air units and naval units. Note that ATC
-frequencies (tower, ground, ATIS, etc.) are set according to the published charts for the
-airports in theater and are not shown here as they depend on the specific configuration of
-the mission.
+here. The comms plan is broken up into two parts: air/ground units and naval units. Note
+that ATC frequencies (tower, ground, ATIS, etc.) are set according to the published charts
+for the airports in theater (where available, specific missions may fill in any missing
+frequencies as needed) and are not shown here as they depend on the specific configuration
+of the mission.
 
-The following table lists the default comms plan for support and squadron aircraft.
+The following table lists the default comms plan for squadron aircraft and support functions.
 
 |Usage|TACAN|Frequency|Notes|   |Usage|TACAN|Frequency|Notes|
 |---|:---:|:---:|:---|---|---|:---:|:---:|---|
+|**Support**|
 |Tactical Common|N/A|270.00|
 |Overlord 1-1<br>*AWACS*|N/A|240.00|FL300| |Magic 1-1<br>*Carrier AWACS*|N/A|241.00|FL280
 |Darknight 1-1<br>*JTAC*|N/A|138.00|AI| |Various<br>*JTAC/AFAC*|N/A|138.10|Player
 |**Tankers**|
-|Texaco 1-1<br>*Boom*|51Y|251.00|FL250<br>310KIAS|    |Texaco 2-1<br>*Boom*|52Y|252.00|FL150<br>200KIAS
+|Texaco 1-1<br>*Boom*|51Y|251.00|FL250<br>300KIAS|    |Texaco 2-1<br>*Boom*|52Y|252.00|15000 MSL<br>220KIAS
 |Arco 1-1<br>*Probe & Drogue*|53Y|253.00|FL200<br>285KIAS|    |Arco 2-1<br>*Probe & Drogue*|54Y|254.00|FL210<br>285KIAS|
-|Shell 1-1<br>*Carrier Probe & Drogue*|55Y|255.00|6000 MSL<br>285KIAS|
-|**Squadrons / Flights**|
+|Shell 1-1<br>*Carrier Recovery*|55Y|255.00|6000 MSL<br>285KIAS|
+|**Flights**|
 |Colt 1<br>*F-16C*|38Y<br>101Y|138.25||    |Uzi 1<br>*F-16C*|39Y<br>102Y|138.75||
 |Enfield 1<br>*F/A-18C*|40Y<br>103Y|139.25||    |Springfield 1<br>*F/A-18C*|41Y<br>104Y|139.75||
 |Dodge 1<br>*F-14B*|42Y<br>105Y|140.25||    |Dodge 2<br>*F-14B*|43Y<br>106Y|140.75||
@@ -63,41 +102,33 @@ kneeboard.
 Missions should configure the presets on radios in client aircraft with the default comms ladder
 this section describes.
 
-### A-10
+### A-10C
 TODO: No presets in ME?
 
 ### AV-8B
 TODO: V/UHF #1 x26, V/UHF #2 x26, V/UHF RCS x30
 
-### F-14
+### F-14B
 TODO: UHF (-159) x20, V/UHF (-182) x30
 
-### F-16
+### F-16C
 TODO: UHF (-164) x20, VHF (-222) x20
 
 |UHF Preset|Purpose|   |VHF Preset|Purpose|
 |:---:|:---|---|:---:|:---|
 |1|Tactical Common||1|Inter-flight
 
-### F/A-18
+### F/A-18C
 TODO: COMM1 (-210) x20, COMM2 (-210) x20
 
 
-## Misc
+## Miscellaneous
 ### Loadout references
 - [Desert Storm Era](https://www.dstorm.eu/pages/loadout/loadout.html)
-### Tanker speeds
-|Reciever type|Speeds|
-|---|---|
-|A-10|220|
-|F-16|315|
-|F/A-18|275-285|
-
-- [ref](https://forums.eagle.ru/topic/260542-looking-for-actualrecommened-aerial-refueling-speeds/)
 ### Create a pull request!
     - Don't commit to master unless you are the main owner/delegated.
 
-## Todo
+## TODO
 - [] Add mids and tacan overlap documentation (don't mix the freqs!)
 - [] Standard comms ladder per aircraft?
 
