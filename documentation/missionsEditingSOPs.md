@@ -25,6 +25,7 @@ The following table lists the default comms plan for support and squadron aircra
 |---|:---:|:---:|:---|---|---|:---:|:---:|---|
 |Tactical Common|N/A|270.00|
 |Overlord 1-1<br>*AWACS*|N/A|240.00|FL300| |Magic 1-1<br>*Carrier AWACS*|N/A|241.00|FL280
+|Darknight 1-1<br>*JTAC*|N/A|138.00|AI| |Various<br>*JTAC/AFAC*|N/A|138.10|Player
 |**Tankers**|
 |Texaco 1-1<br>*Boom*|51Y|251.00|FL250<br>310KIAS|    |Texaco 2-1<br>*Boom*|52Y|252.00|FL150<br>200KIAS
 |Arco 1-1<br>*Probe & Drogue*|53Y|253.00|FL200<br>285KIAS|    |Arco 2-1<br>*Probe & Drogue*|54Y|254.00|FL210<br>285KIAS|
