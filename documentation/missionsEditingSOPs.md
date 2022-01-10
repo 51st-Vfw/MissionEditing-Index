@@ -4,11 +4,15 @@ This section covers a number of SOPs mission designers should employ around miss
 such as communications, navigation, and operational support. These SOPs are built around the
 airframes the 51st VFW currently supports: A-10C, AV-8B, F-14B, F-16C, and F/A-18C.
 
+Missions should follow the SOPs where possible and practical to provide consistency across
+51st VFW missions. That being said, mission designers may deviate from these guidelines
+where necessary due to the specific mission scenario.
+
 ## Tanker Altitude and Airspeed Guidelines
 This thread from the [ED DCS Forums](https://forums.eagle.ru/topic/260542-looking-for-actualrecommened-aerial-refueling-speeds/)
 discusses tanker altitude and airspeed guidelines for AAR units based on the the KC-135
 airframe. The following table summarizes the guidelines relevant to the airframes the 51st
-VFW operaties.
+VFW operates.
 
 |Airframe|Speed (KIAS)|Altitude|Notes|
 |---|:---:|:---:|---|
@@ -19,12 +23,14 @@ VFW operaties.
 |F/A-18C|275-285|FL300|
 
 The 51st VFW SOPs track these guidelines with some adjustments as our missions may use
-airframes other than the KC-135 for AAR tasking or adjust altitudes.
+airframes other than the KC-135 for AAR tasking or perfer different altitudes.
 
-The following table lists the set of tankers typically found in a mission along with the
-default altitude and airspeeds the 51st VFW SOPs assume. As the DCS Mission Editor specifies
+The following table lists the full set of tankers that might be found in a mission along with
+the default altitude and airspeeds the 51st VFW SOPs assume. A specific mission need not
+provide all of these tankers and may deviate from these speeds (though missions should attempt
+to provide speeds with 10-20kt of these speeds). As the DCS Mission Editor specifies route
 speeds using ground speed, not KIAS, the following table lists the ground speeds necessary in
- the DCS Mission Editor to achieve the default KIAS at the default altitude in calm conditions.
+the DCS Mission Editor to achieve the default KIAS at the default altitude in calm conditions.
 
 |Tanker|Airframes|Altitude|Speed (KIAS)|Speed (GS, ME)|Purpose|
 |---|:---:|:---:|:---:|:---:|---|
@@ -37,16 +43,17 @@ speeds using ground speed, not KIAS, the following table lists the ground speeds
 Keep in mind that ground speed may change based on altitude or other factors and may need to be
 adjusted accordingly in the mission editor based on the specific scenario.
 
-## TACAN Usage
+## TACAN Usage Guidelines
 
-TACAN frequencies in the mission should be assigned according to the following diagram.
+TACAN channels in the mission should be assigned according to the following diagram.
 
 ![](images/TACAN_usage.png)
 
 Channels marked "unavailable" or "degraded" should be avoided. Default assignments for
-TACAN channels are detailed below and are consistent with these assignments.
+TACAN channels are detailed below in the discussion of the communications plan and are
+consistent with these assignments.
 
-## Default Comms Plan
+## Default Communications Plan
 
 For consistency, missions should follow the default comms plan to the extent possible. These
 defaults are intended to support a wide range of missions, but specific msisions may not need
@@ -54,10 +61,9 @@ to support all units in the plan or may have additional communications needs not
 here. The comms plan is broken up into two parts: air/ground units and naval units. Note
 that ATC frequencies (tower, ground, ATIS, etc.) are set according to the published charts
 for the airports in theater (where available, specific missions may fill in any missing
-frequencies as needed) and are not shown here as they depend on the specific configuration
-of the mission.
+frequencies as needed) and are not shown here as they depend on the specific mission scenario.
 
-The following table lists the default comms plan for squadron aircraft and support functions.
+The following table lists the default comms plan for air/ground units and support functions.
 
 |Usage|TACAN|Frequency|Notes|   |Usage|TACAN|Frequency|Notes|
 |---|:---:|:---:|:---|---|---|:---:|:---:|---|
@@ -77,8 +83,10 @@ The following table lists the default comms plan for squadron aircraft and suppo
 |Pontiac 1<br>*Helicopter, AV-8B*|46Y<br>109Y|142.25||    |Chevy 1<br>*Helicopter, AV-8B*|47Y<br>110Y|142.75||
 |Ford 1<br>*F-15E*|48Y<br>110Y|143.25||    |Ford 2<br>*F-15E*|49Y<br>111Y|143.75||
 
-The TACAN pairs in the squadrons indicate the A2A yardstick setup: the lead uses the lower numbered
-channel of the pair while the wingmen use the higher numbered channel of the pair.
+AWACS and Tactical Common may share the same frequency, depending on the sceario. In this case,
+one of the two frequencies listed above should be chosen. The TACAN pairs in the flights
+indicate the A2A yardstick setup: the lead uses the lower numbered channel of the pair while
+the wingmen use the higher numbered channel of the pair.
 
 The following table lists the default comms plan for naval units.
 
@@ -92,8 +100,8 @@ The following table lists the default comms plan for naval units.
 |CVN-74| USS *John C. Stennis*|74X|274.40|Ch. 14|
 |CVN-75| USS *Harry S. Truman*|75X|275.40|Ch. 15|
 
-Missions should make a summary of the of the comms plan that they implemenmt available on the
-kneeboard.
+Missions are encouraged to make a summary of the of the comms plan that they implemenmt
+available on a kneeboard.
 
 **TODO**: kneeboard for default comms plan?
 
