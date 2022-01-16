@@ -1183,27 +1183,53 @@ function EmergencyTacanReset( BeaconTable )
 
 end
 
-function SetupIADS()
+function SetupMANTIS()
     local RedAwacs = GROUP:FindByName("Red AWACS")
-    local RedMantis = nil
+    local RedIADS = nil
 
+    -- Create the IADS network with wor without AWACS
     if RedAwacs then
-        RedMantis = MANTIS:New("RedMantis","Red SAM","Red EWR",nil,"red",false,"Red AWACS")
+        RedIADS = MANTIS:New("RedIADS","Red SAM","Red EWR",nil,"red",false,"Red AWACS")
     else
-        RedMantis = MANTIS:New("RedMantis","Red SAM","Red EWR",nil,"red",false)
+        RedIADS = MANTIS:New("RedIADS","Red SAM","Red EWR",nil,"red",false)
     end
 
-    local RedIADS = GROUP:FindByName("Red IADS")
-    if RedIADS then
-        RedMantis:AddZones({RedIADS},{},{})
-    end
+    -- Optional Zones for MANTIS IADS
+    local AcceptZones = SET_ZONE:New():FilterPrefixes('Red IADS Accept'):FilterOnce():GetSetObjects()
+    local RejectZones = SET_ZONE:New():FilterPrefixes('Red IADS Reject'):FilterOnce():GetSetObjects()
+    local ConflictZones = SET_ZONE:New():FilterPrefixes('Red IADS Conflict'):FilterOnce():GetSetObjects()
+    RedIADS:AddZones(AcceptZones,RejectZones,ConflictZones)
 
-    RedMantis:Start()
+    RedIADS:Start()
+
+    return RedIADS
+end
+
+function SetupSKYNET()
+  local RedAwacs = GROUP:FindByName("Red AWACS")
+  local RedIADS = nil
+
+  --create an instance of the IADS
+  RedIADS = SkynetIADS:create('RedIADS')
+
+  --add all units with unit name beginning with 'EW' to the IADS:
+  RedIADS:addEarlyWarningRadarsByPrefix('Red EWR')
+
+  --add all groups begining with group name 'SAM' to the IADS:
+  RedIADS:addSAMSitesByPrefix('Red SAM')
+
+  -- Add AWACS to the IADS if present
+  if RedAwacs then
+    RedIADS:addEarlyWarningRadar("Red AWACS")
+  end
+
+  RedIADS:activate()
+
+  return RedIADS
 end
 
 local SupportBase = nil
 local AircraftCarriers = nil
-local Beacons = nil
 local AirStart = SupportFlightAirStart or true
 
 local CarrierMenu = MENU_MISSION:New("Carrier Control")
@@ -1224,7 +1250,12 @@ local Carriers = InitNavySupport(AircraftCarriers, CarrierMenu, AirStart)
 -- Enable TACAN reset menu
 local TacanMenu1 = MENU_MISSION_COMMAND:New("Emergency TACAN reset", TacanMenu, EmergencyTacanReset, { SupportBeacons, Carriers } )
 
--- Start MANTIS IADS
-SetupIADS()
+-- Setup either MANTIS or SKYNET IADS
+RedIADS = nil
+if samTypesDB == nil then
+  RedIADS = SetupMANTIS()
+else 
+  RedIADS = SetupSKYNET()
+end
 
 
