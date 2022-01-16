@@ -4,7 +4,8 @@
 -- Tested against MOOSE GITHUB Commit Hash ID:
 -- 2021-12-23T18:55:27.0000000Z-77f2cf5089e4d3915bf8205a1de5aa8c38ae605e
 --
--- Version 20220101.1
+-- Version 20220101.1 - Blackdog initial version
+-- Version 20220115.1 - Fix tanker speeds to match KIAS from SOP + better starting altitudes.
 
 ENUMS.UnitType = {
     AIRCRAFT     = "Aircraft",
@@ -69,15 +70,15 @@ local SUPPORTUNITS = {}
 -- CALLSIGN, CALLSIGN_NUM, TYPE, RADIOFREQ, TACANCHAN, TACANBAND, TACANMORSE, ICLSCHAN, ICLSMORSE, ALTITUDE, SPEED, MODEX, REFUELINGSYSTEM, TEMPLATE
 
 -- Tankers
-SUPPORTUNITS[ "Texaco1" ] = { CALLSIGN.Tanker.Texaco,  1, ENUMS.UnitType.TANKER,  251.00, 51, ENUMS.TacanBand.Y, "TX1", nil, nil, 25000, 310, 251, ENUMS.RefuelingSystem.BOOM,  ENUMS.SupportUnitTemplate.BOOMTANKER }
-SUPPORTUNITS[ "Texaco2" ] = { CALLSIGN.Tanker.Texaco,  2, ENUMS.UnitType.TANKER,  252.00, 52, ENUMS.TacanBand.Y, "TX2", nil, nil, 15000, 200, 252, ENUMS.RefuelingSystem.BOOM,  ENUMS.SupportUnitTemplate.BOOMTANKER }
-SUPPORTUNITS[ "Arco1" ]   = { CALLSIGN.Tanker.Arco,    1, ENUMS.UnitType.TANKER,  253.00, 53, ENUMS.TacanBand.Y, "AR1", nil, nil, 20000, 285, 253, ENUMS.RefuelingSystem.PROBE, ENUMS.SupportUnitTemplate.PROBETANKER }
-SUPPORTUNITS[ "Arco2" ]   = { CALLSIGN.Tanker.Arco,    2, ENUMS.UnitType.TANKER,  254.00, 54, ENUMS.TacanBand.Y, "AR2", nil, nil, 21000, 285, 254, ENUMS.RefuelingSystem.PROBE, ENUMS.SupportUnitTemplate.PROBETANKER }
-SUPPORTUNITS[ "Shell1" ]  = { CALLSIGN.Tanker.Shell,   1, ENUMS.UnitType.TANKER,  255.00, 55, ENUMS.TacanBand.Y, "SH1", nil, nil,  6000, 285, 255, ENUMS.RefuelingSystem.PROBE, ENUMS.SupportUnitTemplate.NAVYTANKER }
+SUPPORTUNITS[ "Texaco1" ] = { CALLSIGN.Tanker.Texaco,  1, ENUMS.UnitType.TANKER,  251.00, 51, ENUMS.TacanBand.Y, "TX1", nil, nil, 25000, 449, 251, ENUMS.RefuelingSystem.BOOM,  ENUMS.SupportUnitTemplate.BOOMTANKER }
+SUPPORTUNITS[ "Texaco2" ] = { CALLSIGN.Tanker.Texaco,  2, ENUMS.UnitType.TANKER,  252.00, 52, ENUMS.TacanBand.Y, "TX2", nil, nil, 15000, 278, 252, ENUMS.RefuelingSystem.BOOM,  ENUMS.SupportUnitTemplate.BOOMTANKER }
+SUPPORTUNITS[ "Arco1" ]   = { CALLSIGN.Tanker.Arco,    1, ENUMS.UnitType.TANKER,  253.00, 53, ENUMS.TacanBand.Y, "AR1", nil, nil, 20000, 391, 254, ENUMS.RefuelingSystem.PROBE, ENUMS.SupportUnitTemplate.PROBETANKER }
+SUPPORTUNITS[ "Arco2" ]   = { CALLSIGN.Tanker.Arco,    2, ENUMS.UnitType.TANKER,  254.00, 54, ENUMS.TacanBand.Y, "AR2", nil, nil, 21000, 398, 255, ENUMS.RefuelingSystem.PROBE, ENUMS.SupportUnitTemplate.PROBETANKER }
+SUPPORTUNITS[ "Shell1" ]  = { CALLSIGN.Tanker.Shell,   1, ENUMS.UnitType.TANKER,  255.00, 55, ENUMS.TacanBand.Y, "SH1", nil, nil,  6000, 312, 255, ENUMS.RefuelingSystem.PROBE, ENUMS.SupportUnitTemplate.NAVYTANKER }
 
 -- AWACS
-SUPPORTUNITS[ "Overlord1" ] = { CALLSIGN.AWACS.Overlord,    1, ENUMS.UnitType.AWACS,  240.00, nil, nil, nil, nil, nil, 30000, 310, 240, nil, ENUMS.SupportUnitTemplate.AWACS }
-SUPPORTUNITS[ "Magic1" ]    = { CALLSIGN.AWACS.Magic,       1, ENUMS.UnitType.AWACS,  241.00, nil, nil, nil, nil, nil, 25000, 256, 241, nil, ENUMS.SupportUnitTemplate.NAVYAWACS }
+SUPPORTUNITS[ "Overlord1" ] = { CALLSIGN.AWACS.Overlord,    1, ENUMS.UnitType.AWACS,  240.00, nil, nil, nil, nil, nil, 30000, 404, 240, nil, ENUMS.SupportUnitTemplate.AWACS }
+SUPPORTUNITS[ "Magic1" ]    = { CALLSIGN.AWACS.Magic,       1, ENUMS.UnitType.AWACS,  241.00, nil, nil, nil, nil, nil, 25000, 450, 241, nil, ENUMS.SupportUnitTemplate.NAVYAWACS }
 
 -- Navy
 SUPPORTUNITS[ "LHA-1"  ] = { nil, nil, ENUMS.UnitType.SHIP,  264.00, 64, ENUMS.TacanBand.X, "TAR", 1,   "TAR", nil, nil, 264, nil, nil }
@@ -1047,7 +1048,7 @@ function InitSupport( SupportBase, InAir )
                 if Flight:GetFirstAliveGroup() == nil then
                     if InAir then      
                         Flight:InitAirbase(SupportBase, SPAWN.Takeoff.Hot)
-                              :SpawnInZone( OrbitPt, false, SupportUnitFields[ENUMS.SupportUnitFields.ALTITUDE], SupportUnitFields[ENUMS.SupportUnitFields.ALTITUDE] )
+                              :SpawnInZone( OrbitPt, false, UTILS.FeetToMeters(SupportUnitFields[ENUMS.SupportUnitFields.ALTITUDE] + 15000), UTILS.FeetToMeters(SupportUnitFields[ENUMS.SupportUnitFields.ALTITUDE] + 15000) )
                     else
                         Flight:SpawnAtAirbase( SupportBase, SPAWN.Takeoff.Hot, nil, AIRBASE.TerminalType.OpenBig, true )
                     end
@@ -1075,6 +1076,7 @@ function InitNavySupport( AircraftCarriers, CarrierMenu, InAir )
                 if TakeoffAir then
                     tanker:SetTakeoffAir()
                 end
+                tanker:SetSpeed(SupportUnitFields[ENUMS.SupportUnitFields.SPEED])
                 tanker:SetRadio(SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ] + CarrierCount - 1)
                 tanker:SetModex(SupportUnitFields[ENUMS.SupportUnitFields.MODEX] + CarrierCount - 1)
                 tanker:SetAltitude(SupportUnitFields[ENUMS.SupportUnitFields.ALTITUDE])
