@@ -6,17 +6,16 @@
 --
 -- Version 20220101.1 - Blackdog initial version
 -- Version 20220115.1 - Fix: Tanker speeds adjusted to be close KIAS from SOP + better starting altitudes.
--- Version 20220222.1 - Fix: Unit orbit endpoints longer offset from orbit endpoint zone locations.
+-- Version 20220223.1 - Fix: Unit orbit endpoints longer offset from orbit endpoint zone locations.
 --                    - Fix: Carriers/LHA now set their assigned radio frequencies.
 --                    - Fix: Tankers/AWACs relief launched at 25-35% fuel instead of testing value of 80-90%.
 --                    - Allow 'extra' Tankers/AWACS flights not in SOP to be spawned via Trigger Zones.
---                    - Allow limiting the number of Tankers/AWACS airframes via -P1 Zone name parameters.
+--                    - Allow limiting the number of Tankers/AWACS spawns per flight via -P1 Zone name parameters.
 --                    - Allow override of SOP parameters via -P1 Zone name parameters.
 --                    - Allow relative adjustment of SOP FL/Airspeed via -P1 Zone name parameters.
 --                    - Allow setting Tanker/AWACS invisible via -P1 Zone name parameter.
 --                    - IADS completely disabled if no group names with 'Red SAM'.
-
-
+--
 -- Known issues:
 --   - Tankers/AWACs airspawn at 0 velocity; to compensate units spawn 
 --     at 15k feet above target altitude to prevent terrain collisions.
@@ -892,23 +891,18 @@ function InitSupportBases()
         end
     end
 
-    local P1zones = SET_ZONE:New():FilterPrefixes('-P1'):FilterOnce():GetSetNames()
-    BASE:E({"P1zones", P1zones})
-  
+    local P1zones = SET_ZONE:New():FilterPrefixes('-P1'):FilterOnce():GetSetNames()  
     local callsigns = CALLSIGN.Tanker
+
     for k,v in pairs(CALLSIGN.AWACS) do callsigns[k] = v end
-    BASE:E(callsigns)
   
     for  _,P1zone in ipairs(P1zones) do
-      BASE:E({"P1zone, callsign", P1zone,callsign})
+
       local callsign, num, param
       local pattern = "^(%a+)" .. "(%d)" .. "-*" .. "(.*)" .. "-P1"
       callsign, num, param =  string.match(P1zone,  pattern)
 
-      BASE:E({"** callsign,callsigns[callsign]",callsign,callsigns[callsign]})
       if callsigns[callsign] ~= nil then
- 
-        BASE:E({"callsign, num, param",callsign,num,param})
 
         if num then 
           
@@ -916,46 +910,32 @@ function InitSupportBases()
 
           local template,alt,speed,freq,tacan,tacanband,invisible,airframes
 
-
-
           template = template or 1
-
-          BASE:E({"template,alt,speed,freq,tacan,tacanband",template,alt,speed,freq,tacan,tacanband})
-
-          BASE:E({"FullCallsign", FullCallsign})
-          BASE:E({"SUPPORTUNITS[ FullCallsign ]",SUPPORTUNITS[ FullCallsign ]})
           
           if SUPPORTUNITS[ FullCallsign ] == nil then
             if SUPPORTUNITS[ callsign .. template ] ~= nil then
-              BASE:E("***COPY*** " .. callsign .. "1")
-              BASE:E(SUPPORTUNITS[ callsign .. "1" ])
               SUPPORTUNITS[ FullCallsign ] = routines.utils.deepCopy(SUPPORTUNITS[ callsign .. "1" ])
             else
-              BASE:E("***COPY*** " .. callsign .. template)
-              BASE:E(SUPPORTUNITS[ callsign .. template ])
               SUPPORTUNITS[ FullCallsign ] = routines.utils.deepCopy(SUPPORTUNITS[ callsign .. template ])
             end
           end
 
-          BASE:E(param)
           if param then
             for token in string.gmatch(param, "[^-]+") do
-              BASE:E({"token", token})
               template = template or string.match(token, "T(%d)")
     
               local op,newalt = string.match(token, "FL([mp]?)(%d+)")
               if newalt then
                 if op == "p" then
-                  alt = (SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.ALTITUDE ] * 100) + newalt
+                  alt = (SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.ALTITUDE ] ) + (newalt * 100)
                 elseif op == "m" then
-                  alt = (SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.ALTITUDE ] * 100) - newalt
+                  alt = (SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.ALTITUDE ] ) - (newalt * 100)
                 else
                   alt = newalt * 100
                 end
               end
 
               local op,newspeed = string.match(token, "SP([mp]?)(%d+)")
-              BASE:E({op, newspeed})
               if newspeed then
                 if op == "p" then
                   speed = SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.SPEED ] + newspeed
@@ -979,8 +959,6 @@ function InitSupportBases()
 
             end
           end
-
-          BASE:E({"SUPPORTUNITS[ FullCallsign ] before", SUPPORTUNITS[ FullCallsign ] })
 
           if airframes then
             SUPPORTUNITS[ FullCallsign ].airframes = airframes
@@ -1034,19 +1012,14 @@ function InitSupportBases()
             SUPPORTUNITS[ FullCallsign ].CoordP2 = P2:GetCoordinate()
           end
 
-          BASE:E({"SUPPORTUNITS[ FullCallsign ]  after", SUPPORTUNITS[ FullCallsign ] })
         end
       end
     end
-
-    BASE:E("*********************************")
 
     -- Spawn late activated template units to use as basis for squadrons and such
     for SupportUnit,SupportUnitFields in pairs(SUPPORTUNITS) do
         local SpawnTemplate = nil
         local SupportUnitInfo = SupportUnitFields[ENUMS.SupportUnitFields.TEMPLATE]
-        BASE:E(SupportUnit)
-        BASE:E(SupportUnitFields)
 
         if SupportUnitInfo then
             local SupportUnitTypeName = SupportUnitInfo[ENUMS.SupportUnitTemplateFields.UNITTYPE]
@@ -1076,17 +1049,8 @@ end
 
 
 function InitSupport( SupportBase, InAir ) 
-  for SupportUnit,SupportUnitFields in pairs(SUPPORTUNITS) do 
-    BASE:E(SupportUnit)
-    if SupportUnitFields.CoordP1 then BASE:E({SupportUnitFields.CoordP1.x, SupportUnitFields.CoordP1.z}) end
-    if SupportUnitFields.CoordP2 then BASE:E({SupportUnitFields.CoordP2.x, SupportUnitFields.CoordP2.z}) end
-    BASE:E(SupportUnitFields[ENUMS.SupportUnitFields.TEMPLATE])
-  end
-
-  BASE:E("******* SPAWN LOOP *******")
 
   for SupportUnit,SupportUnitFields in pairs(SUPPORTUNITS) do
-    BASE:E(SupportUnit)
 
     local PreviousMission = {}
     PreviousMission[SupportUnit] = {}
@@ -1107,8 +1071,6 @@ function InitSupport( SupportBase, InAir )
       end
     end
 
-    BASE:E(CallsignNum)
-
     if SupportUnitType == ENUMS.SupportUnitTemplate.BOOMTANKER[ ENUMS.SupportUnitTemplateFields.UNITTYPE ] or
        SupportUnitType == ENUMS.SupportUnitTemplate.PROBETANKER[ ENUMS.SupportUnitTemplateFields.UNITTYPE ] or
        SupportUnitType == ENUMS.SupportUnitTemplate.AWACS[ ENUMS.SupportUnitTemplateFields.UNITTYPE ] or
@@ -1119,11 +1081,6 @@ function InitSupport( SupportBase, InAir )
         local OrbitPt1 = SupportUnitFields.CoordP1
         local OrbitPt2 = SupportUnitFields.CoordP2
 
-        BASE:E("===")
-        BASE:E(SupportUnit)
-        BASE:E({"== OrbitPt1 x,z", SupportUnit, OrbitPt1.x, OrbitPt1.z})
-        BASE:E({"== OrbitPt2 x,z", SupportUnit, OrbitPt2.x, OrbitPt2.z})
-
         if OrbitPt1 and OrbitPt2 then
             local OrbitLeg = UTILS.MetersToNM( OrbitPt1:Get2DDistance(OrbitPt2) )
             local OrbitPt = OrbitPt1
@@ -1131,7 +1088,13 @@ function InitSupport( SupportBase, InAir )
 
             local airframes = SupportUnitFields.airframes or '0'
             airframes = tonumber(airframes)
-            BASE:E('#### Setting InitLimit for ' .. SupportUnit .. ' to: ' .. tostring(airframes))
+
+            if airframes == 0 then
+              BASE:I('Allowing unlimited airframes for ' .. SupportUnit .. '.')
+            else
+              BASE:I('Limiting ' .. SupportUnit .. ' to ' .. tostring(airframes) .. ' available airframes.')
+            end
+            
             local Flight = SPAWN:NewWithAlias(SupportUnit, SupportUnit .. " Flight")
                 :InitLimit( 2, airframes )
                 :InitHeading(OrbitDir)
@@ -1312,10 +1275,9 @@ function InitNavySupport( AircraftCarriers, CarrierMenu, InAir )
                           :SetICLS(SupportUnitFields[ENUMS.SupportUnitFields.ICLSCHAN], SupportUnitFields[ENUMS.SupportUnitFields.ICLSMORSE])
                           :SetBeaconRefresh(5*60)
                           :__Start(2)
-                      BASE:E("Freq " .. SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ])
+
                       if SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ] then
-                        BASE:E("Setting Carrier freq of " .. SupportUnit .. " to " ..  SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ] .. "MHz AM" )
-                        --NAVYGROUP:New(Carriers[SupportUnit].carrier:GetGroup()):SwitchRadio(SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ])
+                        BASE:I(SupportUnit .. " radio set to " .. SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ] .. "MHz AM." )
                         Carriers[SupportUnit].carrier:CommandSetFrequency(SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ])
                       end
 
@@ -1325,7 +1287,7 @@ function InitNavySupport( AircraftCarriers, CarrierMenu, InAir )
                         if Ship then
                           local ShipBeacon = Ship:GetBeacon()
                           if SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ] then
-                            --NAVYGROUP:New(Ship:GetGroup()):SwitchRadio(SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ])
+                            BASE:I(SupportUnit .. " radio set to " .. SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ] .. "MHz AM." )
                             Ship:CommandSetFrequency(SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ])
                           end
                           -- Schedule TACAN reset every 5 minutes
@@ -1385,7 +1347,7 @@ function SetupMANTIS()
 
     -- Create the IADS network with wor without AWACS
     if RedAwacs then
-        RedIADS = MANTIS:New("RedIADS","Red SAM","Red EWR",nil,"red",false,"Red AWACS")
+        RedIADS = MANTIS:New("RedIADS","Red SAM","Red EWR",nil,"red",false,"Red EWR AWACS")
     else
         RedIADS = MANTIS:New("RedIADS","Red SAM","Red EWR",nil,"red",false)
     end
@@ -1424,8 +1386,6 @@ function SetupSKYNET()
 
   redIADS:activate()
 
-  BASE:E(redIADS)
-
   return redIADS
 end
 
@@ -1455,7 +1415,6 @@ local TacanMenu1 = MENU_MISSION_COMMAND:New("Emergency TACAN reset", TacanMenu, 
 RedIADS = nil
 local RedSAMs = SET_GROUP:New():FilterPrefixes('Red SAM'):FilterOnce():GetSetNames()
 
-BASE:E("RedSAMs count: " .. table.getn(RedSAMs))
 if table.getn(RedSAMs) > 0 then
   BASE:I("Initializing IADS...")
   if samTypesDB == nil then
