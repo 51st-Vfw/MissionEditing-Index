@@ -1280,7 +1280,9 @@ function InitNavySupport( AircraftCarriers, CarrierMenu, InAir )
                         BASE:I(SupportUnit .. " radio set to " .. SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ] .. "MHz AM." )
                         Carriers[SupportUnit].carrier:CommandSetFrequency(SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ])
                       end
-
+                      if CarrierMenu == null then
+                        CarrierMenu = MENU_MISSION:New("Carrier Control")
+                      end
                       local CarrierMenu1 = MENU_MISSION_COMMAND:New(SupportUnit .. ": Turn into wind for 30 minutes", CarrierMenu, CarrierTurnIntoWind, Carriers[SupportUnit] )
                     else
                         local Ship = UNIT:FindByName(SupportUnit)
@@ -1393,7 +1395,7 @@ local SupportBase = nil
 local AircraftCarriers = nil
 local AirStart = SupportFlightAirStart or true
 
-local CarrierMenu = MENU_MISSION:New("Carrier Control")
+local CarrierMenu = null
 local TacanMenu = MENU_MISSION:New("TACANs")
 
 -- Initialize Airbase & Carriers
