@@ -6,7 +6,7 @@
 --
 -- Version 20220101.1 - Blackdog initial version
 -- Version 20220115.1 - Fix: Tanker speeds adjusted to be close KIAS from SOP + better starting altitudes.
--- Version 20220223.1 - Fix: Unit orbit endpoints longer offset from orbit endpoint zone locations.
+-- Version 20220123.1 - Fix: Unit orbit endpoints longer offset from orbit endpoint zone locations.
 --                    - Fix: Carriers/LHA now set their assigned radio frequencies.
 --                    - Fix: Tankers/AWACs relief launched at 25-35% fuel instead of testing value of 80-90%.
 --                    - Allow 'extra' Tankers/AWACS flights not in SOP to be spawned via Trigger Zones.
@@ -15,6 +15,7 @@
 --                    - Allow relative adjustment of SOP FL/Airspeed via -P1 Zone name parameters.
 --                    - Allow setting Tanker/AWACS invisible via -P1 Zone name parameter.
 --                    - IADS completely disabled if no group names with 'Red SAM'.
+-- Version 20220213.1 - No carrier F10 menu without a carrier.
 --
 -- Known issues:
 --   - Tankers/AWACs airspawn at 0 velocity; to compensate units spawn 
