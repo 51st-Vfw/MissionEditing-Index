@@ -2,7 +2,7 @@
 -- Initial version by Blackdog Jan 2022
 --
 -- Tested against MOOSE GITHUB Commit Hash ID:
--- 2021-12-23T18:55:27.0000000Z-77f2cf5089e4d3915bf8205a1de5aa8c38ae605e
+-- 2022-02-21T07:35:56.0000000Z-890dae8ba7bd9371db8001a6458c3a5a51e88555
 --
 -- Version 20220101.1 - Blackdog initial version
 -- Version 20220115.1 - Fix: Tanker speeds adjusted to be close KIAS from SOP + better starting altitudes.
@@ -16,6 +16,7 @@
 --                    - Allow setting Tanker/AWACS invisible via -P1 Zone name parameter.
 --                    - IADS completely disabled if no group names with 'Red SAM'.
 -- Version 20220213.1 - No carrier F10 menu without a carrier.
+-- Version 20220221.1 - Package MOOSE devel from 2022-02-21 for DCS NTTR Airport name changes.
 --
 -- Known issues:
 --   - Tankers/AWACs airspawn at 0 velocity; to compensate units spawn 
