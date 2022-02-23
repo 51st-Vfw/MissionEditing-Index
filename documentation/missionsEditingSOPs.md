@@ -137,6 +137,11 @@ table summarizes the standard communications plan for the wing for the base set 
 The TACAN pairs in this table describe the A2A yardstick setup: the lead uses the lower
 numbered channel of the pair while the wingmen use the higher numbered channel of the pair.
 
+Specific missions may choose different flight names as required. When deviating from the SOP
+though, please avoid changes that may create confusion. For example, an F-16C flight could use a
+name such as "Venom" or "Lobo" that is not listed here; however, it should not use a name such as
+"Enfield" or "Hawg" that is typically associated with a different airframe in the SOPs.
+
 ### Naval Units
 
 Missions may include naval units for the launch and recovery of aircraft in the mission. The
