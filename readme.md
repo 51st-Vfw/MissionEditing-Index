@@ -7,7 +7,8 @@ Here, you will find,
 
 - [Mission Editing SOPs](./documentation/missionsEditingSOPs.md) discuses SOPs and best
   practices for mission creation and construction in the wing.
-- [MapSOP Script](./documentation/51stMapSOP/readme.md) provides TODO.
+- [MapSOP Script](./documentation/51stMapSOP/readme.md) provides support for common setup
+  tasks (carriers, tankers, etc.) consistent with 51st VFW SOP.
 - [Missions](./documentation/missions.md) provides a repository for missions that have been
   made availble for reference via Git.
 - [Reference Scripts](./documentation/referenceScripts.md) provides a repository for scripts
