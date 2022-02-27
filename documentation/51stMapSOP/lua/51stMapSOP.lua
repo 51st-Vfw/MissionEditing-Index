@@ -17,6 +17,7 @@
 --                    - IADS completely disabled if no group names with 'Red SAM'.
 -- Version 20220213.1 - No carrier F10 menu without a carrier.
 -- Version 20220221.1 - Package MOOSE devel from 2022-02-21 for DCS NTTR Airport name changes.
+-- Version 20220227.1 - Add Carrier STC/TACAN/ICLS info to comms/F10 carrier menu.
 --
 -- Known issues:
 --   - Tankers/AWACs airspawn at 0 velocity; to compensate units spawn 
