@@ -17,6 +17,7 @@
 --                    - IADS completely disabled if no group names with 'Red SAM'.
 -- Version 20220213.1 - No carrier F10 menu without a carrier.
 -- Version 20220221.1 - Package MOOSE devel from 2022-02-21 for DCS NTTR Airport name changes.
+-- Version 20220227.1 - Add Carrier STC/TACAN/ICLS info to comms/F10 carrier menu.
 --
 -- Known issues:
 --   - Tankers/AWACs airspawn at 0 velocity; to compensate units spawn 
@@ -1285,7 +1286,12 @@ function InitNavySupport( AircraftCarriers, CarrierMenu, InAir )
                       if CarrierMenu == null then
                         CarrierMenu = MENU_MISSION:New("Carrier Control")
                       end
-                      local CarrierMenu1 = MENU_MISSION_COMMAND:New(SupportUnit .. ": Turn into wind for 30 minutes", CarrierMenu, CarrierTurnIntoWind, Carriers[SupportUnit] )
+                      local CarrierString = string.format("%s \n(ATC %.2f / %i%s / ICLS %i)", 
+                                                          SupportUnit, SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ], 
+                                                          SupportUnitFields[ENUMS.SupportUnitFields.TACANCHAN], 
+                                                          SupportUnitFields[ENUMS.SupportUnitFields.TACANBAND],
+                                                          SupportUnitFields[ENUMS.SupportUnitFields.ICLSCHAN])
+                      local CarrierMenu1 = MENU_MISSION_COMMAND:New(CarrierString .. ":\nTurn into wind for 30 minutes", CarrierMenu, CarrierTurnIntoWind, Carriers[SupportUnit] )
                     else
                         local Ship = UNIT:FindByName(SupportUnit)
                         if Ship then
