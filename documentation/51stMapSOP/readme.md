@@ -39,11 +39,16 @@
     | Arco1            | Probe & Drogue Tanker       | Arco1-P1     | Arco1-P2     |
     | Arco2            | Probe & Drogue Tanker       | Arco2-P1     | Arco2-P2     |
     | Overlord1        | AWACS                       | Overlord1-P1 | Overlord1-P2 |
+    | Magic1           | (Carrier*) AWACS            | Magic1-P1    | Magic1-P2    |
+    | Shell1           | (Carrier*) S-3B Tanker      | Shell1-P1    | Shell1-P2    |
+    * Presence of -P2 zone for a Carrier AWACS/Tanker will prevent auto creation of auto-creation of carrier-following flights for the cooresponding callsign.
 
     ![Create Trigger Zones to designate Tanker/AWACs Orbits](images/OrbitPoints.png)
 6. **(OPTIONAL)** SOP flight parameters can be overridden by adding them to to the -P1 Trigger zone for a callsign, for example, a Trigger Zone named `Texaco1-FL230-P1` in conjunction with a `Texaco-P2` Trigger Zone will create a Texaco1 tanker flight according to the SOP, **except** that the altitude will be overridden to 23k feet.
 
     The speed and altitude allow for a special additional syntax that allows adding lowercase  **p** (plus/addition) or **m** (minus/subtraction) immediately after **FL** or **SP** to add or subtract from the SOP values.  For example, a trigger zone named `Texaco1-FLp30-SPm50-P1` would override the speed and altitude SOP values for Texaco1 by adding (**p**) 3k feet to the SOP altitude, and subtracting (**m**) 50 knots from its orbit speed.
+
+    Overrides for each callsign are processed in numerical order, so if `Texaco1-FLp30-P1` and `Texaco2-T1-P1` Zones were both present, *Texaco2* would also inherit the `FLp30` flight level override from *Texaco1*.
 
     Consult the table below for the complete list of SOP override paramters:
     | **Parameter**           | **Notation** | **Example**               | **Effect**                                           |
@@ -58,7 +63,8 @@
     | Set Radio Frequency     |FR***nnn.nn***|Texaco1-FR***FR256.00***-P1|Override Texaco1 radio setting to 256.00 MHz AM       |
     | Set TACAN Freq/Band     |TC***nnY***   |Texaco1-TC***56Y***-P1     |Override Texaco1 TACAN to 56Y                         |
     | Make invisible to AI    |INV           |Texaco1-INV-P1             |Makes Texaco1 invisible to the AI                     |
-    | Limit available flights |QTY***n***    |Texaco1-QTY***4***         |Limits Texaco1 to ***4*** spawns during the mission   |
+    | Limit available flights |QTY***n***    |Texaco1-QTY***4***-P1      |Limits Texaco1 to ***4*** spawns during the mission   |
+    | Initial ground start    |GND           |Texaco1-GND-P1             |Makes initial Texaco1 takeoff from support Airbase    |
 
 7.  **(OPTIONAL)** Additional flights beyond those specified in the SOP can be created by specifying additional -P1 and -P2 trigger with a name cooresponding to the callsign of the new flight. All values will default to the SOP settings of the **1** callsign with the same name (Texaco1/Acro1/Shell1/Overlord1/Magic1).  
 
@@ -110,7 +116,7 @@
     
     4. **(OPTIONAL)** If using *MANTIS* (*Skynet* has not not loaded), you may create Trigger Zones starting with `Red IADS Accept`, `Red IADS Reject`, or `Red IADS Conflict` to designate *MANTIS* Accept, Reject, or Conflict Zones that limit where the IADS network will consider targets for engaugement. Reference the [MANTIS](https://flightcontrol-master.github.io/MOOSE_DOCS_DEVELOP/Documentation/Functional.Mantis.html##(MANTIS).AddZones) documentation for details.
 
-    5. **(OPTIONAL)** If you want a Red AWACS unit to act as a EWR, name the AWACS group `Red EWR AWACS`.
+    5. **(OPTIONAL)** If you want a Red AWACS unit(s) to act as a EWR, name or start AWACS group name(s) with `Red EWR AWACS`.
 
 ---
 
@@ -141,6 +147,13 @@
 
 *Version 20220227.1*
 * Add Carrier STC/TACAN/ICLS info to comms/F10 carrier menu.
+
+*Version 20220327.1* 
+* Updated MOOSE version (updates for DCS changes)
+* Fix: Bug that may have prevented Red AWACS for operating as part of MANTIS IADS network.
+* Fix: Ensure parameter override inheritance consistent, and document this behavior.
+* Add 'GND' Zone name parameter to make AWACS/Tanker initially ground start.
+* Prevent 'auto' creation of Carrier AWACS/Tanker if -P2 zone with same name.
 
 ### Known issues:
 * Tankers/AWACs airspawn at 0 velocity; to compensate units spawn at 15k feet above target altitude to prevent terrain collisions.
