@@ -2,7 +2,7 @@
 -- Initial version by Blackdog Jan 2022
 --
 -- Tested against MOOSE GITHUB Commit Hash ID:
--- 2022-02-21T07:35:56.0000000Z-890dae8ba7bd9371db8001a6458c3a5a51e88555
+-- 2022-03-26T21:39:44.0000000Z-c3591c1faeb56427ad435635d0171b4500daa04f
 --
 -- Version 20220101.1 - Blackdog initial version
 -- Version 20220115.1 - Fix: Tanker speeds adjusted to be close KIAS from SOP + better starting altitudes.
@@ -18,6 +18,11 @@
 -- Version 20220213.1 - No carrier F10 menu without a carrier.
 -- Version 20220221.1 - Package MOOSE devel from 2022-02-21 for DCS NTTR Airport name changes.
 -- Version 20220227.1 - Add Carrier STC/TACAN/ICLS info to comms/F10 carrier menu.
+-- Version 20220327.1 - Updated MOOSE version (updates for DCS changes)
+--                    - Fix: Bug that may have prevented Red AWACS for operating as part of MANTIS IADS network.
+--                    - Fix: Ensure parameter override inheritance consistent, and document this behavior.
+--                    - Add 'GND' Zone name parameter to make AWACS/Tanker initially ground start.
+--                    - Prevent 'auto' creation of Carrier AWACS/Tanker if -P2 zone with same name.
 --
 -- Known issues:
 --   - Tankers/AWACs airspawn at 0 velocity; to compensate units spawn 
@@ -894,9 +899,14 @@ function InitSupportBases()
         end
     end
 
-    local P1zones = SET_ZONE:New():FilterPrefixes('-P1'):FilterOnce():GetSetNames()  
+    local P1ZoneSet = SET_ZONE:New():FilterPrefixes('-P1'):FilterOnce()
+    local P2ZoneSet = SET_ZONE:New():FilterPrefixes('-P2'):FilterOnce()
+    P1ZoneSet:SortByName()
+    P2ZoneSet:SortByName()
+    local P1zones = P1ZoneSet:GetSetNames()
+    local P2zones = P2ZoneSet:GetSetNames()
+    
     local callsigns = CALLSIGN.Tanker
-
     for k,v in pairs(CALLSIGN.AWACS) do callsigns[k] = v end
   
     for  _,P1zone in ipairs(P1zones) do
@@ -911,7 +921,7 @@ function InitSupportBases()
           
           local FullCallsign = callsign .. num
 
-          local template,alt,speed,freq,tacan,tacanband,invisible,airframes
+          local template,alt,speed,freq,tacan,tacanband,invisible,airframes,groundstart
 
           template = template or 1
           
@@ -958,6 +968,11 @@ function InitSupportBases()
                 invisible = true
               end
 
+              groundstart = groundstart or string.match(token, "GND")
+              if groundstart == "GND" then
+                groundstart = true
+              end
+
               airframes = airframes or string.match(token, "QTY(%d+)")
 
             end
@@ -989,6 +1004,10 @@ function InitSupportBases()
             SUPPORTUNITS[ FullCallsign ].invisible = true
           end
 
+          if groundstart then
+            SUPPORTUNITS[ FullCallsign ].groundstart = true
+          end
+
           if SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.TACANCHAN ] then
             pattern = "^(%a+)%d"
             local morse = SUPPORTUNITS[ callsign .. template ][ ENUMS.SupportUnitFields.TACANMORSE ]
@@ -1010,11 +1029,25 @@ function InitSupportBases()
             SUPPORTUNITS[ FullCallsign ].CoordP1 = P1:GetCoordinate()
           end
 
+        end
+      end
+    end
+
+    for  _,P2zone in ipairs(P2zones) do
+      local callsign, num, param
+      local pattern = "^(%a+)" .. "(%d)" .. "-*" .. "(.*)" .. "-P2"
+      callsign, num, param =  string.match(P2zone,  pattern)
+
+      if callsigns[callsign] ~= nil then
+
+        if num then        
+          local FullCallsign = callsign .. num
           local P2 = ZONE:FindByName(FullCallsign .. "-P2")
           if P2 then
             SUPPORTUNITS[ FullCallsign ].CoordP2 = P2:GetCoordinate()
+            BASE:I("Setting zoneP2exists for " .. FullCallsign)
+            SUPPORTUNITS[ FullCallsign ].zoneP2exists = true
           end
-
         end
       end
     end
@@ -1197,13 +1230,13 @@ function InitSupport( SupportBase, InAir )
                         
                     end, SupportUnit, SupportUnitFields, SupportUnitInfo, Flight, SupportBase, OrbitLeg, OrbitPt, OrbitDir
                   )
-            if Flight:GetFirstAliveGroup() == nil then
-                if InAir then      
-                    Flight:InitAirbase(SupportBase, SPAWN.Takeoff.Hot)
-                    Flight:SpawnInZone( OrbitPt, false, UTILS.FeetToMeters(SupportUnitFields[ENUMS.SupportUnitFields.ALTITUDE] + 15000), UTILS.FeetToMeters(SupportUnitFields[ENUMS.SupportUnitFields.ALTITUDE] + 15000) )
-                else
-                    Flight:SpawnAtAirbase( SupportBase, SPAWN.Takeoff.Hot, nil, AIRBASE.TerminalType.OpenBig, true )
-                end
+            if (Flight:GetFirstAliveGroup() == nil)  then
+              if InAir and not SupportUnitFields.groundstart then
+                Flight:InitAirbase(SupportBase, SPAWN.Takeoff.Hot)
+                Flight:SpawnInZone( OrbitPt, false, UTILS.FeetToMeters(SupportUnitFields[ENUMS.SupportUnitFields.ALTITUDE] + 15000), UTILS.FeetToMeters(SupportUnitFields[ENUMS.SupportUnitFields.ALTITUDE] + 15000) )
+              else
+                Flight:SpawnAtAirbase( SupportBase, SPAWN.Takeoff.Hot, nil, AIRBASE.TerminalType.OpenBig, true )
+              end
             end
         end
     end 
@@ -1221,33 +1254,32 @@ function InitNavySupport( AircraftCarriers, CarrierMenu, InAir )
         for SupportUnit,SupportUnitFields in pairs(SUPPORTUNITS) do      
             local SupportUnitInfo = SupportUnitFields[ENUMS.SupportUnitFields.TEMPLATE]
             if SupportUnitInfo == ENUMS.SupportUnitTemplate.NAVYTANKER then
+                if not SupportUnitFields.zoneP2exists then 
+                  -- S-3B Recovery Tanker
+                  local tanker=RECOVERYTANKER:New(AircraftCarrier, SupportUnit)
+                  if TakeoffAir then
+                      tanker:SetTakeoffAir()
+                  end
+                  tanker:SetSpeed(SupportUnitFields[ENUMS.SupportUnitFields.SPEED])
+                  tanker:SetRadio(SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ] + CarrierCount - 1)
+                  tanker:SetModex(SupportUnitFields[ENUMS.SupportUnitFields.MODEX] + CarrierCount - 1)
+                  tanker:SetAltitude(SupportUnitFields[ENUMS.SupportUnitFields.ALTITUDE])
+                  tanker:SetTACAN(SupportUnitFields[ENUMS.SupportUnitFields.TACANCHAN] + CarrierCount - 1, SupportUnitFields[ENUMS.SupportUnitFields.TACANMORSE])
+                  tanker:SetCallsign(SupportUnitFields[ENUMS.SupportUnitFields.CALLSIGN], SupportUnitFields[ENUMS.SupportUnitFields.CALLSIGN_NUM] + CarrierCount - 1)
+                  tanker:SetRacetrackDistances(30, 15)
+                  tanker:__Start(2)
 
-
-                -- S-3B Recovery Tanker
-                local tanker=RECOVERYTANKER:New(AircraftCarrier, SupportUnit)
-                if TakeoffAir then
-                    tanker:SetTakeoffAir()
-                end
-                tanker:SetSpeed(SupportUnitFields[ENUMS.SupportUnitFields.SPEED])
-                tanker:SetRadio(SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ] + CarrierCount - 1)
-                tanker:SetModex(SupportUnitFields[ENUMS.SupportUnitFields.MODEX] + CarrierCount - 1)
-                tanker:SetAltitude(SupportUnitFields[ENUMS.SupportUnitFields.ALTITUDE])
-                tanker:SetTACAN(SupportUnitFields[ENUMS.SupportUnitFields.TACANCHAN] + CarrierCount - 1, SupportUnitFields[ENUMS.SupportUnitFields.TACANMORSE])
-                tanker:SetCallsign(SupportUnitFields[ENUMS.SupportUnitFields.CALLSIGN], SupportUnitFields[ENUMS.SupportUnitFields.CALLSIGN_NUM] + CarrierCount - 1)
-                tanker:SetRacetrackDistances(30, 15)
-                tanker:__Start(2)
-
-                local ScheduleRecoveryTankerTacanStart = SCHEDULER:New( nil, 
-                    function( tanker )
-                        BASE:I(tanker.lid..string.format(" %s: Activating TACAN Channel %d%s (%s)", SupportUnit, 
-                            tanker.TACANchannel, tanker.TACANmode, tanker.TACANmorse))
-                        tanker:_ActivateTACAN()
-                    end, { tanker }, 300, 300
-                )
-
-
-                SupportBeacons[SupportUnit] = tanker.beacon
+                  local ScheduleRecoveryTankerTacanStart = SCHEDULER:New( nil, 
+                      function( tanker )
+                          BASE:I(tanker.lid..string.format(" %s: Activating TACAN Channel %d%s (%s)", SupportUnit, 
+                              tanker.TACANchannel, tanker.TACANmode, tanker.TACANmorse))
+                          tanker:_ActivateTACAN()
+                      end, { tanker }, 300, 300
+                  )
+                  SupportBeacons[SupportUnit] = tanker.beacon
+              end
             elseif SupportUnitInfo == ENUMS.SupportUnitTemplate.NAVYAWACS then
+              if not SupportUnitFields.zoneP2exists then 
                 -- E-2 AWACS
                 local awacs=RECOVERYTANKER:New(AircraftCarrier, SupportUnit)
                 if TakeoffAir then
@@ -1261,6 +1293,7 @@ function InitNavySupport( AircraftCarriers, CarrierMenu, InAir )
                 awacs:SetCallsign(SupportUnitFields[ENUMS.SupportUnitFields.CALLSIGN], SupportUnitFields[ENUMS.SupportUnitFields.CALLSIGN_NUM] + CarrierCount - 1) 
                 awacs:SetRacetrackDistances(40, 20)
                 awacs:__Start(2)
+              end
             elseif SupportUnitInfo == ENUMS.SupportUnitTemplate.RESCUEHELO then
                 -- Rescue Helo
                 local rescuehelo=RESCUEHELO:New(AircraftCarrier, SupportUnit)
@@ -1352,11 +1385,12 @@ function EmergencyTacanReset( BeaconTable )
 end
 
 function SetupMANTIS()
-    local RedAwacs = GROUP:FindByName("Red AWACS")
+    local RedAwacs = SET_GROUP:New():FilterPrefixes('Red EWR AWACS'):FilterOnce():GetSetNames()
+    SET_GROUP:New():FilterPrefixes('Red SAM'):FilterOnce():GetSetNames()
     local RedIADS = nil
 
     -- Create the IADS network with wor without AWACS
-    if RedAwacs then
+    if RedAwacs ~= {} then
         RedIADS = MANTIS:New("RedIADS","Red SAM","Red EWR",nil,"red",false,"Red EWR AWACS")
     else
         RedIADS = MANTIS:New("RedIADS","Red SAM","Red EWR",nil,"red",false)
@@ -1403,7 +1437,7 @@ local SupportBase = nil
 local AircraftCarriers = nil
 local AirStart = SupportFlightAirStart or true
 
-local CarrierMenu = null
+local CarrierMenu = nil
 local TacanMenu = MENU_MISSION:New("TACANs")
 
 -- Initialize Airbase & Carriers
