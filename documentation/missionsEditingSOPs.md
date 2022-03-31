@@ -164,10 +164,9 @@ available on a kneeboard.
 
 **TODO**: kneeboard for default comms plan?
 
-## Default Comms Ladder
+## Airframe Specific SOPs
 
-Missions should configure the presets on radios in client aircraft with the default comms ladder
-this section describes.
+Missions should configure airframes as described for each aircraft.
 
 ### A-10C
 TODO: No presets in ME?
@@ -176,7 +175,10 @@ TODO: No presets in ME?
 TODO: V/UHF #1 x26, V/UHF #2 x26, V/UHF RCS x30
 
 ### F-14B
+![Tomcat INS Reference Alignment](images/TomcatINS.png)
+
 TODO: UHF (-159) x20, V/UHF (-182) x30
+
 
 ### F-16C
 TODO: UHF (-164) x20, VHF (-222) x20
