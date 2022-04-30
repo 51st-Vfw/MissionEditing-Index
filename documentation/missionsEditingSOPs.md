@@ -181,7 +181,6 @@ TODO: V/UHF #1 x26, V/UHF #2 x26, V/UHF RCS x30
 
 TODO: UHF (-159) x20, V/UHF (-182) x30
 
-
 ### F-16C
 TODO: UHF (-164) x20, VHF (-222) x20
 
@@ -192,6 +191,12 @@ TODO: UHF (-164) x20, VHF (-222) x20
 ### F/A-18C
 TODO: COMM1 (-210) x20, COMM2 (-210) x20
 
+### AJS37
+For ME comms presets use:
+**Special 1:** Tac Common
+**Special 2:** Fjörd 1/2 Intraflight
+**Special 3:** Viggen Common freq or other frequently needed freq 
+**H (Larm/Guard):** Tac Common
 
 ## Miscellaneous
 ### Loadout references
