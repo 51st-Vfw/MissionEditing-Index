@@ -193,10 +193,13 @@ TODO: COMM1 (-210) x20, COMM2 (-210) x20
 
 ### AJS37
 For ME comms presets use:
-|**Special 1:**| Tac Common
-|**Special 2:**| Fjörd 1/2 Intraflight
-|**Special 3:**| Viggen Common freq or other frequently needed freq 
-|**H (Larm/Guard):**| Tac Common
+
+|Radio|Frequency|
+|---:|:---|
+|**Special 1:**| Tac Common |
+|**Special 2:**| Fjörd 1/2 Intraflight |
+|**Special 3:**| Viggen Common or other frequently needed frequency | 
+|**H (Larm/Guard):**| Tac Common (Allows monitoring while using other frequency) |
 
 ## Miscellaneous
 ### Loadout references
