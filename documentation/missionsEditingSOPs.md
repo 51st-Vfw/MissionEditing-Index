@@ -196,10 +196,10 @@ For ME comms presets use:
 
 |Radio|Frequency|
 |---:|:---|
-|**Special 1:**| Tac Common |
-|**Special 2:**| Fjörd 1/2 Intraflight |
-|**Special 3:**| Viggen Common or other frequently needed frequency | 
-|**H (Larm/Guard):**| Tac Common (Allows monitoring while using other frequency) |
+|**Special 1:**| Fjörd 1 Intraflight |
+|**Special 2:**| Fjörd 2 Intraflight |
+|**Special 3:**| Viggen Common or required mission frequency | 
+|**H (Larm/Guard):**| Tac Common |
 
 ## Miscellaneous
 ### Loadout references
