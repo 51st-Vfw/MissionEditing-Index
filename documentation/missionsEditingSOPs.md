@@ -132,9 +132,9 @@ table summarizes the standard communications plan for the wing for the base set 
 |Dodge 1<br>*F-14B*|42Y<br>105Y|140.25|    |Dodge 2<br>*F-14B*|43Y<br>106Y|140.75|
 |Hawg 1<br>*A-10C*|44Y<br>107Y|141.25|    |Pig 1<br>*A-10C*|45Y<br>108Y|141.75|
 |Pontiac 1<br>*AV-8B*|46Y<br>109Y|142.25|    |Pontiac 2<br>*AV-8B*|47Y<br>110Y|142.75|
-|Dude 1<br>*F-15E*|48Y<br>110Y|143.25|    |Jazz 1<br>*F-15E*|49Y<br>111Y|143.75|
-|Sioux 1<br>*AH-64D*|50Y<br>112Y|144.25|    |Gunslinger 1<br>*AH-64D*|51Y<br>113Y|144.75|
-|Fjörd 1<br>*AJS37*|N/A|145.25|    |Fjörd 2<br>*AJS37*|N/A|145.75|
+|Dude 1<br>*F-15E*|48Y<br>111Y|143.25|    |Jazz 1<br>*F-15E*|49Y<br>112Y|143.75|
+|Sioux 1<br>*AH-64D*|50Y<br>113Y|144.25|    |Gunslinger 1<br>*AH-64D*|51Y<br>114Y|144.75|
+|Fjörd 1<br>*AJS37*|N/A|145.25|    |Björk 1<br>*AJS37*|N/A|145.75|
 
 The TACAN pairs in this table describe the A2A yardstick setup: the lead uses the lower
 numbered channel of the pair while the wingmen use the higher numbered channel of the pair.
