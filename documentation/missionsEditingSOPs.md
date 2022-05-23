@@ -17,7 +17,12 @@ TACAN channels in the mission should be assigned according to the following diag
 
 Channels marked "unavailable" or "degraded" should be avoided. Default assignments for
 TACAN channels are detailed below in the discussion of the communications plan and are
-consistent with these assignments.
+consistent with these assignments. The following figure shows which TACAN channels the SOPs
+use.
+
+![](images/TACAN_Usage_SOP.png)
+
+Further details follow below.
 
 ## Tanker Altitude and Airspeed Guidelines
 This thread from the [ED DCS Forums](https://forums.eagle.ru/topic/260542-looking-for-actualrecommened-aerial-refueling-speeds/)
@@ -81,7 +86,7 @@ plan for these elements.
 |Element|Frequency|Notes|   |Element|Frequency|Notes|
 |---|:---:|:---|---|---|:---:|---|
 |Tactical Common|270.00|Player AWACS/GCI
-|Overlord 1-1<br>*AWACS*|240.00|FL300<br>AI| |Magic 1-1<br>*Carrier AWACS*|241.00|FL280<br>AI
+|Overlord 1-1<br>*AWACS*|240.00|FL300<br>AI| |Magic *N*-1<br>*Carrier AWACS*|See Below|FL280<br>AI
 |Darknight 1-1<br>*JTAC*|138.00|AI| |Various<br>*JTAC/AFAC*|138.10|Player
 
 The frequencies are selected to support both human and AI in AWACS and JTAC/AFAC roles. For
@@ -89,6 +94,18 @@ AWACS/GCI, a mission that uses a human in the role would place the AWACS/GCI on 
 common frequency. Placing any AI AWACS/GCI on different frequencies prevents the AI from flooding
 the radio. A mission that relies on only AI AWACS/GCI would place the tactical common frequncy
 on one of the AWACS/GCI frequencies.
+
+To allow multiple carriers in a mission, each carrier may have its own AWACS (an S-3B with the
+callsign "Magic"). The following table summarizes the SOP carrier AWACS.
+
+|Element|Frequency|Notes|   |Element|Frequency|Notes|
+|---|:---:|:---|---|---|:---:|---|
+|Magic 0-1<br>*CVN-70 AWACS*|270.60|FL280<br>AI| |Magic 1-1<br>*CVN-71 AWACS*|271.60|FL280<br>AI
+|Magic 2-1<br>*CVN-72 AWACS*|272.60|FL280<br>AI| |Magic 3-1<br>*CVN-73 AWACS*|273.60|FL280<br>AI
+|Magic 4-1<br>*CVN-74 AWACS*|274.60|FL280<br>AI| |Magic 5-1<br>*CVN-75 AWACS*|275.60|FL280<br>AI
+
+Frequencies for the carrier AWACS follow the hull number of their associated carrier and line
+up with the other carrier-related frequencies like the carrier AWACS or Link4 system.
 
 ### AAR Tankers
 
@@ -104,16 +121,29 @@ flight names to differentiate the different taker airframes,
 
 Missions may support additional airframes (for example, KC-130), should follow the flight
 naming conventions in the SOP. The following table summarizes the standard communications plan
-for tankers supporting AAR.
+for the non-carrier tankers supporting AAR.
 
 |Tanker|TACAN|Frequency|Notes|   |Tanker|TACAN|Frequency|Notes|
 |---|:---:|:---:|:---|---|---|:---:|:---:|---|
 |Texaco 1-1<br>*Boom*|51Y|251.00|FL250<br>300KIAS|    |Texaco 2-1<br>*Boom*|52Y|252.00|15000 MSL<br>220KIAS
 |Arco 1-1<br>*Probe & Drogue*|53Y|253.00|FL200<br>285KIAS|    |Arco 2-1<br>*Probe & Drogue*|54Y|254.00|FL210<br>285KIAS|
-|Shell 1-1<br>*Carrier Recovery*|55Y|255.00|6000 MSL<br>285KIAS|
 
 To eliminate some complexity, tanker TACAN channel and frequencies should be related as shown
 in the table above (that is, frequency is always 200 + TACAN channel).
+
+To allow for multiple carriers in a mission, each carrier may have its own recovery tanker (an
+S-3B with the callsign "Shell") made available. All recovery tankers orbit at 6000MSL at 285KIAS.
+The following table summarizes the SOP carrier recovery tankers.
+
+|Tanker|TACAN|Frequency|   |Tanker|TACAN|Frequency|
+|---|:---:|:---:|---|---|:---:|:---:|
+|Shell 0-1<br>*CVN-70 Recovery*|120Y|270.80| |Shell 1-1<br>*CVN-71 Recovery*|121Y|271.80|
+|Shell 2-1<br>*CVN-72 Recovery*|122Y|272.80| |Shell 3-1<br>*CVN-71 Recovery*|123Y|273.80|
+|Shell 4-1<br>*CVN-74 Recovery*|124Y|274.80| |Shell 5-1<br>*CVN-75 Recovery*|125Y|275.80|
+
+Frequencies and TACAN channels for the recovey tankers follow the hull number of their
+associated carrier and line up with the other carrier-related frequencies like the carrier
+AWACS or Link4 system.
 
 As missions may require additional tankers, the SOPs set aside TACAN channels 55Y through 63Y
 (along with their associated frequencies 255.0, 256.0, etc.) for use by additional tankers.
@@ -133,7 +163,7 @@ table summarizes the standard communications plan for the wing for the base set 
 |Hawg 1<br>*A-10C*|44Y<br>107Y|141.25|    |Pig 1<br>*A-10C*|45Y<br>108Y|141.75|
 |Pontiac 1<br>*AV-8B*|46Y<br>109Y|142.25|    |Pontiac 2<br>*AV-8B*|47Y<br>110Y|142.75|
 |Dude 1<br>*F-15E*|48Y<br>111Y|143.25|    |Jazz 1<br>*F-15E*|49Y<br>112Y|143.75|
-|Sioux 1<br>*AH-64D*|50Y<br>113Y|144.25|    |Gunslinger 1<br>*AH-64D*|51Y<br>114Y|144.75|
+|Sioux 1<br>*AH-64D*|50Y<br>113Y|144.25|    |Gunslinger 1<br>*AH-64D*|37Y<br>100Y|144.75|
 |Fjörd 1<br>*AJS37*|N/A|145.25|    |Björk 1<br>*AJS37*|N/A|145.75|
 
 The TACAN pairs in this table describe the A2A yardstick setup: the lead uses the lower
@@ -149,22 +179,26 @@ name such as "Venom" or "Viper" that is not listed here; however, it should not 
 Missions may include naval units for the launch and recovery of aircraft in the mission. The
 following table lists the default comms plan for naval units.
 
-|Hull|Ship|TACAN|Frequency|ICLS|
-|---|---|:---:|:---:|---|
-|LHA-1| USS *Tarawa*|64X|264.40|Ch. 1|
-|CVN-70| USS *Carl Vinson*|70X|270.40|Ch. 10|
-|CVN-71| USS *Theodore Roosevelt*|71X|271.40|Ch. 11|
-|CVN-72| USS *Abraham Lincoln*|72X|272.40|Ch. 12|
-|CVN-73| USS *George Washington*|73X|273.40|Ch. 13|
-|CVN-74| USS *John C. Stennis*|74X|274.40|Ch. 14|
-|CVN-75| USS *Harry S. Truman*|75X|275.40|Ch. 15|
+|Hull|Ship|TACAN|Frequency|ICLS|Link4|
+|---|---|:---:|:---:|---|---|
+|LHA-1| USS *Tarawa*|64X|264.40|Ch. 1|264.20
+|CVN-70| USS *Carl Vinson*|70X|270.40|Ch. 10|270.20
+|CVN-71| USS *Theodore Roosevelt*|71X|271.40|Ch. 11|271.20
+|CVN-72| USS *Abraham Lincoln*|72X|272.40|Ch. 12|272.20
+|CVN-73| USS *George Washington*|73X|273.40|Ch. 13|273.20
+|CVN-74| USS *John C. Stennis*|74X|274.40|Ch. 14|274.20
+|CVN-75| USS *Harry S. Truman*|75X|275.40|Ch. 15|275.20
 
 ### Kneeboards
 
-Missions are encouraged to make a summary of the of the comms plan that they implemenmt
-available on a kneeboard.
+Missions makers or planners are encouraged to make a summary of the relevant information from
+the comms plan available on a kneeboard. Alternatively, they can use the default comms card
+below.
 
-**TODO**: kneeboard for default comms plan?
+![](images/51st_SOP_Comms.png)
+
+This image is suitable for use as a DCS kneeboard. Based on the mission configuration, not all
+of the information may be relevant to a particular mission.
 
 ## Airframe Specific SOPs
 
