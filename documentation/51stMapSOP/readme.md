@@ -4,7 +4,7 @@
 
 **MapSOP** does the following:
 * Deploys Tanker and AWACs flights that set radio frequencies, TACANs, altitude, and speed in accordance with 51st VFW SOPs. Orbit endpoints are defined by creating named trigger zones in the DCS Mission Editor. When the on-station Tanker/AWACS flights get low on fuel, a relief flight is automatically launched from the designated support airbase. When the relief flight arrives on-station, the original flight checks-out and RTBs.
-* Sets the radio frequency and TACANS/ICLS for Aircraft Carriers, automatically loops the Carrier group's waypoints, and adds a radio F10 menu option to turn the carrier into the wind for launch and recovery operations.
+* Sets the radio frequency and TACANS/ICLS/ACLS/Link4 for multiple aircraft carriers, automatically loops the carrier group's waypoints, and adds a radio F10 menu option to turn the carrier into the wind for launch and recovery operations, as well as displaying the frequencies for each carrier.
 * Automatically launches and maintains a Recovery Tanker, E-2 AWACS, and a Rescue Helicopter that position themselves relative to the Carrier Group. Tanker/AWACs use SOP Radio/TACAN/Altitude/Speed.
 * Restarts Tanker/Carrier TACAN/ICLS beacons every 5 minutes to ensure they keep working. Also provides an F10 menu option to reset all TACANs on demand.
 
@@ -19,7 +19,7 @@
     ![Load MIST/Skynet Scripts with MISSION START Trigger](images/SKYNET-load.png)
 
 3. Use the ONCE trigger with Time More condition to load the 51stMapSOP.lua after 5 seconds: ![Load 51stMapSOP.lua with ONCE Trigger](images/MapSOP-load.png)
-4. **(OPTIONAL)** designate the home airbase for Tanker and AWACS flights be creating a Trigger Zone called `Support Airbase` over an airbase:
+4. **(OPTIONAL)** designate the home airbase for Tanker and AWACS flights be creating a Trigger Zone called `Support Airbase` (BlueFor) or `Red Support Airbase` (RedFor) over an airbase:
 
     ![Optionally create a trigger zone called 'Support Airbase'](images/SupportAirbase.png)
 
@@ -50,6 +50,8 @@
 
     Overrides for each callsign are processed in numerical order, so if `Texaco1-FLp30-P1` and `Texaco2-T1-P1` Zones were both present, *Texaco2* would also inherit the `FLp30` flight level override from *Texaco1*.
 
+    Prepending RED- to both P1 and P2 trigger zones will spawn a RedFor (Combined Joint Task Force Red) version of the flight. 
+
     Consult the table below for the complete list of SOP override paramters:
     | **Parameter**           | **Notation** | **Example**               | **Effect**                                           |
     |-------------------------|--------------|---------------------------|------------------------------------------------------|
@@ -65,6 +67,8 @@
     | Make invisible to AI    |INV           |Texaco1-INV-P1             |Makes Texaco1 invisible to the AI                     |
     | Limit available flights |QTY***n***    |Texaco1-QTY***4***-P1      |Limits Texaco1 to ***4*** spawns during the mission   |
     | Initial ground start    |GND           |Texaco1-GND-P1             |Makes initial Texaco1 takeoff from support Airbase    |
+    | Spawn flight as RedFor* |RED-          |RED-Texaco1-P1             |Spawns flight as RedFor. RED- must be prefix.         |
+    * Remember to override Radio/TACAN settings to avoid overlap with cooresponding BlueFor flights. 
 
 7.  **(OPTIONAL)** Additional flights beyond those specified in the SOP can be created by specifying additional -P1 and -P2 trigger with a name cooresponding to the callsign of the new flight. All values will default to the SOP settings of the **1** callsign with the same name (Texaco1/Acro1/Shell1/Overlord1/Magic1).  
 
@@ -155,6 +159,17 @@
 * Add 'GND' Zone name parameter to make AWACS/Tanker initially ground start.
 * Prevent 'auto' creation of Carrier AWACS/Tanker if -P2 zone with same name.
 
+*Version 20220526.1* 
+* Multi-carrier support / new 51st carrier support unit SOPs.
+* Same info as Hornet carrier kneeboard for each carrier via F10 carrier control menu.
+* Support new carrier Link4/ALCS.
+* Carrier control F10 menu now "Blue Only" and new formatting.
+* Rescue helo for LHA.
+* Ground start (no air respawn) honored for 'GND' Zone parameter for carrier support units.
+* Create RedFor versions of non-carrier Tankers/AWACS via "RED-" prefix P1/P2 zones.
+* Carrier wind speed at 15M not 50M (replicating AIRBOSS fix in MOOSE)
+
 ### Known issues:
 * Tankers/AWACs airspawn at 0 velocity; to compensate units spawn at 15k feet above target altitude to prevent terrain collisions.
 * Extra Non-SOP Shell/Magic units act like land-based Tankers/AWACS.
+* ACLS does not work for CVN-70 (USS Carl Vincent) -- not implemented as a real SuperCarrier by ED.

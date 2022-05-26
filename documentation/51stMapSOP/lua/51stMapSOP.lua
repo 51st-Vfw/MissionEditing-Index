@@ -2,7 +2,7 @@
 -- Initial version by Blackdog Jan 2022
 --
 -- Tested against MOOSE GITHUB Commit Hash ID:
--- 2022-03-26T21:39:44.0000000Z-c3591c1faeb56427ad435635d0171b4500daa04f
+-- 2022-05-24T14:05:04.0000000Z-91686e252c967ffee744dd0ee91ff93d7f8291bd
 --
 -- Version 20220101.1 - Blackdog initial version
 -- Version 20220115.1 - Fix: Tanker speeds adjusted to be close KIAS from SOP + better starting altitudes.
@@ -23,11 +23,20 @@
 --                    - Fix: Ensure parameter override inheritance consistent, and document this behavior.
 --                    - Add 'GND' Zone name parameter to make AWACS/Tanker initially ground start.
 --                    - Prevent 'auto' creation of Carrier AWACS/Tanker if -P2 zone with same name.
+-- Version 20220526.1 - Multi-carrier support / new 51st carrier support unit SOPs.
+--                    - Same info as Hornet carrier kneeboard for each carrier via F10 carrier control menu.
+--                    - Support new carrier Link4/ALCS.
+--                    - Carrier control F10 menu now "Blue Only" and new formatting.
+--                    - Rescue helo for LHA.
+--                    - Ground start (no air respawn) honored for 'GND' Zone parameter for carrier support units.
+--                    - Create RedFor versions of non-carrier Tankers/AWACS via "RED-" prefix P1/P2 zones.
+--                    - Carrier wind speed at 15M not 50M (replicating AIRBOSS fix in MOOSE)
 --
 -- Known issues:
 --   - Tankers/AWACs airspawn at 0 velocity; to compensate units spawn 
 --     at 15k feet above target altitude to prevent terrain collisions.
 --   - Extra Non-SOP Shell/Magic units act like land-based Tankers/AWACS.
+--   - ACLS does not work for CVN-70 (USS Carl Vincent).
 
 ENUMS.UnitType = {
     AIRCRAFT     = "Aircraft",
@@ -73,17 +82,19 @@ ENUMS.SupportUnitFields = {
     CALLSIGN        =   1,  -- CALLSIGN.AWACS.Texaco
     CALLSIGN_NUM    =   2,  -- 1 -- ie, Texaco-1
     TYPE            =   3,  -- ENUMS.UnitType.TANKER
-    RADIOFREQ       =   4,  -- 251.00 -- Number
+    RADIOFREQ       =   4,  -- 251.00 -- Number radio frequency in MHz
     TACANCHAN       =   5,  -- 51 -- Number
     TACANBAND       =   6,  -- ENUMS.TacanBand.Y
     TACANMORSE      =   7,  -- "TX1" -- TACAN morse code callsign string
     ICLSCHAN        =   8,  -- 11 -- ICLS channel -- Number (Carrier)
     ICLSMORSE       =   9,  -- "HST" -- ICLS morse code callsign string
-    ALTITUDE        =   10, -- 25000 -- Number in feet
-    SPEED           =   11, -- 250 -- Number in knots
-    MODEX           =   12, -- 511 -- Number -- Board number, etc.
-    REFUELINGSYSTEM =   13, -- ENUMS.RefuelingSystem.BOOM -- Tanker refueling system
-    TEMPLATE        =   14  -- ENUMS.SupportUnitTemplate.BOOMTANKER -- Unit template type
+    LINK4FREQ       =   10, -- "270.2" -- Number LINK4 frequency in MHz
+    ALTITUDE        =   11, -- 25000 -- Number in feet
+    SPEED           =   12, -- 250 -- Number in knots
+    MODEX           =   13, -- 511 -- Number -- Board number, etc.
+    REFUELINGSYSTEM =   14, -- ENUMS.RefuelingSystem.BOOM -- Tanker refueling system
+    GROUNDSTART     =   15, -- false -- whether to takeoff from the gound (and no airspawn for carrier units)
+    TEMPLATE        =   16  -- ENUMS.SupportUnitTemplate.BOOMTANKER -- Unit template type
 }
 
 local SUPPORTUNITS = {}
@@ -92,27 +103,39 @@ local SUPPORTUNITS = {}
 -- CALLSIGN, CALLSIGN_NUM, TYPE, RADIOFREQ, TACANCHAN, TACANBAND, TACANMORSE, ICLSCHAN, ICLSMORSE, ALTITUDE, SPEED, MODEX, REFUELINGSYSTEM, TEMPLATE
 
 -- Tankers
-SUPPORTUNITS[ "Texaco1" ] = { CALLSIGN.Tanker.Texaco,  1, ENUMS.UnitType.TANKER,  251.00, 51, ENUMS.TacanBand.Y, "TX1", nil, nil, 25000, 449, 251, ENUMS.RefuelingSystem.BOOM,  ENUMS.SupportUnitTemplate.BOOMTANKER }
-SUPPORTUNITS[ "Texaco2" ] = { CALLSIGN.Tanker.Texaco,  2, ENUMS.UnitType.TANKER,  252.00, 52, ENUMS.TacanBand.Y, "TX2", nil, nil, 15000, 278, 252, ENUMS.RefuelingSystem.BOOM,  ENUMS.SupportUnitTemplate.BOOMTANKER }
-SUPPORTUNITS[ "Arco1" ]   = { CALLSIGN.Tanker.Arco,    1, ENUMS.UnitType.TANKER,  253.00, 53, ENUMS.TacanBand.Y, "AR1", nil, nil, 20000, 391, 254, ENUMS.RefuelingSystem.PROBE, ENUMS.SupportUnitTemplate.PROBETANKER }
-SUPPORTUNITS[ "Arco2" ]   = { CALLSIGN.Tanker.Arco,    2, ENUMS.UnitType.TANKER,  254.00, 54, ENUMS.TacanBand.Y, "AR2", nil, nil, 21000, 398, 255, ENUMS.RefuelingSystem.PROBE, ENUMS.SupportUnitTemplate.PROBETANKER }
-SUPPORTUNITS[ "Shell1" ]  = { CALLSIGN.Tanker.Shell,   1, ENUMS.UnitType.TANKER,  255.00, 55, ENUMS.TacanBand.Y, "SH1", nil, nil,  6000, 312, 255, ENUMS.RefuelingSystem.PROBE, ENUMS.SupportUnitTemplate.NAVYTANKER }
+SUPPORTUNITS[ "Texaco1" ] = { CALLSIGN.Tanker.Texaco,  1, ENUMS.UnitType.TANKER,  251.00, 51, ENUMS.TacanBand.Y, "TX1", nil, nil, nil, 25000, 449, 251, ENUMS.RefuelingSystem.BOOM, false, ENUMS.SupportUnitTemplate.BOOMTANKER }
+SUPPORTUNITS[ "Texaco2" ] = { CALLSIGN.Tanker.Texaco,  2, ENUMS.UnitType.TANKER,  252.00, 52, ENUMS.TacanBand.Y, "TX2", nil, nil, nil, 15000, 278, 252, ENUMS.RefuelingSystem.BOOM, false, ENUMS.SupportUnitTemplate.BOOMTANKER }
+SUPPORTUNITS[ "Arco1" ]   = { CALLSIGN.Tanker.Arco,    1, ENUMS.UnitType.TANKER,  253.00, 53, ENUMS.TacanBand.Y, "AR1", nil, nil, nil, 20000, 391, 254, ENUMS.RefuelingSystem.PROBE, false, ENUMS.SupportUnitTemplate.PROBETANKER }
+SUPPORTUNITS[ "Arco2" ]   = { CALLSIGN.Tanker.Arco,    2, ENUMS.UnitType.TANKER,  254.00, 54, ENUMS.TacanBand.Y, "AR2", nil, nil, nil, 21000, 398, 255, ENUMS.RefuelingSystem.PROBE, false, ENUMS.SupportUnitTemplate.PROBETANKER }
+-- Tankers for each CVN
+SUPPORTUNITS[ "Shell9" ] =  { CALLSIGN.Tanker.Shell,   9, ENUMS.UnitType.TANKER,  270.80, 120, ENUMS.TacanBand.Y, "SH9", nil, nil, nil,  6000, 312, 220, ENUMS.RefuelingSystem.PROBE, false, ENUMS.SupportUnitTemplate.NAVYTANKER }
+SUPPORTUNITS[ "Shell1" ]  = { CALLSIGN.Tanker.Shell,   1, ENUMS.UnitType.TANKER,  271.80, 121, ENUMS.TacanBand.Y, "SH1", nil, nil, nil,  6000, 312, 221, ENUMS.RefuelingSystem.PROBE, false, ENUMS.SupportUnitTemplate.NAVYTANKER }
+SUPPORTUNITS[ "Shell2" ]  = { CALLSIGN.Tanker.Shell,   2, ENUMS.UnitType.TANKER,  272.80, 122, ENUMS.TacanBand.Y, "SH2", nil, nil, nil,  6000, 312, 222, ENUMS.RefuelingSystem.PROBE, false, ENUMS.SupportUnitTemplate.NAVYTANKER }
+SUPPORTUNITS[ "Shell3" ]  = { CALLSIGN.Tanker.Shell,   3, ENUMS.UnitType.TANKER,  273.80, 123, ENUMS.TacanBand.Y, "SH3", nil, nil, nil,  6000, 312, 223, ENUMS.RefuelingSystem.PROBE, false, ENUMS.SupportUnitTemplate.NAVYTANKER }
+SUPPORTUNITS[ "Shell4" ]  = { CALLSIGN.Tanker.Shell,   4, ENUMS.UnitType.TANKER,  274.80, 124, ENUMS.TacanBand.Y, "SH4", nil, nil, nil,  6000, 312, 224, ENUMS.RefuelingSystem.PROBE, false, ENUMS.SupportUnitTemplate.NAVYTANKER }
+SUPPORTUNITS[ "Shell5" ]  = { CALLSIGN.Tanker.Shell,   5, ENUMS.UnitType.TANKER,  275.80, 125, ENUMS.TacanBand.Y, "SH5", nil, nil, nil,  6000, 312, 225, ENUMS.RefuelingSystem.PROBE, false, ENUMS.SupportUnitTemplate.NAVYTANKER }
 
 -- AWACS
-SUPPORTUNITS[ "Overlord1" ] = { CALLSIGN.AWACS.Overlord,    1, ENUMS.UnitType.AWACS,  240.00, nil, nil, nil, nil, nil, 30000, 404, 240, nil, ENUMS.SupportUnitTemplate.AWACS }
-SUPPORTUNITS[ "Magic1" ]    = { CALLSIGN.AWACS.Magic,       1, ENUMS.UnitType.AWACS,  241.00, nil, nil, nil, nil, nil, 25000, 450, 241, nil, ENUMS.SupportUnitTemplate.NAVYAWACS }
+SUPPORTUNITS[ "Overlord1" ] = { CALLSIGN.AWACS.Overlord,    1, ENUMS.UnitType.AWACS,  240.00, nil, nil, nil, nil, nil, nil, 30000, 404, 240, nil, false, ENUMS.SupportUnitTemplate.AWACS }
+-- AWACS for each CVN
+SUPPORTUNITS[ "Magic9" ]   =  { CALLSIGN.AWACS.Magic,       9, ENUMS.UnitType.AWACS,  270.60, nil, nil, nil, nil, nil, nil, 25000, 450, 240, nil, false, ENUMS.SupportUnitTemplate.NAVYAWACS }
+SUPPORTUNITS[ "Magic1" ]    = { CALLSIGN.AWACS.Magic,       1, ENUMS.UnitType.AWACS,  271.60, nil, nil, nil, nil, nil, nil, 25000, 450, 241, nil, false, ENUMS.SupportUnitTemplate.NAVYAWACS }
+SUPPORTUNITS[ "Magic2" ]    = { CALLSIGN.AWACS.Magic,       2, ENUMS.UnitType.AWACS,  272.60, nil, nil, nil, nil, nil, nil, 25000, 450, 242, nil, false, ENUMS.SupportUnitTemplate.NAVYAWACS }
+SUPPORTUNITS[ "Magic3" ]    = { CALLSIGN.AWACS.Magic,       3, ENUMS.UnitType.AWACS,  273.60, nil, nil, nil, nil, nil, nil, 25000, 450, 243, nil, false, ENUMS.SupportUnitTemplate.NAVYAWACS }
+SUPPORTUNITS[ "Magic4" ]    = { CALLSIGN.AWACS.Magic,       4, ENUMS.UnitType.AWACS,  274.60, nil, nil, nil, nil, nil, nil, 25000, 450, 244, nil, false, ENUMS.SupportUnitTemplate.NAVYAWACS }
+SUPPORTUNITS[ "Magic5" ]    = { c,       5, ENUMS.UnitType.AWACS,  275.60, nil, nil, nil, nil, nil, nil, 25000, 450, 245, nil, false, ENUMS.SupportUnitTemplate.NAVYAWACS }
 
 -- Navy
-SUPPORTUNITS[ "LHA-1"  ] = { nil, nil, ENUMS.UnitType.SHIP,  264.00, 64, ENUMS.TacanBand.X, "TAR", 1,   "TAR", nil, nil, 264, nil, nil }
-SUPPORTUNITS[ "CVN-70" ] = { nil, nil, ENUMS.UnitType.SHIP,  270.00, 70, ENUMS.TacanBand.X, "CVN", 10,  "CVN", nil, nil, 270, nil, nil }
-SUPPORTUNITS[ "CVN-71" ] = { nil, nil, ENUMS.UnitType.SHIP,  271.00, 71, ENUMS.TacanBand.X, "TDY", 11,  "TDY", nil, nil, 271, nil, nil }
-SUPPORTUNITS[ "CVN-72" ] = { nil, nil, ENUMS.UnitType.SHIP,  272.00, 72, ENUMS.TacanBand.X, "ABE", 12,  "ABE", nil, nil, 272, nil, nil }
-SUPPORTUNITS[ "CVN-73" ] = { nil, nil, ENUMS.UnitType.SHIP,  273.00, 73, ENUMS.TacanBand.X, "WSH", 13,  "WSH", nil, nil, 273, nil, nil }
-SUPPORTUNITS[ "CVN-74" ] = { nil, nil, ENUMS.UnitType.SHIP,  274.00, 74, ENUMS.TacanBand.X, "STN", 14,  "STN", nil, nil, 274, nil, nil }
-SUPPORTUNITS[ "CVN-75" ] = { nil, nil, ENUMS.UnitType.SHIP,  275.00, 75, ENUMS.TacanBand.X, "TRU", 15,  "TRU", nil, nil, 275, nil, nil }
+SUPPORTUNITS[ "LHA-1"  ] = { nil, nil, ENUMS.UnitType.SHIP,  264.40, 64, ENUMS.TacanBand.X, "TAR", 1,   "TAR", nil,    nil, nil, 264, nil, false, nil }
+SUPPORTUNITS[ "CVN-70" ] = { nil, nil, ENUMS.UnitType.SHIP,  270.40, 70, ENUMS.TacanBand.X, "CVN", 10,  "CVN", 270.20, nil, nil, 270, nil, false, nil }
+SUPPORTUNITS[ "CVN-71" ] = { nil, nil, ENUMS.UnitType.SHIP,  271.40, 71, ENUMS.TacanBand.X, "TDY", 11,  "TDY", 271.20, nil, nil, 271, nil, false, nil }
+SUPPORTUNITS[ "CVN-72" ] = { nil, nil, ENUMS.UnitType.SHIP,  272.40, 72, ENUMS.TacanBand.X, "ABE", 12,  "ABE", 272.20, nil, nil, 272, nil, false, nil }
+SUPPORTUNITS[ "CVN-73" ] = { nil, nil, ENUMS.UnitType.SHIP,  273.40, 73, ENUMS.TacanBand.X, "WSH", 13,  "WSH", 273.20, nil, nil, 273, nil, false, nil }
+SUPPORTUNITS[ "CVN-74" ] = { nil, nil, ENUMS.UnitType.SHIP,  274.40, 74, ENUMS.TacanBand.X, "STN", 14,  "STN", 274.20, nil, nil, 274, nil, false, nil }
+SUPPORTUNITS[ "CVN-75" ] = { nil, nil, ENUMS.UnitType.SHIP,  275.40, 75, ENUMS.TacanBand.X, "TRU", 15,  "TRU", 275.20, nil, nil, 275, nil, false, nil }
 
 -- Rescue Helo
-SUPPORTUNITS[ "CSAR-1" ] = { nil, nil, ENUMS.UnitType.HELICOPTER, nil, nil, nil, nil, nil, nil, nil, nil, 265, nil, ENUMS.SupportUnitTemplate.RESCUEHELO }
+SUPPORTUNITS[ "CSAR1" ] = { CALLSIGN.Aircraft.Pontiac , 8, ENUMS.UnitType.HELICOPTER, nil, nil, nil, nil, nil, nil, nil, nil, nil, 265, nil, false, ENUMS.SupportUnitTemplate.RESCUEHELO }
 
 -- If no "Support Airbase" exists, then use a default airbase for each map
 local DEFAULTSUPPORTAIRBASES = { 
@@ -138,6 +161,78 @@ function TEMPLATE.SetCallsign(Template, CallsignName, CallsignNumber)
 end
 
 local SupportBeacons = {}
+
+--- Activate Link4 system of the CONTROLLABLE. The controllable should be an aircraft carrier!
+-- @param #CONTROLLABLE Controllable
+-- @param #number Frequency Radio frequency in MHz.
+-- @return #CONTROLLABLE Controllable
+function CommandActivateLink4(Controllable, Frequency)
+  local UnitID=UnitID or Controllable:GetID()
+
+  -- Command to activate Link4 system.
+  local CommandActivateLink4Obj= {
+    id = "ActivateLink4",
+    params= {
+      ["frequency"] = Frequency*1000000,
+      ["unitId"] = UnitID,
+    }
+  }
+
+  Controllable:SetCommand(CommandActivateLink4Obj)
+
+  return Controllable
+end
+
+--- Dectivate Link4 system of the CONTROLLABLE. The controllable should be an aircraft carrier!
+-- @param #CONTROLLABLE Controllable
+-- @return #CONTROLLABLE Controllable
+function CommandDeactivateLink4(Controllable)
+
+  -- Command to deactivate Link4 system.
+  local CommandDeactivateLink4Obj= {
+    id = "DeactivateLink4",
+    params= {}
+  }
+
+  Controllable:SetCommand(CommandDeactivateLink4Obj)
+
+  return Controllable
+end
+
+--- Activate ACLS system of the CONTROLLABLE. The controllable should be an aircraft carrier!
+-- @param #CONTROLLABLE Controllable
+-- @return #CONTROLLABLE Controllable
+function CommandActivateACLS(Controllable)
+  local UnitID=UnitID or Controllable:GetID()
+
+  -- Command to activate ACLS system.
+  local CommandActivateACLSObj= {
+    id = "ActivateACLS",
+    params= {
+      ["unitId"] = UnitID,
+    }
+  }
+
+  Controllable:SetCommand(CommandActivateACLSObj)
+
+  return Controllable
+end
+
+--- Dectivate ACLS system of the CONTROLLABLE. The controllable should be an aircraft carrier!
+-- @param #CONTROLLABLE Controllable
+-- @return #CONTROLLABLE Controllable
+function CommandDeactivateACLS(Controllable)
+
+  -- Command to deactivate ACLS system.
+  local CommandDeactivateACLSObj= {
+    id = "DeactivateACLS",
+    params= {}
+  }
+
+  Controllable:SetCommand(CommandDeactivateACLSObj)
+
+  return Controllable
+end
 
 -- Borrow data structures from AIRBOSS for CARRIER (many fields not used)
 local CARRIER = AIRBOSS
@@ -282,7 +377,7 @@ function CARRIER:GetWind(alt, magnetic, coord)
     local cv=coord or self:GetCoordinate()
   
     -- Wind direction and speed. By default at 50 meters ASL.
-    local Wdir, Wspeed=cv:GetWind(alt or 50)
+    local Wdir, Wspeed=cv:GetWind(alt or 15)
   
     -- Include magnetic declination.
     if magnetic then
@@ -864,11 +959,18 @@ end
 function InitSupportBases()
 
     local AirbaseName = nil
+    local RedAirbaseName = nil
     local AirbaseZone = ZONE:FindByName("Support Airbase")
+    local RedAirbaseZone = ZONE:FindByName("Red Support Airbase")
     local AircraftCarriers = {}
+    local VTOLcarriers = {}
 
     if AirbaseZone then
         AirbaseName = AirbaseZone:GetCoordinate(0):GetClosestAirbase(Airbase.Category.AIRDROME, coalition.side.BLUE):GetName()
+    end
+
+    if RedAirbaseZone then
+      RedAirbaseName = RedAirbaseZone:GetCoordinate(0):GetClosestAirbase(Airbase.Category.AIRDROME, coalition.side.RED):GetName()
     end
 
     if not AirbaseName then
@@ -886,6 +988,10 @@ function InitSupportBases()
     end
 
     local SupportBase = AIRBASE:Register(AirbaseName)
+    local RedSupportBase = nil
+    if RedAirbaseName then
+      RedSupportBase = AIRBASE:Register(RedAirbaseName)
+    end
 
     CLEANUP_AIRBASE:New(SupportBase:GetName()):SetCleanMissiles(false)
 
@@ -896,7 +1002,7 @@ function InitSupportBases()
 
         if ShipName:find("^CVN-") and ShipInfo then
                 table.insert(AircraftCarriers, ShipName)
-        end
+        end       
     end
 
     local P1ZoneSet = SET_ZONE:New():FilterPrefixes('-P1'):FilterOnce()
@@ -908,18 +1014,31 @@ function InitSupportBases()
     
     local callsigns = CALLSIGN.Tanker
     for k,v in pairs(CALLSIGN.AWACS) do callsigns[k] = v end
+    callsigns['CSAR'] = 8
   
     for  _,P1zone in ipairs(P1zones) do
 
       local callsign, num, param
+
+      local IsRed = false
+      local P1zoneParse = P1zone
+      if string.find(P1zone, "^RED%-") then
+        IsRed = true
+        P1zoneParse = string.gsub(P1zone, "RED%-", "")
+      end
+
       local pattern = "^(%a+)" .. "(%d)" .. "-*" .. "(.*)" .. "-P1"
-      callsign, num, param =  string.match(P1zone,  pattern)
+      callsign, num, param =  string.match(P1zoneParse,  pattern)
 
       if callsigns[callsign] ~= nil then
 
         if num then 
           
           local FullCallsign = callsign .. num
+          local NoRedFullCallsign = FullCallsign
+          if IsRed then
+            FullCallsign = "RED-" .. FullCallsign
+          end
 
           local template,alt,speed,freq,tacan,tacanband,invisible,airframes,groundstart
 
@@ -1005,7 +1124,7 @@ function InitSupportBases()
           end
 
           if groundstart then
-            SUPPORTUNITS[ FullCallsign ].groundstart = true
+            SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.GROUNDSTART ] = true
           end
 
           if SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.TACANCHAN ] then
@@ -1036,16 +1155,26 @@ function InitSupportBases()
     for  _,P2zone in ipairs(P2zones) do
       local callsign, num, param
       local pattern = "^(%a+)" .. "(%d)" .. "-*" .. "(.*)" .. "-P2"
+
+      local IsRed = false
+      if string.find(P2zone, "^RED%-") then
+        IsRed = true
+        P2zone = string.gsub(P2zone, "RED%-", "")
+      end
+
       callsign, num, param =  string.match(P2zone,  pattern)
 
       if callsigns[callsign] ~= nil then
 
         if num then        
           local FullCallsign = callsign .. num
+          local NoRedFullCallsign = FullCallsign
+          if IsRed then
+            FullCallsign = "RED-" .. FullCallsign
+          end
           local P2 = ZONE:FindByName(FullCallsign .. "-P2")
           if P2 then
             SUPPORTUNITS[ FullCallsign ].CoordP2 = P2:GetCoordinate()
-            BASE:I("Setting zoneP2exists for " .. FullCallsign)
             SUPPORTUNITS[ FullCallsign ].zoneP2exists = true
           end
         end
@@ -1080,13 +1209,26 @@ function InitSupportBases()
             end
         end
     end
-    return SupportBase, AircraftCarriers
+    return SupportBase, RedSupportBase, AircraftCarriers
 end
 
 
-function InitSupport( SupportBase, InAir ) 
+function InitSupport( SupportBaseParam, RedSupportBase, InAir ) 
 
   for SupportUnit,SupportUnitFields in pairs(SUPPORTUNITS) do
+
+    local SupportBase = SupportBaseParam
+    local red = nil
+    local UnitName = nil
+    local NoRedSupportUnit = nil
+    local pattern = "^(RED)-" .. "(.*)"
+    red, UnitName =  string.match(SupportUnit,  pattern)
+
+    if red == "RED" then
+      NoRedSupportUnit = UnitName
+      SupportUnit = "RED-" .. UnitName
+      SupportBase = RedSupportBase
+    end
 
     local PreviousMission = {}
     PreviousMission[SupportUnit] = {}
@@ -1122,6 +1264,11 @@ function InitSupport( SupportBase, InAir )
             local OrbitPt = OrbitPt1
             local OrbitDir = OrbitPt1:GetAngleDegrees( OrbitPt1:GetDirectionVec3( OrbitPt2 ) )
 
+            local SetSupportBase = SET_AIRBASE:New():FilterCoalitions("red"):FilterCoalitions("airdrome"):FilterOnce()
+            if not SupportBase then
+              SupportBase = SetSupportBase:FindNearestAirbaseFromPointVec2(POINT_VEC2:NewFromVec3(OrbitPt1:GetVec3()))
+            end
+
             local airframes = SupportUnitFields.airframes or '0'
             airframes = tonumber(airframes)
 
@@ -1134,6 +1281,11 @@ function InitSupport( SupportBase, InAir )
             local Flight = SPAWN:NewWithAlias(SupportUnit, SupportUnit .. " Flight")
                 :InitLimit( 2, airframes )
                 :InitHeading(OrbitDir)
+            
+            if red then
+              Flight:InitCoalition(coalition.side.RED)
+              Flight:InitCountry(country.id.CJTF_RED)
+            end
 
             Flight:OnSpawnGroup(
                     function( SpawnGroup, SupportUnit, SupportUnitFields, SupportUnitInfo, Spawn, SupportBase, OrbitLeg, OrbitPt, OrbitDir )
@@ -1231,7 +1383,7 @@ function InitSupport( SupportBase, InAir )
                     end, SupportUnit, SupportUnitFields, SupportUnitInfo, Flight, SupportBase, OrbitLeg, OrbitPt, OrbitDir
                   )
             if (Flight:GetFirstAliveGroup() == nil)  then
-              if InAir and not SupportUnitFields.groundstart then
+              if InAir and not SupportUnitFields[ ENUMS.SupportUnitFields.GROUNDSTART ] then
                 Flight:InitAirbase(SupportBase, SPAWN.Takeoff.Hot)
                 Flight:SpawnInZone( OrbitPt, false, UTILS.FeetToMeters(SupportUnitFields[ENUMS.SupportUnitFields.ALTITUDE] + 15000), UTILS.FeetToMeters(SupportUnitFields[ENUMS.SupportUnitFields.ALTITUDE] + 15000) )
               else
@@ -1245,27 +1397,38 @@ end
 
 function InitNavySupport( AircraftCarriers, CarrierMenu, InAir )
 
-    local TakeoffAir = InAir or true
+    local function ends_with(str, ending)
+      return ending == "" or str:sub(-#ending) == ending
+    end
+
     local Carriers = {}
+    local OTHERUNITS = {}
 
     -- Deploy a recovery tanker, AWACS, and Rescue Helo for each full Aircraft Carrier
     for CarrierCount,AircraftCarrier in pairs(AircraftCarriers) do
+      local pattern = "%d$"
+      local CarrierNum = string.match(AircraftCarrier, pattern)
+      if CarrierNum == '0' then
+        CarrierNum = '9'
+      end
 
-        for SupportUnit,SupportUnitFields in pairs(SUPPORTUNITS) do      
+      for SupportUnit,SupportUnitFields in pairs(SUPPORTUNITS) do      
             local SupportUnitInfo = SupportUnitFields[ENUMS.SupportUnitFields.TEMPLATE]
-            if SupportUnitInfo == ENUMS.SupportUnitTemplate.NAVYTANKER then
+            if SupportUnitInfo == ENUMS.SupportUnitTemplate.NAVYTANKER and ends_with(SupportUnit,CarrierNum) then
                 if not SupportUnitFields.zoneP2exists then 
                   -- S-3B Recovery Tanker
                   local tanker=RECOVERYTANKER:New(AircraftCarrier, SupportUnit)
-                  if TakeoffAir then
+                  if not SupportUnitFields[ENUMS.SupportUnitFields.GROUNDSTART] then
                       tanker:SetTakeoffAir()
+                  else
+                      tanker:SetTakeoffCold()
                   end
                   tanker:SetSpeed(SupportUnitFields[ENUMS.SupportUnitFields.SPEED])
-                  tanker:SetRadio(SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ] + CarrierCount - 1)
-                  tanker:SetModex(SupportUnitFields[ENUMS.SupportUnitFields.MODEX] + CarrierCount - 1)
+                  tanker:SetRadio(SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ])
+                  tanker:SetModex(SupportUnitFields[ENUMS.SupportUnitFields.MODEX])
                   tanker:SetAltitude(SupportUnitFields[ENUMS.SupportUnitFields.ALTITUDE])
-                  tanker:SetTACAN(SupportUnitFields[ENUMS.SupportUnitFields.TACANCHAN] + CarrierCount - 1, SupportUnitFields[ENUMS.SupportUnitFields.TACANMORSE])
-                  tanker:SetCallsign(SupportUnitFields[ENUMS.SupportUnitFields.CALLSIGN], SupportUnitFields[ENUMS.SupportUnitFields.CALLSIGN_NUM] + CarrierCount - 1)
+                  tanker:SetTACAN(SupportUnitFields[ENUMS.SupportUnitFields.TACANCHAN], SupportUnitFields[ENUMS.SupportUnitFields.TACANMORSE])
+                  tanker:SetCallsign(SupportUnitFields[ENUMS.SupportUnitFields.CALLSIGN], SupportUnitFields[ENUMS.SupportUnitFields.CALLSIGN_NUM])
                   tanker:SetRacetrackDistances(30, 15)
                   tanker:__Start(2)
 
@@ -1277,78 +1440,114 @@ function InitNavySupport( AircraftCarriers, CarrierMenu, InAir )
                       end, { tanker }, 300, 300
                   )
                   SupportBeacons[SupportUnit] = tanker.beacon
-              end
-            elseif SupportUnitInfo == ENUMS.SupportUnitTemplate.NAVYAWACS then
+                end
+            elseif SupportUnitInfo == ENUMS.SupportUnitTemplate.NAVYAWACS and ends_with(SupportUnit,CarrierNum) then
               if not SupportUnitFields.zoneP2exists then 
                 -- E-2 AWACS
                 local awacs=RECOVERYTANKER:New(AircraftCarrier, SupportUnit)
-                if TakeoffAir then
+                if not SupportUnitFields[ENUMS.SupportUnitFields.GROUNDSTART] then
                     awacs:SetTakeoffAir()
+                else
+                    awacs:SetTakeoffCold()
                 end
                 awacs:SetAWACS()
                 awacs:SetTACANoff()
-                awacs:SetRadio(SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ] + CarrierCount - 1)
-                awacs:SetModex(SupportUnitFields[ENUMS.SupportUnitFields.MODEX] + CarrierCount - 1)
+                awacs:SetRadio(SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ])
+                awacs:SetModex(SupportUnitFields[ENUMS.SupportUnitFields.MODEX])
                 awacs:SetAltitude(SupportUnitFields[ENUMS.SupportUnitFields.ALTITUDE])
-                awacs:SetCallsign(SupportUnitFields[ENUMS.SupportUnitFields.CALLSIGN], SupportUnitFields[ENUMS.SupportUnitFields.CALLSIGN_NUM] + CarrierCount - 1) 
+                awacs:SetCallsign(SupportUnitFields[ENUMS.SupportUnitFields.CALLSIGN], SupportUnitFields[ENUMS.SupportUnitFields.CALLSIGN_NUM]) 
                 awacs:SetRacetrackDistances(40, 20)
                 awacs:__Start(2)
               end
-            elseif SupportUnitInfo == ENUMS.SupportUnitTemplate.RESCUEHELO then
-                -- Rescue Helo
-                local rescuehelo=RESCUEHELO:New(AircraftCarrier, SupportUnit)
-                if TakeoffAir then
-                    rescuehelo:SetTakeoffAir()
-                end
-                rescuehelo:SetModex(SupportUnitFields[ENUMS.SupportUnitFields.MODEX] + CarrierCount - 1)
-                rescuehelo:__Start(2)
             elseif SupportUnitFields[ENUMS.SupportUnitFields.TYPE] == ENUMS.UnitType.SHIP then
-                    if SupportUnit == AircraftCarrier then 
-                      Carriers[SupportUnit] = CARRIER:New(AircraftCarrier)
-                      Carriers[SupportUnit]:SetTACAN(SupportUnitFields[ENUMS.SupportUnitFields.TACANCHAN], 
-                                      SupportUnitFields[ENUMS.SupportUnitFields.TACANBAND], 
-                                      SupportUnitFields[ENUMS.SupportUnitFields.TACANMORSE])
-                          :SetICLS(SupportUnitFields[ENUMS.SupportUnitFields.ICLSCHAN], SupportUnitFields[ENUMS.SupportUnitFields.ICLSMORSE])
-                          :SetBeaconRefresh(5*60)
-                          :__Start(2)
+              if SupportUnit == AircraftCarrier then 
+                local carrier = CARRIER:New(AircraftCarrier)
+                
+                carrier:SetTACAN(SupportUnitFields[ENUMS.SupportUnitFields.TACANCHAN], 
+                                SupportUnitFields[ENUMS.SupportUnitFields.TACANBAND], 
+                                SupportUnitFields[ENUMS.SupportUnitFields.TACANMORSE])
+                        :SetBeaconRefresh(5*60)
+                
+                if SupportUnitFields[ENUMS.SupportUnitFields.ICLSCHAN] and SupportUnitFields[ENUMS.SupportUnitFields.ICLSMORSE] then
+                  carrier:SetICLS(SupportUnitFields[ENUMS.SupportUnitFields.ICLSCHAN], SupportUnitFields[ENUMS.SupportUnitFields.ICLSMORSE])
+                end       
+                
+                function carrier:OnAfterStart( From, Event, To )
+                  self:I(SupportUnit .. " ACLS activated." )
 
-                      if SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ] then
-                        BASE:I(SupportUnit .. " radio set to " .. SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ] .. "MHz AM." )
-                        Carriers[SupportUnit].carrier:CommandSetFrequency(SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ])
-                      end
-                      if CarrierMenu == null then
-                        CarrierMenu = MENU_MISSION:New("Carrier Control")
-                      end
-                      local CarrierString = string.format("%s \n(ATC %.2f / %i%s / ICLS %i)", 
-                                                          SupportUnit, SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ], 
-                                                          SupportUnitFields[ENUMS.SupportUnitFields.TACANCHAN], 
-                                                          SupportUnitFields[ENUMS.SupportUnitFields.TACANBAND],
-                                                          SupportUnitFields[ENUMS.SupportUnitFields.ICLSCHAN])
-                      local CarrierMenu1 = MENU_MISSION_COMMAND:New(CarrierString .. ":\nTurn into wind for 30 minutes", CarrierMenu, CarrierTurnIntoWind, Carriers[SupportUnit] )
-                    else
-                        local Ship = UNIT:FindByName(SupportUnit)
-                        if Ship then
-                          local ShipBeacon = Ship:GetBeacon()
-                          if SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ] then
-                            BASE:I(SupportUnit .. " radio set to " .. SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ] .. "MHz AM." )
-                            Ship:CommandSetFrequency(SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ])
-                          end
-                          -- Schedule TACAN reset every 5 minutes
-                          local ScheduleShipTacanStart = SCHEDULER:New( nil, 
-                                  function( Ship )
-                                      ShipBeacon:ActivateTACAN(SupportUnitFields[ENUMS.SupportUnitFields.TACANCHAN], 
-                                                              SupportUnitFields[ENUMS.SupportUnitFields.TACANBAND], 
-                                                              SupportUnitFields[ENUMS.SupportUnitFields.TACANMORSE], 
-                                                              true)
-                                  end, { ShipBeacon }, 1, 300
-                              )
-                          SupportBeacons[SupportUnit] = ShipBeacon
-                        end
-                    end
+                  CommandActivateACLS(self.carrier)
+
+                  if SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ] then
+                    self:I(SupportUnit .. " radio set to " .. SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ] .. "MHz AM." )
+                    self.carrier:CommandSetFrequency(SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ])
+                  end
+                  if SupportUnitFields[ENUMS.SupportUnitFields.LINK4FREQ] then
+                    self:I(SupportUnit .. " Link4 set to " .. SupportUnitFields[ENUMS.SupportUnitFields.LINK4FREQ] .. "MHz." )
+                    CommandActivateLink4(self.carrier, SupportUnitFields[ENUMS.SupportUnitFields.LINK4FREQ])
+                  end
+
+                end
+
+                Carriers[SupportUnit] = carrier
+
+                Carriers[SupportUnit]:__Start(2)
+
+                if CarrierMenu == null then
+                  CarrierMenu = MENU_COALITION:New(coalition.side.BLUE, "Carrier Control")
+                end
+                local CarrierString = string.format("%s\n    -   ATC: %.2f MHz\n    - TACAN: %i%s %s \n    -  ICLS: %i \n    - LINK4: %.2f MHz", 
+                                                    SupportUnit, SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ], 
+                                                    SupportUnitFields[ENUMS.SupportUnitFields.TACANCHAN], 
+                                                    SupportUnitFields[ENUMS.SupportUnitFields.TACANBAND],
+                                                    SupportUnitFields[ENUMS.SupportUnitFields.TACANMORSE],
+                                                    SupportUnitFields[ENUMS.SupportUnitFields.ICLSCHAN],
+                                                    SupportUnitFields[ENUMS.SupportUnitFields.LINK4FREQ])
+                local CarrierMenu1 = MENU_COALITION_COMMAND:New(coalition.side.BLUE, CarrierString .. "\n    Turn into wind for 30 minutes", CarrierMenu, CarrierTurnIntoWind, Carriers[SupportUnit] )
+              else
+                OTHERUNITS[SupportUnit] = SupportUnitFields
+              end
             end
-        end
+      end
     end
+    
+    for SupportUnit,SupportUnitFields in pairs(OTHERUNITS) do
+      local Ship = UNIT:FindByName(SupportUnit)
+      if Ship then
+        local ShipBeacon = Ship:GetBeacon()
+        if SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ] then
+          BASE:I(SupportUnit .. " radio set to " .. SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ] .. "MHz AM." )
+          Ship:CommandSetFrequency(SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ])
+        end
+        -- Schedule TACAN reset every 5 minutes
+        if SupportUnitFields[ENUMS.SupportUnitFields.TACANCHAN] and SupportUnitFields[ENUMS.SupportUnitFields.TACANBAND] then 
+          local ScheduleShipTacanStart = SCHEDULER:New( nil, 
+                  function( Ship )
+                      ShipBeacon:ActivateTACAN(SupportUnitFields[ENUMS.SupportUnitFields.TACANCHAN], 
+                                              SupportUnitFields[ENUMS.SupportUnitFields.TACANBAND], 
+                                              SupportUnitFields[ENUMS.SupportUnitFields.TACANMORSE], 
+                                              true)
+                  end, { ShipBeacon }, 1, 300
+              )
+        end
+        SupportBeacons[SupportUnit] = ShipBeacon
 
+        -- Rescue Helo for LHAs and other non-carriers
+        local rescuehelo=RESCUEHELO:New(SupportUnit, "CSAR1")
+
+        if SUPPORTUNITS[ 'CSAR1' ][ ENUMS.SupportUnitFields.GROUNDSTART ] then
+          rescuehelo:SetTakeoffCold()
+        else
+          if SupportUnit[ ENUMS.SupportUnitFields.GROUNDSTART ] then
+            rescuehelo:SetTakeoffCold()
+          else
+            rescuehelo:SetTakeoffAir()
+          end
+        end
+
+        rescuehelo:SetModex( SUPPORTUNITS[ 'CSAR1' ][ ENUMS.SupportUnitFields.MODEX ] + 8 )
+        rescuehelo:__Start(2)
+      end
+    end
     return Carriers
 end
 
@@ -1434,6 +1633,7 @@ function SetupSKYNET()
 end
 
 local SupportBase = nil
+local RedSupportBase = nil
 local AircraftCarriers = nil
 local AirStart = SupportFlightAirStart or true
 
@@ -1441,10 +1641,10 @@ local CarrierMenu = nil
 local TacanMenu = MENU_MISSION:New("TACANs")
 
 -- Initialize Airbase & Carriers
-SupportBase, AircraftCarriers = InitSupportBases()
+SupportBase, RedSupportBase, AircraftCarriers = InitSupportBases()
 
 -- Init land-based support units
-InitSupport(SupportBase, AirStart)
+InitSupport(SupportBase, RedSupportBase, AirStart)
 
 -- Periodically re-launch each Flight if none in the air
 local SupportFlightScheduler = SCHEDULER:New( nil, InitSupportWings, {SupportBase}, 300, 300 )
