@@ -96,16 +96,17 @@ the radio. A mission that relies on only AI AWACS/GCI would place the tactical c
 on one of the AWACS/GCI frequencies.
 
 To allow multiple carriers in a mission, each carrier may have its own AWACS (an S-3B with the
-callsign "Magic"). The following table summarizes the SOP carrier AWACS.
+callsign "Magic"). The following table summarizes the SOP carrier AWACS units.
 
 |Element|Frequency|Notes|   |Element|Frequency|Notes|
 |---|:---:|:---|---|---|:---:|---|
-|Magic 0-1<br>*CVN-70 AWACS*|270.60|FL280<br>AI| |Magic 1-1<br>*CVN-71 AWACS*|271.60|FL280<br>AI
+|Magic 9-1<br>*CVN-70 AWACS*|270.60|FL280<br>AI| |Magic 1-1<br>*CVN-71 AWACS*|271.60|FL280<br>AI
 |Magic 2-1<br>*CVN-72 AWACS*|272.60|FL280<br>AI| |Magic 3-1<br>*CVN-73 AWACS*|273.60|FL280<br>AI
 |Magic 4-1<br>*CVN-74 AWACS*|274.60|FL280<br>AI| |Magic 5-1<br>*CVN-75 AWACS*|275.60|FL280<br>AI
 
-Frequencies for the carrier AWACS follow the hull number of their associated carrier and line
-up with the other carrier-related frequencies like the carrier AWACS or Link4 system.
+Frequencies for the carrier AWACS units generally follow the hull number of their associated
+carrier and line up with the other carrier-related frequencies like the carrier AWACS or Link4
+system.
 
 ### AAR Tankers
 
@@ -137,13 +138,13 @@ The following table summarizes the SOP carrier recovery tankers.
 
 |Tanker|TACAN|Frequency|   |Tanker|TACAN|Frequency|
 |---|:---:|:---:|---|---|:---:|:---:|
-|Shell 0-1<br>*CVN-70 Recovery*|120Y|270.80| |Shell 1-1<br>*CVN-71 Recovery*|121Y|271.80|
+|Shell 9-1<br>*CVN-70 Recovery*|120Y|270.80| |Shell 1-1<br>*CVN-71 Recovery*|121Y|271.80|
 |Shell 2-1<br>*CVN-72 Recovery*|122Y|272.80| |Shell 3-1<br>*CVN-71 Recovery*|123Y|273.80|
 |Shell 4-1<br>*CVN-74 Recovery*|124Y|274.80| |Shell 5-1<br>*CVN-75 Recovery*|125Y|275.80|
 
-Frequencies and TACAN channels for the recovey tankers follow the hull number of their
-associated carrier and line up with the other carrier-related frequencies like the carrier
-AWACS or Link4 system.
+Frequencies and TACAN channels for the recovey tankers generally follow the hull number of
+their associated carrier and line up with the other carrier-related frequencies like the
+carrier AWACS or Link4 system.
 
 As missions may require additional tankers, the SOPs set aside TACAN channels 55Y through 63Y
 (along with their associated frequencies 255.0, 256.0, etc.) for use by additional tankers.
@@ -170,9 +171,9 @@ The TACAN pairs in this table describe the A2A yardstick setup: the lead uses th
 numbered channel of the pair while the wingmen use the higher numbered channel of the pair.
 
 Specific missions may choose different flight names as required. When deviating from the SOP
-though, please avoid changes that may create confusion. For example, an F-16C flight could use a
-name such as "Venom" or "Viper" that is not listed here; however, it should not use a name such as
-"Enfield" or "Hawg" that is typically associated with a different airframe in the SOPs.
+though, please avoid changes that may create confusion. For example, an F-16C flight could use
+a name such as "Venom" or "Viper" that is not listed here; however, it should not use a name
+such as "Enfield" or "Hawg" that is typically associated with a different airframe in the SOPs.
 
 ### Naval Units
 
@@ -188,6 +189,10 @@ following table lists the default comms plan for naval units.
 |CVN-73| USS *George Washington*|73X|273.40|Ch. 13|273.20
 |CVN-74| USS *John C. Stennis*|74X|274.40|Ch. 14|274.20
 |CVN-75| USS *Harry S. Truman*|75X|275.40|Ch. 15|275.20
+
+A mission may deploy multiple carriers. When doing so, it is suggested that the mission designer
+avoid using CVN-70 (*Carl Vinson*) and CVN-74 (*John C. Stennis*) as the DCS Supercarrier
+module does not support these ships.
 
 ### Kneeboards
 
@@ -231,9 +236,23 @@ For ME comms presets use:
 |Radio|Frequency|
 |---:|:---|
 |**Special 1:**| Fjörd 1 Intraflight |
-|**Special 2:**| Fjörd 2 Intraflight |
+|**Special 2:**| Björk 1 Intraflight |
 |**Special 3:**| Viggen Common or required mission frequency | 
 |**H (Larm/Guard):**| Tac Common |
+
+The Viggen uses navigation markers in addition to the steerpoints assigned to each unit through
+the DCS ME. The Viggen supports navigation markers for waypoints ("B" type) and target points
+("M" type). The markers are number sequentially from 1-9, regardless of type. For example, a
+mission with an ingress steerpoint, target, and egress steerpoint might have navigation markers
+B1, M2, B3.
+
+To add a navigation marker, use the navigation point panel (marked with a square symbol) in the
+DCS ME group editor for a Viggen group as shown below.
+
+![Viggen Navigation Point Editor](images/Viggen_Nav_Pts.png)
+
+You can add, edit, and delete navigation points with the corresponding controls. The navigation
+points show up in the ME map as small squares labeled with the assigned name.
 
 ## Miscellaneous
 ### Loadout references
