@@ -1,9 +1,9 @@
-# Mission Editing Standard Operating Procedures
+# General Mission Editing SOPs
 
-This section covers a number of SOPs mission designers should employ around mission elements
-such as communications, navigation, and operational support. These SOPs are built around the
-airframes the 51st VFW currently supports: A-10C, AV-8B, F-14B, F-15E (soon), F-16C, F/A-18C,
-and various helicopter airframes.
+This section covers a number of standard operating procedures (SOPs) mission designers should
+employ around general mission elements such as communications, navigation, and operational
+support. These SOPs are built around the airframes the 51st VFW currently supports: A-10C,
+AH-64D, AJS37, AV-8B, F-14B, F-15E (soon), F-16C, F/A-18C, and other helicopter airframes.
 
 Missions should follow the SOPs where possible and practical to provide consistency across
 51st VFW missions. That being said, mission designers may deviate from these guidelines
@@ -194,7 +194,7 @@ A mission may deploy multiple carriers. When doing so, it is suggested that the 
 avoid using CVN-70 (*Carl Vinson*) and CVN-74 (*John C. Stennis*) as the DCS Supercarrier
 module does not support these ships.
 
-### Kneeboards
+### Default Kneeboards
 
 Missions makers or planners are encouraged to make a summary of the relevant information from
 the comms plan available on a kneeboard. Alternatively, they can use the default comms card
@@ -205,46 +205,77 @@ below.
 This image is suitable for use as a DCS kneeboard. Based on the mission configuration, not all
 of the information may be relevant to a particular mission.
 
-## Airframe Specific SOPs
+# Airframe Specific SOPs
 
-Missions should configure airframes as described for each aircraft.
+This section covers various airframe-specific SOPs and mission design guidelines that may be
+helpful to keep in mind when designing missions that include the various airframes.
 
-### A-10C
+Missions should follow the SOPs where possible and practical to provide consistency across
+51st VFW missions. That being said, mission designers may deviate from these guidelines
+where necessary due to the specific mission scenario.
+
+## A-10C
+
+The A-10C Warthog is a single-seat, twin-turbofan, straight-wing, subsonic attack aircraft
+designed for close air support (CAS) and forward air controller (FAC) missions.
+
+### Mission Design Guidelines for the A-10C
+
+TODO: A-10 design guidelines
+
+### Comms Presets
+
 TODO: No presets in ME?
 
-### AV-8B
-TODO: V/UHF #1 x26, V/UHF #2 x26, V/UHF RCS x30
+## AH-64D
 
-### F-14B
-![Tomcat INS Reference Alignment](images/TomcatINS.png)
+The AH-64D Apache is a twin-turboshaft attack helicopter with a tailwheel-type landing gear arrangement and a tandem cockpit for a crew of two.
 
-TODO: UHF (-159) x20, V/UHF (-182) x30
+### Mission Design Guidelines for the AH-64D
 
-### F-16C
-TODO: UHF (-164) x20, VHF (-222) x20
+TODO: AH-64D design guidelines
 
-|UHF Preset|Purpose|   |VHF Preset|Purpose|
-|:---:|:---|---|:---:|:---|
-|1|Tactical Common||1|Inter-flight
+### Comms Presets
 
-### F/A-18C
-TODO: COMM1 (-210) x20, COMM2 (-210) x20
+TODO
 
-### AJS37
-For ME comms presets use:
+## AJS37
+
+The AJS37 Viggen is a single-seat, single-engine, short-medium range combat aircraft.
+
+### Mission Design Guidelines for the AJS37
+
+TODO: AJS37 design guidelines
+
+### Comms Presets
+
+Typically, comms presets are set up in the DCS ME according to the following table,
 
 |Radio|Frequency|
 |---:|:---|
-|**Special 1:**| Fjörd 1 Intraflight |
-|**Special 2:**| Björk 1 Intraflight |
-|**Special 3:**| Viggen Common or required mission frequency | 
-|**H (Larm/Guard):**| Tac Common |
+|**Special 1**| Fjörd 1 Intraflight |
+|**Special 2**| Björk 1 Intraflight |
+|**Special 3**| Viggen Common or required mission frequency | 
+|**H (Larm/Guard)**| Tactical Common |
+
+Missions may deviate as necessary.
+
+### Navigation Points
 
 The Viggen uses navigation markers in addition to the steerpoints assigned to each unit through
-the DCS ME. The Viggen supports navigation markers for waypoints ("B" type) and target points
-("M" type). The markers are number sequentially from 1-9, regardless of type. For example, a
-mission with an ingress steerpoint, target, and egress steerpoint might have navigation markers
-B1, M2, B3.
+the DCS ME. There are several different types as shown in the following table,
+
+|Symbol|Type|Numbering|Notes
+|---|:---:|:---:|---|
+|B|Waypoint|1-9|General waypoints, these navigation points share numbering with the M points.
+|M|Target|1-9|Target points, these navigation points share numbers with the B points.
+|Bx|General|1-9|General points of interest (points 1-5) and anti-ship missile programming (points 6-9).
+|R|Recon|1-9|Boundary of recon area for ELINT, minimum of four points is recommended.
+|MR|Recon Target|1-9|Target locations within the recon area the R points define.
+
+Markers are numbered sequentially as shown. With the exception of B and M types, all other
+types are numbered independently (for example, a flight plan could have both B1 and Bx1 but not
+B1 and M1).
 
 To add a navigation marker, use the navigation point panel (marked with a square symbol) in the
 DCS ME group editor for a Viggen group as shown below.
@@ -254,13 +285,86 @@ DCS ME group editor for a Viggen group as shown below.
 You can add, edit, and delete navigation points with the corresponding controls. The navigation
 points show up in the ME map as small squares labeled with the assigned name.
 
-## Miscellaneous
-### Loadout references
+## AV-8B
+
+The AV-8B Harrier II is a single-seat, single-engine ground-attack aircraft, capable of
+vertical or short takeoff and landing (V/STOL). The aircraft is primarily employed on light
+attack or multi-role missions, ranging from close air support to armed reconnaissance.
+
+### Mission Design Guidelines for the AV-8B
+
+TODO: AV-8B design guidelines
+
+### Comms Presets
+
+TODO: V/UHF #1 x26, V/UHF #2 x26, V/UHF RCS x30
+
+## F-14B
+
+The F-14B Tomcat is a two-seat, twin-engine, carrier-capable, variable-sweep wing fighter
+aircraft.
+
+### Mission Design Guidelines for the F-14B
+
+TODO: F-14B design guidelines
+
+### INS Alignment
+
+To reduce the time necessary to align the INS in a cold start, the Tomcat should be set up to
+have an INS reference alignment stored in the jet. This can be done from the DCS ME group
+editor for a Tomcat unit as the following figure illustrates.
+
+![Tomcat INS Reference Alignment](images/TomcatINS.png)
+
+Checking the "INS Reference Alignment Stored" option here will ensure the jet has a reference
+alignment during cold starts.
+
+TODO: UHF (-159) x20, V/UHF (-182) x30
+
+## F-16C
+
+The F-16C Viper is a single-seat, single-engine multirole fighter aircraft. Designed as an air
+superiority day fighter, it has evolved into a successful all-weather multirole aircraft.
+
+### Mission Design Guidelines for the F-14B
+
+TODO: F-16C design guidelines
+
+### Comms Presets
+
+TODO: UHF (-164) x20, VHF (-222) x20
+
+|UHF Preset|Purpose|   |VHF Preset|Purpose|
+|:---:|:---|---|:---:|:---|
+|1|Tactical Common||1|Inter-flight
+
+## F/A-18C
+
+The F/A-18C Hornet is a single-seat, twin-engine, all-weather, carrier-capable, multirole
+combat jet, designed as both a fighter and attack aircraft.
+
+### Mission Design Guidelines for the F-14B
+
+TODO: F/A-18C design guidelines
+
+### Comms Presets
+
+TODO: COMM1 (-210) x20, COMM2 (-210) x20
+
+# Miscellaneous SOPs
+
+TODO
+
+## Loadout references
+
 - [Desert Storm Era](https://www.dstorm.eu/pages/loadout/loadout.html)
-### Create a pull request!
+
+## Create a pull request!
+
     - Don't commit to master unless you are the main owner/delegated.
 
-## TODO
+# TODO
+
 - [] Add mids and tacan overlap documentation (don't mix the freqs!)
 - [] Standard comms ladder per aircraft?
 
