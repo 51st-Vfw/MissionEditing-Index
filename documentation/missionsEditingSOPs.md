@@ -1,4 +1,4 @@
-# General Mission Editing SOPs
+# General 51st VFW Mission Editing SOPs
 
 This section covers a number of standard operating procedures (SOPs) mission designers should
 employ around general mission elements such as communications, navigation, and operational
