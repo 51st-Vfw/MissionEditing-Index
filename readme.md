@@ -9,7 +9,7 @@ Here, you will find,
   practices for mission creation and construction in the wing.
 - [MapSOP Script](./documentation/51stMapSOP/readme.md) provides support for common setup
   tasks (carriers, tankers, etc.) consistent with 51st VFW SOP.
-- [Missions](./documentation/missions.md) provides a repository for missions that have been
+- [Missions](https://github.com/51st-Vfw/missions) provides a repository for missions that have been
   made availble for reference via Git.
 - [Reference Scripts](./documentation/referenceScripts.md) provides a repository for scripts
   and other code that may be useful for mission designers.
