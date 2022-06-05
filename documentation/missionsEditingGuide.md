@@ -26,7 +26,7 @@ good source of general information on mission making and scripting.
 Several 51st VFW templates and missions adopt a workflow intended to help smooth over the rough
 edges of the DCS Mission Editor when it comes to scripting. A description of the workflow is
 available
-[here](https://github.com/51st-Vfw/template-missions/blob/master/NTTR%20Basic%20Template/workflow.md).
+[here](https://github.com/51st-Vfw/template-missions/blob/master/NTTR%20Base%20Scripting/workflow.md).
 
 # Frameworks
 
