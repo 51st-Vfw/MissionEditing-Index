@@ -25,7 +25,7 @@ There are two 51st VFW repositories that contain a variety of mission templates 
 
 Some of the missions and templates adopt a helpful workflow for managing scripts and `.miz` files
 given limitations of the DCS mission editor. A description of the workflow is available
-[here](https://github.com/51st-Vfw/template-missions/blob/master/51st%20NTTR%20Basic%20Template/workflow.md).
+[here](https://github.com/51st-Vfw/template-missions/blob/master/NTTR%20Basic%20Template/workflow.md).
 
 In addition to the content in these repositories, there are several other references that are
 part of other repositories (these are private to the wing at present),
