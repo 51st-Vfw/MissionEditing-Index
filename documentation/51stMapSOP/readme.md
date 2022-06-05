@@ -167,7 +167,11 @@
 * Rescue helo for LHA.
 * Ground start (no air respawn) honored for 'GND' Zone parameter for carrier support units.
 * Create RedFor versions of non-carrier Tankers/AWACS via "RED-" prefix P1/P2 zones.
-* Carrier wind speed at 15M not 50M (replicating AIRBOSS fix in MOOSE)
+* Carrier wind speed at 15M not 50M (replicating AIRBOSS fix in MOOSE).
+
+*Version 20220604.1*
+* Fix Magic5 AWACS (CVN-75).
+* Fix rescue helo for CVNs.
 
 ### Known issues:
 * Tankers/AWACs airspawn at 0 velocity; to compensate units spawn at 15k feet above target altitude to prevent terrain collisions.

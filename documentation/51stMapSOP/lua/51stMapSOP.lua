@@ -30,7 +30,9 @@
 --                    - Rescue helo for LHA.
 --                    - Ground start (no air respawn) honored for 'GND' Zone parameter for carrier support units.
 --                    - Create RedFor versions of non-carrier Tankers/AWACS via "RED-" prefix P1/P2 zones.
---                    - Carrier wind speed at 15M not 50M (replicating AIRBOSS fix in MOOSE)
+--                    - Carrier wind speed at 15M not 50M (replicating AIRBOSS fix in MOOSE).
+-- Version 20220604.1 - Fix Magic5 AWACS (CVN-75).
+--                    - Fix rescue helo for CVNs.
 --
 -- Known issues:
 --   - Tankers/AWACs airspawn at 0 velocity; to compensate units spawn 
@@ -100,7 +102,7 @@ ENUMS.SupportUnitFields = {
 local SUPPORTUNITS = {}
 
 -- Set according to 51st SOPs: https://github.com/51st-Vfw/MissionEditing-Index/blob/master/documentation/missionsEditingSOPs.md
--- CALLSIGN, CALLSIGN_NUM, TYPE, RADIOFREQ, TACANCHAN, TACANBAND, TACANMORSE, ICLSCHAN, ICLSMORSE, ALTITUDE, SPEED, MODEX, REFUELINGSYSTEM, TEMPLATE
+-- CALLSIGN, CALLSIGN_NUM, TYPE, RADIOFREQ, TACANCHAN, TACANBAND, TACANMORSE, ICLSCHAN, ICLSMORSE, LINK4FREQ, ALTITUDE, SPEED, MODEX, REFUELINGSYSTEM, GROUNDSTART, TEMPLATE
 
 -- Tankers
 SUPPORTUNITS[ "Texaco1" ] = { CALLSIGN.Tanker.Texaco,  1, ENUMS.UnitType.TANKER,  251.00, 51, ENUMS.TacanBand.Y, "TX1", nil, nil, nil, 25000, 449, 251, ENUMS.RefuelingSystem.BOOM, false, ENUMS.SupportUnitTemplate.BOOMTANKER }
@@ -123,7 +125,7 @@ SUPPORTUNITS[ "Magic1" ]    = { CALLSIGN.AWACS.Magic,       1, ENUMS.UnitType.AW
 SUPPORTUNITS[ "Magic2" ]    = { CALLSIGN.AWACS.Magic,       2, ENUMS.UnitType.AWACS,  272.60, nil, nil, nil, nil, nil, nil, 25000, 450, 242, nil, false, ENUMS.SupportUnitTemplate.NAVYAWACS }
 SUPPORTUNITS[ "Magic3" ]    = { CALLSIGN.AWACS.Magic,       3, ENUMS.UnitType.AWACS,  273.60, nil, nil, nil, nil, nil, nil, 25000, 450, 243, nil, false, ENUMS.SupportUnitTemplate.NAVYAWACS }
 SUPPORTUNITS[ "Magic4" ]    = { CALLSIGN.AWACS.Magic,       4, ENUMS.UnitType.AWACS,  274.60, nil, nil, nil, nil, nil, nil, 25000, 450, 244, nil, false, ENUMS.SupportUnitTemplate.NAVYAWACS }
-SUPPORTUNITS[ "Magic5" ]    = { c,       5, ENUMS.UnitType.AWACS,  275.60, nil, nil, nil, nil, nil, nil, 25000, 450, 245, nil, false, ENUMS.SupportUnitTemplate.NAVYAWACS }
+SUPPORTUNITS[ "Magic5" ]    = { CALLSIGN.AWACS.Magic,       5, ENUMS.UnitType.AWACS,  275.60, nil, nil, nil, nil, nil, nil, 25000, 450, 245, nil, false, ENUMS.SupportUnitTemplate.NAVYAWACS }
 
 -- Navy
 SUPPORTUNITS[ "LHA-1"  ] = { nil, nil, ENUMS.UnitType.SHIP,  264.40, 64, ENUMS.TacanBand.X, "TAR", 1,   "TAR", nil,    nil, nil, 264, nil, false, nil }
@@ -1487,6 +1489,22 @@ function InitNavySupport( AircraftCarriers, CarrierMenu, InAir )
                   end
 
                 end
+
+                -- Rescue Helo for LHAs and other non-carriers
+                local rescuehelo=RESCUEHELO:New(SupportUnit, "CSAR1")
+
+                if SUPPORTUNITS[ 'CSAR1' ][ ENUMS.SupportUnitFields.GROUNDSTART ] then
+                  rescuehelo:SetTakeoffCold()
+                else
+                  if SupportUnit[ ENUMS.SupportUnitFields.GROUNDSTART ] then
+                    rescuehelo:SetTakeoffCold()
+                  else
+                    rescuehelo:SetTakeoffAir()
+                  end
+                end
+
+        rescuehelo:SetModex( SUPPORTUNITS[ 'CSAR1' ][ ENUMS.SupportUnitFields.MODEX ] + 8 )
+        rescuehelo:__Start(2)
 
                 Carriers[SupportUnit] = carrier
 
