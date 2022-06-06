@@ -155,7 +155,7 @@ As missions may require additional tankers, the SOPs set aside TACAN channels 55
 
 The SOPs include a base set of airframes that includes at least one flight from all of the
 currently active airframes. Based on its needs, missions may change the airframes for a
-particular flight while keeping the inter-flight frequency and TACAN channels. The following
+particular flight while keeping the intraflight frequency and TACAN channels. The following
 table summarizes the standard communications plan for the wing for the base set of airframes.
 
 |Flight / Arirframe|TACAN|Frequency|   |Flight / Arirframe|TACAN|Frequency|
@@ -255,8 +255,8 @@ Typically, comms presets are set up in the DCS ME according to the following tab
 
 |Radio|Frequency|
 |---:|:---|
-|Special 1| Fjörd 1 Inter-flight |
-|Special 2| Fjörd 2 Inter-flight |
+|Special 1| Fjörd 1 Intraflight |
+|Special 2| Fjörd 2 Intraflight |
 |Special 3| Viggen Common or mission frequency | 
 |H (Larm/Guard)| Tactical Common |
 
@@ -329,7 +329,7 @@ comms ladder.
 
 |COMM1 Preset<br>(UHF)|Frequency||COMM2 Preset<br>(UHF/VHF)|Frequency|
 |:-----:|:---|---|:-----:|:---|
-| 1     | Tactical Common               | | 1     | Inter-flight
+| 1     | Tactical Common               | | 1     | Intraflight
 | 2-4   | Unassigned                    | | 2-7   | Unassigned
 | 5     | AWACS Overlord 1-1            | | 8     | JTAC/AFAC Darknight 1-1 (VHF)
 | 6     | AAR Arco 1-1                  | | 9     | JTAC/AFAC Player (VHF)
@@ -365,7 +365,7 @@ have 20 presets. We will use the general 20-channel layout for the default comms
 
 |COMM1 Preset<br>(UHF)|Frequency| |COMM2 Preset<br>(VHF)|Frequency|
 |:-----:|:---|---|:---:|:---|
-| 1     | Tactical Common                || 1     | Inter-flight
+| 1     | Tactical Common                || 1     | Intraflight
 | 2-4   | Unassigned                     || 2-7   | Unassigned
 | 5     | AWACS Overlord 1-1             || 8     | JTAC/AFAC Darknight 1-1 (VHF)
 | 6     | AAR Texaco 1-1                 || 9     | JTAC/AFAC Player (VHF)
@@ -398,7 +398,7 @@ We will use the general 20-channel layout for the default comms ladder.
 
 |COMM1 Preset<br>(UHF/VHF)|Frequency||COMM2 Preset<br>(UHF/VHF)|Frequency|
 |:-----:|:---|---|:-----:|:---|
-| 1     | Tactical Common               | | 1     | Inter-flight
+| 1     | Tactical Common               | | 1     | Intraflight
 | 2-4   | Unassigned                    | | 2-7   | Unassigned
 | 5     | AWACS Overlord 1-1            | | 8     | JTAC/AFAC Darknight 1-1 (VHF)
 | 6     | AAR Arco 1-1                  | | 9     | JTAC/AFAC Player (VHF)
