@@ -339,7 +339,7 @@ comms ladder.
 | 10    | Carrier #1 ATC
 | 11    | Carrier #1 Recovery AWACS
 | 12    | Carrier #1 Recovery AAR
-| 13-14 | Unassigned    
+| 13-14 | Unassigned
 | 15    | Carrier #2 ATC
 | 16    | Carrier #2 Recovery AWACS
 | 17    | Carrier #2 Recovery AAR
@@ -399,20 +399,20 @@ We will use the general 20-channel layout for the default comms ladder.
 |COMM1 Preset<br>(UHF/VHF)|Frequency||COMM2 Preset<br>(UHF/VHF)|Frequency|
 |:-----:|:---|---|:-----:|:---|
 | 1     | Tactical Common               | | 1     | Intraflight
-| 2-4   | Unassigned                    | | 2-7   | Unassigned
-| 5     | AWACS Overlord 1-1            | | 8     | JTAC/AFAC Darknight 1-1 (VHF)
-| 6     | AAR Arco 1-1                  | | 9     | JTAC/AFAC Player (VHF)
-| 7     | AAR Arco 2-1                  | | 10-20 | Unassigned
-| 8     | JTAC/AFAC Darknight 1-1 (UHF) | |
-| 9     | JTAC/AFAC Player (UHF)
-| 10    | Carrier #1 ATC
-| 11    | Carrier #1 Recovery AWACS
-| 12    | Carrier #1 Recovery AAR
-| 13-14 | Unassigned
-| 15    | Carrier #2 ATC
-| 16    | Carrier #2 Recovery AWACS
-| 17    | Carrier #2 Recovery AAR
-| 18-20 | Unassigned
+| 2-4   | Unassigned                    | | 2-4   | Unassigned
+| 5     | AWACS Overlord 1-1            | | 5     | AWACS Overlord 1-1
+| 6     | AAR Arco 1-1                  | | 6     | AAR Arco 1-1
+| 7     | AAR Arco 2-1                  | | 7     | AAR Arco 2-1
+| 8     | JTAC/AFAC Darknight 1-1 (UHF) | | 8     | JTAC/AFAC Darknight 1-1 (VHF)
+| 9     | JTAC/AFAC Player (UHF)        | | 9     | JTAC/AFAC Player (VHF)
+| 10    | Carrier #1 ATC                | | 10    | Carrier #1 ATC
+| 11    | Carrier #1 Recovery AWACS     | | 11    | Carrier #1 Recovery AWACS
+| 12    | Carrier #1 Recovery AAR       | | 12    | Carrier #1 Recovery AAR
+| 13-14 | Unassigned                    | | 13-14 | Unassigned 
+| 15    | Carrier #2 ATC                | | 15    | Carrier #2 ATC
+| 16    | Carrier #2 Recovery AWACS     | | 16    | Carrier #2 Recovery AWACS
+| 17    | Carrier #2 Recovery AAR       | | 17    | Carrier #2 Recovery AAR
+| 18-20 | Unassigned                    | | 18-20 | Unassigned
 
 A mission may set unassigned frequencies to ATC at the departure, arrival, and alternate
 airfields or other mission-specific frequencies. Missions are also free to re-purpose
