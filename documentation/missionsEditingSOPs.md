@@ -199,10 +199,14 @@ module does not support these ships.
 ### Default Kneeboards
 
 Missions makers or planners are encouraged to make a summary of the relevant information from
-the comms plan available on a kneeboard. Alternatively, they can use the default comms card
+the comms plan available on a kneeboard. Alternatively, they can use the default comms cards
 below.
 
 ![](images/51st_SOP_Comms.png)
+
+The following version shows presets where defined (see below).
+
+![](images/51st_SOP_Comms_Presets.png)
 
 This image is suitable for use as a DCS kneeboard. Based on the mission configuration, not all
 of the information may be relevant to a particular mission.
@@ -260,7 +264,7 @@ Typically, comms presets are set up in the DCS ME according to the following tab
 |Special 3| Viggen Common or mission frequency | 
 |H (Larm/Guard)| Tactical Common |
 
-Missions may deviate as necessary.
+Missions may deviate from these presets as necessary.
 
 ### Navigation Points
 
@@ -330,31 +334,32 @@ comms ladder.
 |COMM1 Preset<br>(UHF)|Frequency||COMM2 Preset<br>(UHF/VHF)|Frequency|
 |:-----:|:---|---|:-----:|:---|
 | 1     | Tactical Common               | | 1     | Intraflight
-| 2-4   | Unassigned                    | | 2-7   | Unassigned
-| 5     | AWACS Overlord 1-1            | | 8     | JTAC/AFAC Darknight 1-1 (VHF)
-| 6     | AAR Arco 1-1                  | | 9     | JTAC/AFAC Player (VHF)
-| 7     | AAR Arco 2-1                  | | 10-30 | Unassigned
-| 8     | JTAC/AFAC Darknight 1-1 (UHF) | |
-| 9     | JTAC/AFAC Player (UHF)
-| 10    | Carrier #1 ATC
-| 11    | Carrier #1 Recovery AWACS
-| 12    | Carrier #1 Recovery AAR
-| 13-14 | Unassigned
-| 15    | Carrier #2 ATC
-| 16    | Carrier #2 Recovery AWACS
-| 17    | Carrier #2 Recovery AAR
-| 18-20 | Unassigned
+| 2-4   | Unassigned                    | | 2-4   | Unassigned
+| 5     | AWACS Overlord 1-1            | | 5     | AWACS Overlord 1-1
+| 6     | AAR Arco 1-1                  | | 6     | AAR Arco 1-1
+| 7     | AAR Arco 2-1                  | | 7     | AAR Arco 2-1
+| 8     | JTAC/AFAC Darknight 1-1 (UHF) | | 8     | JTAC/AFAC Darknight 1-1 (VHF)
+| 9     | JTAC/AFAC Player (UHF)        | | 9     | JTAC/AFAC Player (VHF)
+| 10    | Carrier #1 ATC                | | 10    | Carrier #1 ATC
+| 11    | Carrier #1 Recovery AWACS     | | 11    | Carrier #1 Recovery AWACS
+| 12    | Carrier #1 Recovery AAR       | | 12    | Carrier #1 Recovery AAR
+| 13-14 | Unassigned                    | | 13-14 | Unassigned 
+| 15    | Carrier #2 ATC                | | 15    | Carrier #2 ATC
+| 16    | Carrier #2 Recovery AWACS     | | 16    | Carrier #2 Recovery AWACS
+| 17    | Carrier #2 Recovery AAR       | | 17    | Carrier #2 Recovery AAR
+| 18-20 | Unassigned                    | | 18-30 | Unassigned
 
-A mission may set unassigned frequencies to ATC at the departure, arrival, and alternate
-airfields or other mission-specific frequencies. Missions are also free to re-purpose
-presets 2-20 based on mission needs.
+Missions are encouraged to leave preset 1 as Tactical Common or Intraflight frequencies. Beyond
+that suggestion, missions are free to re-purpose the remaining presets based on the needs of
+the mission. Unassigned or repurposed presets may be assigned to ATC at the departure, arrival,
+or alternate fields or other mission-specific frequencies.
 
 ## F-16C
 
 The F-16C Viper is a single-seat, single-engine multirole fighter aircraft. Designed as an air
 superiority day fighter, it has evolved into a successful all-weather multirole aircraft.
 
-### Mission Design Guidelines for the F-14B
+### Mission Design Guidelines for the F-16C
 
 TODO: F-16C design guidelines
 
@@ -374,9 +379,10 @@ have 20 presets. We will use the general 20-channel layout for the default comms
 | 9     | JTAC/AFAC Player (UHF)
 | 10-20 | Unassigned
 
-A mission may set unassigned frequencies to ATC at the departure, arrival, and alternate
-airfields or other mission-specific frequencies. Missions are also free to re-purpose
-presets 2-20 based on mission needs.
+Missions are encouraged to leave preset 1 as Tactical Common or Intraflight frequencies. Beyond
+that suggestion, missions are free to re-purpose the remaining presets based on the needs of
+the mission. Unassigned or repurposed presets may be assigned to ATC at the departure, arrival,
+or alternate fields or other mission-specific frequencies.
 
 ## F/A-18C
 
@@ -414,9 +420,10 @@ We will use the general 20-channel layout for the default comms ladder.
 | 17    | Carrier #2 Recovery AAR       | | 17    | Carrier #2 Recovery AAR
 | 18-20 | Unassigned                    | | 18-20 | Unassigned
 
-A mission may set unassigned frequencies to ATC at the departure, arrival, and alternate
-airfields or other mission-specific frequencies. Missions are also free to re-purpose
-presets 2-20 based on mission needs.
+Missions are encouraged to leave preset 1 as Tactical Common or Intraflight frequencies. Beyond
+that suggestion, missions are free to re-purpose the remaining presets based on the needs of
+the mission. Unassigned or repurposed presets may be assigned to ATC at the departure, arrival,
+or alternate fields or other mission-specific frequencies.
 
 # Miscellaneous SOPs
 
