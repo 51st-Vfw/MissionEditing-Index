@@ -33,6 +33,7 @@
 --                    - Carrier wind speed at 15M not 50M (replicating AIRBOSS fix in MOOSE).
 -- Version 20220604.1 - Fix Magic5 AWACS (CVN-75).
 --                    - Fix rescue helo for CVNs.
+-- Version 20220611.1 - Force callsign resets every 5 minutes (possibly address apparent callsign bug).
 --
 -- Known issues:
 --   - Tankers/AWACs airspawn at 0 velocity; to compensate units spawn 
@@ -1295,7 +1296,9 @@ function InitSupport( SupportBaseParam, RedSupportBase, InAir )
                         local RouteToMission = nil
                         local Mission = nil
                         local Scheduler = nil
+                        local CallsignScheduler = nil
                         local TacanScheduleID = nil
+                        local CallsignScheduleID = nil
 
                         if SupportUnitFields.invisible then
                           BASE:I("Setting " .. SpawnGroup:GetName() .. " invisible to AI.")
@@ -1343,6 +1346,13 @@ function InitSupport( SupportBaseParam, RedSupportBase, InAir )
                             else
                               PreviousMission[SupportUnit].flightgroup:TurnOffTACAN()
                             end
+                            -- Reset callsign after 2 seconds and every 5 minutes
+                            CallsignScheduler, CallsignScheduleID = SCHEDULER:New( nil, 
+                              function( SpawnGroup )
+                                  BASE:I( SpawnGroup:GetName() .. ": Resetting callsign.")
+                                  SpawnGroup:CommandSetCallsign(SupportUnitFields[ENUMS.SupportUnitFields.CALLSIGN], SupportUnitFields[ENUMS.SupportUnitFields.CALLSIGN_NUM])
+                              end, { SpawnGroup }, 2, 300
+                            )
                         end                    
 
                         SpawnGroup:CommandSetCallsign(SupportUnitFields[ENUMS.SupportUnitFields.CALLSIGN], SupportUnitFields[ENUMS.SupportUnitFields.CALLSIGN_NUM])
@@ -1377,6 +1387,9 @@ function InitSupport( SupportBaseParam, RedSupportBase, InAir )
                             self:GetGroup():ClearTasks()
                             if Scheduler and TacanScheduleID then
                                 Scheduler:Stop(TacanScheduleID)
+                            end
+                            if CallsignScheduler and CallsignScheduleID then
+                              CallsignScheduler:Stop(CallsignScheduleID)
                             end
                             self:TurnOffTACAN()
                             self:_LandAtAirbase(SupportBase)
@@ -1437,8 +1450,10 @@ function InitNavySupport( AircraftCarriers, CarrierMenu, InAir )
                   local ScheduleRecoveryTankerTacanStart = SCHEDULER:New( nil, 
                       function( tanker )
                           BASE:I(tanker.lid..string.format(" %s: Activating TACAN Channel %d%s (%s)", SupportUnit, 
-                              tanker.TACANchannel, tanker.TACANmode, tanker.TACANmorse))
+                            tanker.TACANchannel, tanker.TACANmode, tanker.TACANmorse))
                           tanker:_ActivateTACAN()
+                          BASE:I(tanker.lid..string.format(" %s: Set callsign", SupportUnit))
+                          tanker:SetCallsign(SupportUnitFields[ENUMS.SupportUnitFields.CALLSIGN], SupportUnitFields[ENUMS.SupportUnitFields.CALLSIGN_NUM])
                       end, { tanker }, 300, 300
                   )
                   SupportBeacons[SupportUnit] = tanker.beacon

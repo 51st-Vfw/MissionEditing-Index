@@ -173,6 +173,9 @@
 * Fix Magic5 AWACS (CVN-75).
 * Fix rescue helo for CVNs.
 
+*Version 20220611.1*
+* Force callsign resets every 5 minutes (possibly address apparent callsign bug).
+
 ### Known issues:
 * Tankers/AWACs airspawn at 0 velocity; to compensate units spawn at 15k feet above target altitude to prevent terrain collisions.
 * Extra Non-SOP Shell/Magic units act like land-based Tankers/AWACS.
