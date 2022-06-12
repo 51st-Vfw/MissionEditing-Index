@@ -356,6 +356,9 @@ comms ladder.
 | 17    | Carrier #2 Recovery AAR       | | 17    | Carrier #2 Recovery AAR
 | 18-20 | Unassigned                    | | 18-30 | Unassigned
 
+For missions that do not include carriers, Carrier #1 and Carrier #2 frequencies are treated as
+unassgiend.
+
 Missions are encouraged to leave preset 1 as Tactical Common or Intraflight frequencies. Beyond
 that suggestion, missions are free to re-purpose the remaining presets based on the needs of
 the mission. Unassigned or repurposed presets may be assigned to ATC at the departure, arrival,
@@ -426,6 +429,9 @@ We will use the general 20-channel layout for the default comms ladder.
 | 16    | Carrier #2 Recovery AWACS     | | 16    | Carrier #2 Recovery AWACS
 | 17    | Carrier #2 Recovery AAR       | | 17    | Carrier #2 Recovery AAR
 | 18-20 | Unassigned                    | | 18-20 | Unassigned
+
+For missions that do not include carriers, Carrier #1 and Carrier #2 frequencies are treated as
+unassgiend.
 
 Missions are encouraged to leave preset 1 as Tactical Common or Intraflight frequencies. Beyond
 that suggestion, missions are free to re-purpose the remaining presets based on the needs of
