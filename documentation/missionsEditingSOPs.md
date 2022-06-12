@@ -9,6 +9,12 @@ Missions should follow the SOPs where possible and practical to provide consiste
 51st VFW missions. That being said, mission designers may deviate from these guidelines
 where necessary due to the specific mission scenario.
 
+## Mission Editor Mission Options
+
+The following are the suggested SOP mission options for use in the DCS Mission Editor.
+
+![](images/51st_SOP_ME_Options.png)
+
 ## TACAN Usage Guidelines
 
 TACAN channels in the mission should be assigned according to the following diagram.
@@ -204,7 +210,8 @@ below.
 
 ![](images/51st_SOP_Comms.png)
 
-The following version shows presets where defined (see below).
+The following version shows presets where defined (see the discussion of airframe specific SOPs
+below).
 
 ![](images/51st_SOP_Comms_Presets.png)
 
