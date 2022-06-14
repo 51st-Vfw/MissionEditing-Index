@@ -9,7 +9,7 @@ Here, you will find,
   best practices for mission creation and construction in the wing.
 - [Mission Editing Compendium](./documentation/missionsEditingGuide.md) provides a wealth
   of useful scripting material including documentation, frameworks, and reference scripts.
-- [MapSOP Script](./documentation/51stMapSOP/readme.md) is a Lua script that provides support
+- [MapSOP Script](./51stMapSOP/readme.md) is a Lua script that provides support
   for common setup tasks (carriers, tankers, AWACS, etc.) consistent with 51st VFW SOP.
 
 The templates and missions (links below) are also good sources of information.
