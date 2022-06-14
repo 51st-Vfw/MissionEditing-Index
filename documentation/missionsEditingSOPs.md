@@ -3,7 +3,7 @@
 This section covers a number of standard operating procedures (SOPs) mission designers should
 employ around general mission elements such as communications, navigation, and operational
 support. These SOPs are built around the airframes the 51st VFW currently supports: A-10C,
-AH-64D, AJS37, AV-8B, F-14B, F-15E (soon), F-16C, F/A-18C, and other helicopter airframes.
+AH-64D, AV-8B, F-14B, F-15E (soon), F-16C, F/A-18C, and other helicopter airframes.
 
 Missions should follow the SOPs where possible and practical to provide consistency across
 51st VFW missions. That being said, mission designers may deviate from these guidelines
@@ -31,6 +31,7 @@ use.
 Further details follow below.
 
 ## Tanker Altitude and Airspeed Guidelines
+
 This thread from the [ED DCS Forums](https://forums.eagle.ru/topic/260542-looking-for-actualrecommened-aerial-refueling-speeds/)
 discusses tanker altitude and airspeed guidelines for AAR units based on the the KC-135
 airframe. The following table summarizes the guidelines relevant to the airframes the 51st
@@ -173,7 +174,6 @@ table summarizes the standard communications plan for the wing for the base set 
 |Pontiac 1<br>*AV-8B*|46Y<br>109Y|142.25|    |Pontiac 2<br>*AV-8B*|47Y<br>110Y|142.75|
 |Dude 1<br>*F-15E*|48Y<br>111Y|143.25|    |Jazz 1<br>*F-15E*|49Y<br>112Y|143.75|
 |Sioux 1<br>*AH-64D*|50Y<br>113Y|144.25|    |Gunslinger 1<br>*AH-64D*|37Y<br>100Y|144.75|
-|Fjörd 1<br>*AJS37*|N/A|145.25|    |Fjörd 2<br>*AJS37*|N/A|145.75|
 
 The TACAN pairs in this table describe the A2A yardstick setup: the lead uses the lower
 numbered channel of the pair while the wingmen use the higher numbered channel of the pair.
@@ -251,52 +251,6 @@ TODO: AH-64D design guidelines
 ### Comms Presets
 
 TODO
-
-## AJS37
-
-The AJS37 Viggen is a single-seat, single-engine, short-medium range combat aircraft.
-
-### Mission Design Guidelines for the AJS37
-
-TODO: AJS37 design guidelines
-
-### Comms Presets
-
-Typically, comms presets are set up in the DCS ME according to the following table,
-
-|Radio|Frequency|
-|---:|:---|
-|Special 1| Fjörd 1 Intraflight |
-|Special 2| Fjörd 2 Intraflight |
-|Special 3| Viggen Common or mission frequency | 
-|H (Larm/Guard)| Tactical Common |
-
-Missions may deviate from these presets as necessary.
-
-### Navigation Points
-
-The Viggen uses navigation markers in addition to the steerpoints assigned to each unit through
-the DCS ME. There are several different types as shown in the following table,
-
-|Symbol|Type|Numbering|Notes
-|---|:---:|:---:|---|
-|B|Waypoint|1-9|General waypoints, these navigation points share numbering with the M points.
-|M|Target|1-9|Target points, these navigation points share numbers with the B points.
-|Bx|General|1-9|General points of interest (points 1-5) and anti-ship missile programming (points 6-9).
-|R|Recon|1-9|Boundary of recon area for ELINT, minimum of four points is recommended.
-|MR|Recon Target|1-9|Target locations within the recon area the R points define.
-
-Markers are numbered sequentially as shown. With the exception of B and M types, all other
-types are numbered independently (for example, a flight plan could have both B1 and Bx1 but not
-B1 and M1).
-
-To add a navigation marker, use the navigation point panel (marked with a square symbol) in the
-DCS ME group editor for a Viggen group as shown below.
-
-![Viggen Navigation Point Editor](images/Viggen_Nav_Pts.png)
-
-You can add, edit, and delete navigation points with the corresponding controls. The navigation
-points show up in the ME map as small squares labeled with the assigned name.
 
 ## AV-8B
 
