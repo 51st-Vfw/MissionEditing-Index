@@ -62,7 +62,7 @@
     | Orbit Speed             |SP***n***     |Texaco1-SP***400***-P1     |Override Texaco1 orbit speed to 300 knots             |    
     | Increase Orbit Speed    |SPp***n***    |Texaco1-SPp***50***-P1     |Increase Texaco1 orbit altitude by 50 knots           |
     | Decrease Orbit Speed    |SPm***n***    |Texaco1-SPm***50***-P1     |Decrease Texaco1 orbit altitude by 50 knots           |
-    | Set Radio Frequency     |FR***nnn.nn***|Texaco1-FR***FR256.00***-P1|Override Texaco1 radio setting to 256.00 MHz AM       |
+    | Set Radio Frequency     |FR***nnn.nn***|Texaco1-FR***256.00***-P1|Override Texaco1 radio setting to 256.00 MHz AM       |
     | Set TACAN Freq/Band     |TC***nnY***   |Texaco1-TC***56Y***-P1     |Override Texaco1 TACAN to 56Y                         |
     | Make invisible to AI    |INV           |Texaco1-INV-P1             |Makes Texaco1 invisible to the AI                     |
     | Limit available flights |QTY***n***    |Texaco1-QTY***4***-P1      |Limits Texaco1 to ***4*** spawns during the mission   |
