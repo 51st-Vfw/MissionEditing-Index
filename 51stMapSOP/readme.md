@@ -176,7 +176,18 @@
 *Version 20220611.1*
 * Force callsign resets every 5 minutes (possibly address apparent callsign bug).
 
+*Version 20220727.1* 
+* Undo unsucessful change from 20220611.1
+* Fix 'All tankers Acro 1-1' bug by working around DCS issue.
+* Fix non-AWACS in AWACS radio menu.
+* Fix aircraft spawning without velocity; now spawn in at 350kts @ +5k ft of dest altitude.
+* Aircraft spawn offset a bit from their initial destination to smooth initial flight.
+* Tanker/AWACS speed now actually ~KIAS (changes w/ assigned altitude), table speeds adjusted.
+* After being relieved, AWACS/Tanker flights change their callsign number to '9' and get off freq.
+* Limited airframes become available to launch again ~1 hour after landing (maint/refueling).
+* Tested/included MOOSE version bump.
+
 ### Known issues:
-* Tankers/AWACs airspawn at 0 velocity; to compensate units spawn at 15k feet above target altitude to prevent terrain collisions.
 * Extra Non-SOP Shell/Magic units act like land-based Tankers/AWACS.
-* ACLS does not work for CVN-70 (USS Carl Vincent) -- not implemented as a real SuperCarrier by ED.
+* While RTB, relieved Tankers/AWACS still show up in the radio menu, but at least now as the '9' callsign.
+* ACLS does not work for CVN-70 (USS Carl Vincent, apparently not a 'real' DCS SuperCarrier).
