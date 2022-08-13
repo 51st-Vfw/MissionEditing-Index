@@ -2,7 +2,7 @@
 -- Initial version by Blackdog Jan 2022
 --
 -- Tested against MOOSE GITHUB Commit Hash ID:
--- 2022-07-27T17:41:20.0000000Z-80f73f0bb18f17f165d073aec47cd010b092adfe
+-- 2022-08-04T20:13:18.0000000Z-fa0549f34ff9c2317de11ec2dfb95c786e1f947c
 --
 -- Version 20220101.1 - Blackdog initial version
 -- Version 20220115.1 - Fix: Tanker speeds adjusted to be close KIAS from SOP + better starting altitudes.
