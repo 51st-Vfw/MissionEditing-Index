@@ -1069,10 +1069,10 @@ do
       local ZoneProperties = ZoneData.properties or nil
       if ZoneName and ZoneProperties then
         for _,ZoneProp in ipairs(ZoneProperties) do
-          if ZoneProp.key and ZoneProp.value then
+          if ZoneProp.key and ZoneProp.value and string.lower(ZoneProp.value) ~= "sop" then
             self.Zones = self.Zones or {}
             self.Zones[ZoneName] = self.Zones[ZoneName] or {}
-            self.Zones[ZoneName][ZoneProp.key] = ZoneProp.value
+            self.Zones[ZoneName][string.lower(ZoneProp.key)] = ZoneProp.value
           end
         end
       end
@@ -1083,10 +1083,11 @@ do
 
   function ZONEPROPERTIES:GetProperty(zonename, property)
     local value = nil
+    local lowerproperty = string.lower(property)
 
     if self.Zones and self.Zones[zonename] then
-      if self.Zones[zonename][property] then
-        value = self.Zones[zonename][property]
+      if self.Zones[zonename][lowerproperty] then
+        value = self.Zones[zonename][lowerproperty]
       end
     end
 
@@ -1104,16 +1105,12 @@ function InitSupportBases()
   ENUMS.ZoneProperties = {
     TEMPLATE = "Template",
     ALTITUDE = "Altitude",
-    ALTITUDE_PLUS = "Altitude+",
-    ALTITUDE_MINUS = "Altitude-",
     SPEED = "Speed",
-    SPEED_PLUS = "Speed+",
-    SPEED_MINUS = "Speed-",
     FREQUENCY = "Frequency",
     TACAN = "TACAN",
     INVISIBLE = "Invisible",
     AIRFRAMES = "Airframes",
-    GROUNDSTART = "GroundStart",
+    GROUNDSTART = "GroundStart"
   }
 
 
@@ -1217,22 +1214,22 @@ function InitSupportBases()
               local op,parsealt = string.match(token, "FL([mp]?)(%d+)")
 
               if not alt then
-                local altvalue = ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.ALTITUDE)
-                local altplus = ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.ALTITUDE_PLUS)
-                local altminus = ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.ALTITUDE_MINUS)
-                if altplus then
-                  op = "p"
-                  alt = (SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.ALTITUDE ] ) + tonumber(altplus)
+                local altstring = ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.ALTITUDE)
+                local altvalue, altsign
+                if altstring then
+                  altvalue = string.match(altstring, "[%+%-pm](%d+)")
+                  altsign = string.match(altstring, "([%+%-pm])%d+")
                 end
-                if altminus then
+
+                if altsign and (altsign == "+" or string.lower(altsign) == "p") then
+                  op = "p"
+                  alt = (SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.ALTITUDE ] ) + tonumber(altvalue)
+                elseif altsign and (altsign == "-" or string.lower(altsign) == "m") then
                   op = "m"
-                  alt = (SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.ALTITUDE ] ) - tonumber(altminus)
+                  alt = (SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.ALTITUDE ] ) - tonumber(altvalue)
+                elseif altvalue then 
+                  alt = tonumber(altvalue)
                 end
-                if altplus and altminus then
-                  op = "p"
-                  alt = (SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.ALTITUDE ] ) + tonumber(altplus) - tonumber(altminus)
-                end
-                alt = tonumber(altvalue) or alt
               end
 
               if parsealt then
@@ -1246,82 +1243,91 @@ function InitSupportBases()
               end
 
               if not speed then
-                local speedvalue = ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.SPEED)
-                local speedplus = ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.SPEED_PLUS)
-                local speedminus = ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.SPEED_MINUS)
-                if speedplus then
-                  op = "p"
-                  speed = (SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.SPEED ] ) + tonumber(speedplus)
+                local speedstring = ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.SPEED)
+                local speedvalue, speedsign
+                if speedstring then
+                  speedvalue = string.match(speedstring, "[%+%-pm](%d+)")
+                  speedsign = string.match(speedstring, "([%+%-pm])%d+")
                 end
-                if speedminus then
+
+                if speedsign and (speedsign == "+" or string.lower(speedsign) == "p") then
+                  op = "p"
+                  speed = (SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.SPEED ] ) + UTILS.KnotsToAltKIAS(tonumber(speedvalue), alt or SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.ALTITUDE ])
+                elseif speedsign and (speedsign == "-" or string.lower(speedsign) == "m") then
                   op = "m"
-                  speed = (SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.SPEED ] ) - tonumber(speedminus)
-                end
-                if speedplus and speedminus then
-                  op = "p"
-                  speed = (SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.SPEED ] ) + tonumber(speedplus) - tonumber(speedminus)
-                end
-                speed = tonumber(speedvalue) or speed
+                  speed = (SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.SPEED ] ) - UTILS.KnotsToAltKIAS(tonumber(speedvalue), alt or SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.ALTITUDE ])
+                elseif speedvalue then 
+                  speed = tonumber(speedvalue)
+                end 
               end
 
               local op,parsespeed = string.match(token, "SP([mp]?)(%d+)")
               if parsespeed then
                 if op == "p" then
-                  speed = SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.SPEED ] + parsespeed
+                  speed = SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.SPEED ] + UTILS.KnotsToAltKIAS(tonumber(parsespeed), alt or SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.ALTITUDE ])
                 elseif op == "m" then
-                  speed = SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.SPEED ] - parsespeed
+                  speed = SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.SPEED ] - UTILS.KnotsToAltKIAS(tonumber(parsespeed), alt or SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.ALTITUDE ])
                 else
                   speed = parsespeed
                 end
               end
 
-              freq = freq or string.match(token, "FR(%d+%.*%d*)")
-              tacan = tacan or string.match(token, "TC(%d+)%u")
-              tacanband = tacanband or string.match(token, "TC%d+(%u)")
+              freq = freq or string.match(token, "FR(%d+%.*%d*)") or ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.FREQUENCY)
+              tacan = tacan or string.match(token, "TC(%d+)%u") or tonumber(string.match(ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.TACAN), "(%d+)%u"))
+              tacanband = tacanband or string.match(token, "TC%d+(%u)") or string.match(ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.TACAN), "%d+(%u)")
+              if tacanband then string.upper(tacanband) end
               
               invisible = invisible or string.match(token, "INV")
-              if invisible == "INV" then
+              if invisible == "INV" or (ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.INVISIBLE) == true) then
                 invisible = true
               end
 
-              groundstart = groundstart or string.match(token, "GND")
-              if groundstart == "GND" then
+              groundstart = groundstart or string.match(token, "GND") 
+              if groundstart == "GND" or (ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.GROUNDSTART) == true) then
                 groundstart = true
               end
 
-              airframes = airframes or string.match(token, "QTY(%d+)")
+              airframes = airframes or string.match(token, "QTY(%d+)") or tonumber(ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.AIRFRAMES))
 
             end
           end
 
           airframes = airframes or ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.AIRFRAMES)
           if airframes then
+            BASE:I(FullCallsign .. " SOP override to " .. airframes .. " airframes.")
             SUPPORTUNITS[ FullCallsign ].airframes = airframes
           end
 
           if num then
+            BASE:I(FullCallsign .. " SOP override to -" .. num .. " callsign.")
             SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.CALLSIGN_NUM ] = num
           end
 
           if alt then
+            BASE:I(FullCallsign .. " SOP override to " .. alt .. "ft MSL.")
             SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.ALTITUDE ] = alt
           end
           if speed then
+            BASE:I(FullCallsign .. " SOP override to " .. speed .. " KIAS.")
             SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.SPEED ] = speed
           end
           if freq then
+            BASE:I(FullCallsign .. " SOP override radio frequency to " .. freq .. "MHz AM.")
             SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.RADIOFREQ ] = freq
           end
           if tacan and tacanband then
+            BASE:I(FullCallsign .. " SOP override radio TACAN to " .. tacan .. tacanband .. ".")
             SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.TACANCHAN ] = tacan
             SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.TACANBAND ] = tacanband
           end
 
           if invisible then
+            BASE:I(FullCallsign .. " SOP override to be invisible to AI.")
             SUPPORTUNITS[ FullCallsign ].invisible = true
           end
 
           if groundstart then
+            BASE:I(FullCallsign .. " SOP override initial flight to ground takeoff.")
             SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.GROUNDSTART ] = true
           end
 
