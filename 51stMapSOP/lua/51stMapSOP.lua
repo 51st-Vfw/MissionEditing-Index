@@ -148,6 +148,8 @@ SUPPORTUNITS[ "CVN-75" ] = { nil, nil, ENUMS.UnitType.SHIP,  275.40, 75, ENUMS.T
 -- Rescue Helo
 SUPPORTUNITS[ "CSAR1" ] = { CALLSIGN.Aircraft.Pontiac , 8, ENUMS.UnitType.HELICOPTER, nil, nil, nil, nil, nil, nil, nil, nil, nil, 265, nil, false, ENUMS.SupportUnitTemplate.RESCUEHELO }
 
+BASESUPPORTUNITS = routines.utils.deepCopy(SUPPORTUNITS)
+
 -- If no "Support Airbase" exists, then use a default airbase for each map
 local DEFAULTSUPPORTAIRBASES = { 
     AIRBASE.Caucasus.Batumi,
@@ -186,7 +188,7 @@ function SPAWN:_Prepare( SpawnTemplatePrefix, SpawnIndex ) --R2.2
 	
   local SpawnTemplate
   if self.TweakedTemplate ~= nil and self.TweakedTemplate == true then
-    BASE:I("WARNING: You are using a tweaked template.")
+    --BASE:I("WARNING: You are using a tweaked template.")
     SpawnTemplate = self.SpawnTemplate
   else
     SpawnTemplate = self:_GetTemplate( SpawnTemplatePrefix )
@@ -1082,7 +1084,7 @@ do
   function ZONEPROPERTIES:GetProperty(zonename, property)
     local value = nil
 
-    if self.Zones[zonename] then
+    if self.Zones and self.Zones[zonename] then
       if self.Zones[zonename][property] then
         value = self.Zones[zonename][property]
       end
@@ -1202,19 +1204,15 @@ function InitSupportBases()
 
           local template,alt,speed,freq,tacan,tacanband,invisible,airframes,groundstart
 
-          template = template or ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.TEMPLATE) or 1
-          
-          if SUPPORTUNITS[ FullCallsign ] == nil then
-            if SUPPORTUNITS[ callsign .. template ] ~= nil then
-              SUPPORTUNITS[ FullCallsign ] = routines.utils.deepCopy(SUPPORTUNITS[ callsign .. "1" ])
-            else
-              SUPPORTUNITS[ FullCallsign ] = routines.utils.deepCopy(SUPPORTUNITS[ callsign .. template ])
-            end
-          end
-
           if param then
             for token in string.gmatch(param, "[^-]+") do
-              template = template or string.match(token, "T(%d)")
+
+              template = template or string.match(token, "T(%d)") or ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.TEMPLATE)
+
+              if template or (SUPPORTUNITS[ FullCallsign ] == nil) then
+                template = template or 1
+                SUPPORTUNITS[ FullCallsign ] = routines.utils.deepCopy(BASESUPPORTUNITS[callsign .. template])
+              end
     
               local op,parsealt = string.match(token, "FL([mp]?)(%d+)")
 
@@ -1247,14 +1245,33 @@ function InitSupportBases()
                 end
               end
 
-              local op,newspeed = string.match(token, "SP([mp]?)(%d+)")
-              if newspeed then
+              if not speed then
+                local speedvalue = ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.SPEED)
+                local speedplus = ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.SPEED_PLUS)
+                local speedminus = ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.SPEED_MINUS)
+                if speedplus then
+                  op = "p"
+                  speed = (SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.SPEED ] ) + tonumber(speedplus)
+                end
+                if speedminus then
+                  op = "m"
+                  speed = (SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.SPEED ] ) - tonumber(speedminus)
+                end
+                if speedplus and speedminus then
+                  op = "p"
+                  speed = (SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.SPEED ] ) + tonumber(speedplus) - tonumber(speedminus)
+                end
+                speed = tonumber(speedvalue) or speed
+              end
+
+              local op,parsespeed = string.match(token, "SP([mp]?)(%d+)")
+              if parsespeed then
                 if op == "p" then
-                  speed = SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.SPEED ] + newspeed
+                  speed = SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.SPEED ] + parsespeed
                 elseif op == "m" then
-                  speed = SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.SPEED ] - newspeed
+                  speed = SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.SPEED ] - parsespeed
                 else
-                  speed = newspeed
+                  speed = parsespeed
                 end
               end
 
@@ -1391,9 +1408,8 @@ function InitSupportBases()
                 end
 
                 if SupportUnitFields[ENUMS.SupportUnitFields.SPEED] then
-                  BASE:I("Setting speed for " .. SupportUnit .. ".")
-                  SpawnTemplate.route.points[1].speed = 350
-                  SpawnTemplate.units[1].speed = 350
+                  SpawnTemplate.route.points[1].speed = UTILS.KnotsToAltKIAS(SupportUnitFields[ENUMS.SupportUnitFields.SPEED],SupportUnitFields[ENUMS.SupportUnitFields.ALTITUDE]) or 350
+                  SpawnTemplate.units[1].speed = UTILS.KnotsToAltKIAS(SupportUnitFields[ENUMS.SupportUnitFields.SPEED],SupportUnitFields[ENUMS.SupportUnitFields.ALTITUDE]) or 350
                 end
 
                 --BASE:I(SpawnTemplate.units[1].callsign)
