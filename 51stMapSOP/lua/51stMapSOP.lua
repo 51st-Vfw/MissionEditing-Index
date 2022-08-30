@@ -1051,69 +1051,7 @@ function CARRIER:_CheckCarrierTurning()
     self.turning=turning
 end
 
-do
-
-  ZONEPROPERTIES = {
-    ClassName = "ZONEPROPERTIES",
-  }
-
-  function ZONEPROPERTIES:New()
-    
-    -- Inherits from BASE
-    local self = BASE:Inherit( self, BASE:New() ) -- #ZONEPROPERTIES
-    
-    for ZoneID, ZoneData in pairs(env.mission.triggers.zones) do
-      local ZoneName = ZoneData.name or nil
-      local ZoneProperties = ZoneData.properties or nil
-      if ZoneName and ZoneProperties then
-        for _,ZoneProp in ipairs(ZoneProperties) do
-          if ZoneProp.key and ZoneProp.value then
-            self.Zones = self.Zones or {}
-            self.Zones[ZoneName] = self.Zones[ZoneName] or {}
-            self.Zones[ZoneName][ZoneProp.key] = ZoneProp.value
-          end
-        end
-      end
-    end
-
-    return self
-  end
-
-  function ZONEPROPERTIES:GetProperty(zonename, property)
-    local value = nil
-
-    if self.Zones[zonename] then
-      if self.Zones[zonename][property] then
-        value = self.Zones[zonename][property]
-      end
-    end
-
-    return value
-  end
-
-  function ZONEPROPERTIES:GetPropertyTable(zonename)
-    return self.Zones[zonename]
-  end
-
-end
-
 function InitSupportBases()
-
-  ENUMS.ZoneProperties = {
-    TEMPLATE = "Template",
-    ALTITUDE = "Altitude",
-    ALTITUDE_PLUS = "Altitude+",
-    ALTITUDE_MINUS = "Altitude-",
-    SPEED = "Speed",
-    SPEED_PLUS = "Speed+",
-    SPEED_MINUS = "Speed-",
-    FREQUENCY = "Frequency",
-    TACAN = "TACAN",
-    INVISIBLE = "Invisible",
-    AIRFRAMES = "Airframes",
-    GROUNDSTART = "GroundStart",
-  }
-
 
     local AirbaseName = nil
     local RedAirbaseName = nil
@@ -1168,8 +1106,7 @@ function InitSupportBases()
     P2ZoneSet:SortByName()
     local P1zones = P1ZoneSet:GetSetNames()
     local P2zones = P2ZoneSet:GetSetNames()
-    local ZoneProps = ZONEPROPERTIES:New()
-
+    
     local callsigns = CALLSIGN.Tanker
     for k,v in pairs(CALLSIGN.AWACS) do callsigns[k] = v end
     callsigns['CSAR'] = 8
@@ -1187,8 +1124,6 @@ function InitSupportBases()
 
       local pattern = "^(%a+)" .. "(%d)" .. "-*" .. "(.*)" .. "-P1"
       callsign, num, param =  string.match(P1zoneParse,  pattern)
-      param = param or ""
-      param = param .. "-done"
 
       if callsigns[callsign] ~= nil then
 
@@ -1202,7 +1137,7 @@ function InitSupportBases()
 
           local template,alt,speed,freq,tacan,tacanband,invisible,airframes,groundstart
 
-          template = template or ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.TEMPLATE) or 1
+          template = template or 1
           
           if SUPPORTUNITS[ FullCallsign ] == nil then
             if SUPPORTUNITS[ callsign .. template ] ~= nil then
@@ -1216,34 +1151,14 @@ function InitSupportBases()
             for token in string.gmatch(param, "[^-]+") do
               template = template or string.match(token, "T(%d)")
     
-              local op,parsealt = string.match(token, "FL([mp]?)(%d+)")
-
-              if not alt then
-                local altvalue = ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.ALTITUDE)
-                local altplus = ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.ALTITUDE_PLUS)
-                local altminus = ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.ALTITUDE_MINUS)
-                if altplus then
-                  op = "p"
-                  alt = (SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.ALTITUDE ] ) + tonumber(altplus)
-                end
-                if altminus then
-                  op = "m"
-                  alt = (SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.ALTITUDE ] ) - tonumber(altminus)
-                end
-                if altplus and altminus then
-                  op = "p"
-                  alt = (SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.ALTITUDE ] ) + tonumber(altplus) - tonumber(altminus)
-                end
-                alt = tonumber(altvalue) or alt
-              end
-
-              if parsealt then
+              local op,newalt = string.match(token, "FL([mp]?)(%d+)")
+              if newalt then
                 if op == "p" then
-                  alt = (SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.ALTITUDE ] ) + (parsealt * 100)
+                  alt = (SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.ALTITUDE ] ) + (newalt * 100)
                 elseif op == "m" then
-                  alt = (SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.ALTITUDE ] ) - (parsealt * 100)
+                  alt = (SUPPORTUNITS[ FullCallsign ][ ENUMS.SupportUnitFields.ALTITUDE ] ) - (newalt * 100)
                 else
-                  alt = parsealt * 100
+                  alt = newalt * 100
                 end
               end
 
@@ -1277,7 +1192,6 @@ function InitSupportBases()
             end
           end
 
-          airframes = airframes or ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.AIRFRAMES)
           if airframes then
             SUPPORTUNITS[ FullCallsign ].airframes = airframes
           end
