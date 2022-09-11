@@ -2,7 +2,7 @@
 -- Initial version by Blackdog Jan 2022
 --
 -- Tested against MOOSE GITHUB Commit Hash ID:
--- 2022-08-04T20:13:18.0000000Z-fa0549f34ff9c2317de11ec2dfb95c786e1f947c
+-- 2022-09-03T14:28:32.0000000Z-e53ff167ee729509b3af84f5fbf8fadb85de6f06
 --
 -- Version 20220101.1 - Blackdog initial version
 -- Version 20220115.1 - Fix: Tanker speeds adjusted to be close KIAS from SOP + better starting altitudes.
@@ -42,6 +42,12 @@
 --                    - Tanker/AWACS speed now actually ~KIAS (changes w/ assigned altitude), table speeds adjusted.
 --                    - After being relieved, AWACS/Tanker flights change their callsign number to '9' and get off freq.
 --                    - Limited airframes become available to launch again ~1 hour after landing (maint/refueling).
+--                    - Tested/included MOOSE version bump.
+-- Version XXXXXXXX.X - Option to use Zone properties instead of zone naming to set Tanker/AWACS SOP overrides.
+--                    - Use new native MOOSE stuff for Link4 activation.
+--                    - Airbase ATC silenced by default, enabled by putting Airbase inside an 'Enable ATC' zone(s).
+--                    - Mission pauses at 5 seconds (or after no live clients); unpaused on client slotting.
+--                    - If 'Unpause Client' zone(s) exist, only unpause when units in those zone(s) slot in.
 --                    - Tested/included MOOSE version bump.
 --
 -- Known issues:
@@ -171,6 +177,20 @@ end
 local SupportBeacons = {}
 local SpawnSchedule = {}
 
+function ServerPause()
+  BASE:I("***Pausing server...***")
+  return net.dostring_in("gui", "return DCS.setPause(true)")
+end
+
+function ServerUnpause()
+  BASE:I("***Unpausing server...***")
+  return net.dostring_in("gui", "return DCS.setPause(false)")
+end
+
+function ServerGetPause()
+  return net.dostring_in("gui", "return DCS.getPause()")
+end
+
 -- Overriding MOOSE function to hack callsign behavior
 -- Don't change template callsign if SpawnTemplateKeepCallsign is True
 local SpawnTemplateKeepCallsign = nil
@@ -257,43 +277,6 @@ function SPAWN:_Prepare( SpawnTemplatePrefix, SpawnIndex ) --R2.2
 	self:T3( { "Template:", SpawnTemplate } )
 	return SpawnTemplate
 		
-end
-
---- Activate Link4 system of the CONTROLLABLE. The controllable should be an aircraft carrier!
--- @param #CONTROLLABLE Controllable
--- @param #number Frequency Radio frequency in MHz.
--- @return #CONTROLLABLE Controllable
-function CommandActivateLink4(Controllable, Frequency)
-  local UnitID=UnitID or Controllable:GetID()
-
-  -- Command to activate Link4 system.
-  local CommandActivateLink4Obj= {
-    id = "ActivateLink4",
-    params= {
-      ["frequency"] = Frequency*1000000,
-      ["unitId"] = UnitID,
-    }
-  }
-
-  Controllable:SetCommand(CommandActivateLink4Obj)
-
-  return Controllable
-end
-
---- Dectivate Link4 system of the CONTROLLABLE. The controllable should be an aircraft carrier!
--- @param #CONTROLLABLE Controllable
--- @return #CONTROLLABLE Controllable
-function CommandDeactivateLink4(Controllable)
-
-  -- Command to deactivate Link4 system.
-  local CommandDeactivateLink4Obj= {
-    id = "DeactivateLink4",
-    params= {}
-  }
-
-  Controllable:SetCommand(CommandDeactivateLink4Obj)
-
-  return Controllable
 end
 
 --- Activate ACLS system of the CONTROLLABLE. The controllable should be an aircraft carrier!
@@ -1053,56 +1036,9 @@ function CARRIER:_CheckCarrierTurning()
     self.turning=turning
 end
 
-do
-
-  ZONEPROPERTIES = {
-    ClassName = "ZONEPROPERTIES",
-  }
-
-  function ZONEPROPERTIES:New()
-    
-    -- Inherits from BASE
-    local self = BASE:Inherit( self, BASE:New() ) -- #ZONEPROPERTIES
-    
-    for ZoneID, ZoneData in pairs(env.mission.triggers.zones) do
-      local ZoneName = ZoneData.name or nil
-      local ZoneProperties = ZoneData.properties or nil
-      if ZoneName and ZoneProperties then
-        for _,ZoneProp in ipairs(ZoneProperties) do
-          if ZoneProp.key and ZoneProp.value and string.lower(ZoneProp.value) ~= "sop" then
-            self.Zones = self.Zones or {}
-            self.Zones[ZoneName] = self.Zones[ZoneName] or {}
-            self.Zones[ZoneName][string.lower(ZoneProp.key)] = ZoneProp.value
-          end
-        end
-      end
-    end
-
-    return self
-  end
-
-  function ZONEPROPERTIES:GetProperty(zonename, property)
-    local value = nil
-    local lowerproperty = string.lower(property)
-
-    if self.Zones and self.Zones[zonename] then
-      if self.Zones[zonename][lowerproperty] then
-        value = self.Zones[zonename][lowerproperty]
-      end
-    end
-
-    return value
-  end
-
-  function ZONEPROPERTIES:GetPropertyTable(zonename)
-    return self.Zones[zonename]
-  end
-
-end
-
 function InitSupportBases()
 
-  ENUMS.ZoneProperties = {
+  ENUMS.MapsopZoneProperties = {
     TEMPLATE = "Template",
     ALTITUDE = "Altitude",
     SPEED = "Speed",
@@ -1118,6 +1054,7 @@ function InitSupportBases()
     local RedAirbaseName = nil
     local AirbaseZone = ZONE:FindByName("Support Airbase")
     local RedAirbaseZone = ZONE:FindByName("Red Support Airbase")
+    local ATCzones = SET_ZONE:New():FilterPrefixes('Enable ATC'):FilterOnce()
     local AircraftCarriers = {}
     local VTOLcarriers = {}
 
@@ -1129,8 +1066,19 @@ function InitSupportBases()
       RedAirbaseName = RedAirbaseZone:GetCoordinate(0):GetClosestAirbase(Airbase.Category.AIRDROME, coalition.side.RED):GetName()
     end
 
+    local Airbases = AIRBASE.GetAllAirbases(nil, Airbase.Category.AIRDROME)
+
+    -- Disable airbase ATC
+    BASE:I("Enabling ATC in " .. ATCzones:Count() .. " Trigger Zones.")
+    for _,CheckAirbase in ipairs(Airbases) do
+      if ATCzones:IsCoordinateInZone(CheckAirbase:GetCoordinate()) then
+        BASE:I("ATC enabled at " .. CheckAirbase:GetName() .. ".")
+      else
+        CheckAirbase:SetRadioSilentMode(true)
+      end
+    end
+
     if not AirbaseName then
-        local Airbases = AIRBASE.GetAllAirbases(nil, Airbase.Category.AIRDROME)
         for _,CheckAirbase in ipairs(Airbases) do
             local CheckAirbaseName = CheckAirbase:GetName()
             for _,DefaultAirbase in ipairs(DEFAULTSUPPORTAIRBASES) do
@@ -1167,7 +1115,6 @@ function InitSupportBases()
     P2ZoneSet:SortByName()
     local P1zones = P1ZoneSet:GetSetNames()
     local P2zones = P2ZoneSet:GetSetNames()
-    local ZoneProps = ZONEPROPERTIES:New()
 
     local callsigns = CALLSIGN.Tanker
     for k,v in pairs(CALLSIGN.AWACS) do callsigns[k] = v end
@@ -1178,6 +1125,7 @@ function InitSupportBases()
       local callsign, num, param
 
       local IsRed = false
+      local P1ZoneObj = ZONE:FindByName(P1zone)
       local P1zoneParse = P1zone
       if string.find(P1zone, "^RED%-") then
         IsRed = true
@@ -1204,8 +1152,9 @@ function InitSupportBases()
           if param then
             for token in string.gmatch(param, "[^-]+") do
 
-              template = template or string.match(token, "T(%d)") or ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.TEMPLATE)
-
+              template = template or string.match(token, "T(%d)") or P1ZoneObj:GetProperty(ENUMS.MapsopZoneProperties.TEMPLATE)
+              if template == 'SOP' then template = nil end
+              
               if template or (SUPPORTUNITS[ FullCallsign ] == nil) then
                 template = template or 1
                 SUPPORTUNITS[ FullCallsign ] = routines.utils.deepCopy(BASESUPPORTUNITS[callsign .. template])
@@ -1214,7 +1163,8 @@ function InitSupportBases()
               local op,parsealt = string.match(token, "FL([mp]?)(%d+)")
 
               if not alt then
-                local altstring = ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.ALTITUDE)
+                local altstring = P1ZoneObj:GetProperty(ENUMS.MapsopZoneProperties.ALTITUDE)
+                if altstring == 'SOP' then altstring = nil end
                 local altvalue, altsign
                 if altstring then
                   altvalue = string.match(altstring, "[%+%-pm](%d+)")
@@ -1243,7 +1193,8 @@ function InitSupportBases()
               end
 
               if not speed then
-                local speedstring = ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.SPEED)
+                local speedstring = P1ZoneObj:GetProperty(ENUMS.MapsopZoneProperties.SPEED)
+                if speedstring == 'SOP' then speedstring = nil end
                 local speedvalue, speedsign
                 if speedstring then
                   speedvalue = string.match(speedstring, "[%+%-pm](%d+)")
@@ -1272,28 +1223,38 @@ function InitSupportBases()
                 end
               end
 
-              freq = freq or string.match(token, "FR(%d+%.*%d*)") or ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.FREQUENCY)
-              tacan = tacan or string.match(token, "TC(%d+)%u") or tonumber(string.match(ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.TACAN), "(%d+)%u"))
-              tacanband = tacanband or string.match(token, "TC%d+(%u)") or string.match(ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.TACAN), "%d+(%u)")
+              local freqprop = P1ZoneObj:GetProperty(ENUMS.MapsopZoneProperties.FREQUENCY)
+              if freqprop == 'SOP' then freqprop = nil end
+              freq = freq or string.match(token, "FR(%d+%.*%d*)") or freqprop
+
+              local tacanStringProp = P1ZoneObj:GetProperty(ENUMS.MapsopZoneProperties.TACAN)
+              if tacanStringProp == 'SOP' then tacanprop = nil end
+
+              tacan = tacan or string.match(token, "TC(%d+)%u") or tonumber(string.match(P1ZoneObj:GetProperty(ENUMS.MapsopZoneProperties.TACAN), "(%d+)%u"))
+              tacanband = tacanband or string.match(token, "TC%d+(%u)") or string.upper(string.match(P1ZoneObj:GetProperty(ENUMS.MapsopZoneProperties.TACAN), "%d+(%u)"))
               if tacanband then string.upper(tacanband) end
               
               invisible = invisible or string.match(token, "INV")
-              if invisible == "INV" or (ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.INVISIBLE) == true) then
+              if invisible == "INV" or (P1ZoneObj:GetProperty(ENUMS.MapsopZoneProperties.INVISIBLE) == true) then
                 invisible = true
               end
 
               groundstart = groundstart or string.match(token, "GND") 
-              if groundstart == "GND" or (ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.GROUNDSTART) == true) then
+              if groundstart == "GND" or (P1ZoneObj:GetProperty(ENUMS.MapsopZoneProperties.GROUNDSTART) == true) then
                 groundstart = true
               end
 
-              airframes = airframes or string.match(token, "QTY(%d+)") or tonumber(ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.AIRFRAMES))
+              airframes = airframes or string.match(token, "QTY(%d+)") or P1ZoneObj:GetProperty(ENUMS.MapsopZoneProperties.AIRFRAMES)
+              if airframes == SOP then
+                airframes = nil
+              else
+                airframes = tonumber(airframes)
+              end
 
             end
           end
 
-          airframes = airframes or ZoneProps:GetProperty(P1zone, ENUMS.ZoneProperties.AIRFRAMES)
-          if airframes then
+          if airframes and airframes > 0 then
             BASE:I(FullCallsign .. " SOP override to " .. airframes .. " airframes.")
             SUPPORTUNITS[ FullCallsign ].airframes = airframes
           end
@@ -1758,7 +1719,7 @@ function InitNavySupport( AircraftCarriers, CarrierMenu, InAir )
                   end
                   if SupportUnitFields[ENUMS.SupportUnitFields.LINK4FREQ] then
                     self:I(SupportUnit .. " Link4 set to " .. SupportUnitFields[ENUMS.SupportUnitFields.LINK4FREQ] .. "MHz." )
-                    CommandActivateLink4(self.carrier, SupportUnitFields[ENUMS.SupportUnitFields.LINK4FREQ])
+                    self.beacon:ActivateLink4(SupportUnitFields[ENUMS.SupportUnitFields.LINK4FREQ], SupportUnitFields[ENUMS.SupportUnitFields.ICLSMORSE])
                   end
 
                 end
@@ -1769,11 +1730,8 @@ function InitNavySupport( AircraftCarriers, CarrierMenu, InAir )
                 if SUPPORTUNITS[ 'CSAR1' ][ ENUMS.SupportUnitFields.GROUNDSTART ] then
                   rescuehelo:SetTakeoffCold()
                 else
-                  if SupportUnit[ ENUMS.SupportUnitFields.GROUNDSTART ] then
-                    rescuehelo:SetTakeoffCold()
-                  else
-                    rescuehelo:SetTakeoffAir()
-                  end
+                  rescuehelo:SetTakeoffAir()
+                  rescuehelo:SetRespawnInAir()
                 end
 
         rescuehelo:SetModex( SUPPORTUNITS[ 'CSAR1' ][ ENUMS.SupportUnitFields.MODEX ] + 8 )
@@ -1962,3 +1920,65 @@ if table.getn(RedSAMs) > 0 then
 else
   BASE:E("No group names with 'Red SAM' found, skipping IADS initialization.")
 end
+
+-- Server Pause/Resume behavior
+UnpauseZoneSet = SET_ZONE:New():FilterPrefixes("Unpause Client"):FilterOnce()
+
+ClientSet = SET_CLIENT:New():FilterActive()
+if UnpauseZoneSet:Count() > 0 then
+  BASE:I("Unpause Zone Count: " .. UnpauseZoneSet:Count())
+  ClientSet:FilterZones(UnpauseZoneSet)
+end
+ClientSet:FilterStart()
+
+local PauseScheduler = nil 
+
+if UnpauseZoneSet:Count() < 1 then
+  PauseScheduler = SCHEDULER:New( nil, 
+  function()
+    if ClientSet:CountAlive() == 0 then
+      ServerPause()
+    end
+  end, { }, 5, 60
+  )
+else 
+  SCHEDULER:New( nil, 
+  function()
+      ServerPause()
+  end, { }, 5
+  )
+  PauseScheduler = SCHEDULER:New( nil, 
+  function()
+    if ClientSet:CountAlive() == 0 then
+      ServerPause()
+    end
+  end, { }, 60, 60
+  )
+end
+
+function SetEventHandler()
+    ClientBirth = ClientSet:HandleEvent(EVENTS.PlayerEnterAircraft)
+end
+
+function ClientSet:OnEventPlayerEnterAircraft(event_data)
+    local unit_name = event_data.IniUnitName
+    local unit = UNIT:FindByName(unit_name)
+    local group = event_data.IniGroup
+    local player_name = event_data.IniPlayerName
+
+    env.info("Client connected!")
+    env.info(unit_name)
+    env.info(player_name)
+
+    BASE:I("Unpause zone set count: " .. UnpauseZoneSet:Count())
+    if UnpauseZoneSet:Count() > 0 then 
+      if UnpauseZoneSet:IsCoordinateInZone( unit:GetCoordinate() ) then
+        BASE:I(unit_name .. " is in zone " .. UnpauseZoneSet:IsCoordinateInZone( unit:GetCoordinate() ):GetName())
+        ServerUnpause()
+      end
+    else
+      ServerUnpause()
+    end
+end
+
+SetEventHandler()
