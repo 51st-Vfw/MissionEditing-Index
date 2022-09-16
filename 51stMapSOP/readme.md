@@ -244,6 +244,10 @@
 *  Use new native MOOSE function for Link4 activation.
 *  Tested/included MOOSE version bump.
 
+*Version 20220917.1*
+* Eliminated mysterious aircraft disappearances (remove MOOSE cleanup at SupportBase)
+* Greatly reduced naval rotary aviation accidents (only one helo spawn on carriers) 
+
 ### Known issues:
 * Extra Non-SOP Shell/Magic units act like land-based Tankers/AWACS.
 * Off-duty tankers/AWACS show up in radio menu under -8 callsigns.
