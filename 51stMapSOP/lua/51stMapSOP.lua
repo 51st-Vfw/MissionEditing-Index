@@ -51,6 +51,9 @@
 --                    - 'Off duty' Tankers use 58Y (Viper TACAN freezes if you turn a Tanker TACAN off).
 --                    - Use new native MOOSE function for Link4 activation.
 --                    - Tested/included MOOSE version bump.
+-- Version 20220917.1 - Eliminated mysterious aircraft disappearances (remove MOOSE cleanup at SupportBase)
+--                    - Greatly reduced naval rotary aviation accidents (only one helo spawn on carriers) 
+--
 --
 -- Known issues:
 --   - Extra Non-SOP Shell/Magic units act like land-based Tankers/AWACS.
@@ -1100,7 +1103,8 @@ function InitSupportBases()
       RedSupportBase = AIRBASE:Register(RedAirbaseName)
     end
 
-    CLEANUP_AIRBASE:New(SupportBase:GetName()):SetCleanMissiles(false)
+    -- Disabled, was 'cleaning up' jets taking off at SupportBase
+    --CLEANUP_AIRBASE:New(SupportBase:GetName()):SetCleanMissiles(false)
 
     local CarrierShips = AIRBASE.GetAllAirbases(coalition.side.BLUE, Airbase.Category.SHIP)
     for _,CarrierShip in pairs(CarrierShips) do
@@ -1827,21 +1831,22 @@ function InitNavySupport( AircraftCarriers, CarrierMenu, InAir )
         end
         SupportBeacons[SupportUnit] = ShipBeacon
 
+        if not SupportUnit:find("CVN") then
         -- Rescue Helo for LHAs and other non-carriers
-        local rescuehelo=RESCUEHELO:New(SupportUnit, "CSAR1")
+          local rescuehelo=RESCUEHELO:New(SupportUnit, "CSAR1")
 
-        if SUPPORTUNITS[ 'CSAR1' ][ ENUMS.SupportUnitFields.GROUNDSTART ] then
-          rescuehelo:SetTakeoffCold()
-        else
-          if SupportUnit[ ENUMS.SupportUnitFields.GROUNDSTART ] then
+          if SUPPORTUNITS[ 'CSAR1' ][ ENUMS.SupportUnitFields.GROUNDSTART ] then
             rescuehelo:SetTakeoffCold()
           else
-            rescuehelo:SetTakeoffAir()
+            if SupportUnit[ ENUMS.SupportUnitFields.GROUNDSTART ] then
+              rescuehelo:SetTakeoffCold()
+            else
+              rescuehelo:SetTakeoffAir()
+            end
           end
+          rescuehelo:SetModex( SUPPORTUNITS[ 'CSAR1' ][ ENUMS.SupportUnitFields.MODEX ] + 8 )
+          rescuehelo:__Start(2)
         end
-
-        rescuehelo:SetModex( SUPPORTUNITS[ 'CSAR1' ][ ENUMS.SupportUnitFields.MODEX ] + 8 )
-        rescuehelo:__Start(2)
       end
     end
     return Carriers
