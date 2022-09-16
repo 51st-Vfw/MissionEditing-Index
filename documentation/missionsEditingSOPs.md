@@ -1,4 +1,130 @@
-# General 51st VFW Mission Editing SOPs
+# SOP Introduction
+
+This document covers a variety of topics that attempt to standardize some aspects of mission
+design to reduce the workload on mission designers.
+
+- [Mission Design SOPs](#Mission-Design-SOPs) covers guidelines for mission design.
+- [Mission Setup SOPs](#General-51st-VFW-Mission-Setup-SOPs)
+  covers general setup topics such as communications, tankers, TACAN, etc.
+- [Airframe Specific SOPs](#Airframe-Specific-SOPs)
+  covers material specific to an airframe such as design guidelines or radio setup.
+
+These are intented to be guidelines.
+
+# Mission Design SOPs
+
+This section covers a number of general topics in mission design and provides information that
+may be helpful in conceptualizing and buildign a mission.
+
+## Startup and Launch Timeline
+
+The mission design should be conscious of the amount of time it takes for the pilots in the
+mission to slot and depart on the mission proper. As different airframes have different
+timelines for getting from slotting to ready, this can lead to coordination issues depending
+on the mission design. There are a number of ways the mission designer can attempt to align
+schedules, for example,
+
+- Have faster groups slot later (perhaps they are allowed a longer pre-mission brief)
+  than slower groups.
+- Hold faster groups on the ground until slower groups are ready.
+- Add tasking or sequencing in the mission that relies on the faster group being ready
+  sooner. For example, the mission might task faster groups with early destruction of enemy
+  defenses to enable slower groups to perform their tasking.
+
+This list is not exhaustive.
+
+The discussion will consider typical timelines for several aircraft to provide some insight
+into the potential challenges that a designer may need to address. In the following material
+keep in mind that factors such as disconnects or technical issues can also influence the time
+it takes to reach a ready state.
+
+### Sea-Based Naval Airframes
+
+The following example describes the F-14B. Other airframes are assumed to follow similar
+timelines.
+
+The timeline is broken up into a start up phase that takes the jet from cold to on the catapult
+followed by a departure phase from departure to an initial waypoint.
+
+In the start up phase, pilots slot and get their jet ready to launch. Due to the limited space
+on the deck, jets start and get their INS aligned before moving to another spot on the deck to
+clear the spawn points.
+
+|Event|Time|Notes|
+|:---:|:---:|---|
+|Slot and align INS| T + 0:05-0:07|
+|Repark and Rearm| T + 0:09-0:11| May be necessary only with more than 8 pilots.
+|Take Catapult, Launch| T + 0:12-0:14|
+
+In DCS, the carrier module is limited to 8 spawn points on the deck. Aircraft must move off
+these spawn points before additional pilots can slot in. As a result, when more than 8 pilots
+are attached to a carrier, their slotting must happen in waves which will stagger the
+availability of airframes (that is, those in the first group of pilots that slot may be ready
+around ten minutes before the second group). Generally, this is done by having pilots start
+their jets, perform INS alignment, and then move to a staging area on the carrier to
+allow others to slot in. While in the staging area, pilots can finish startup and rearming as
+needed before heading to the catapults for depatrure.
+
+Departure procedures for naval units depend on conditions such as weather and time of day at
+launch. There are two departure classes,
+
+- CASE-1 for day VFR operations involves extending 7nm from the carrier, then turning on course
+  to an initial waypoint. In CASE-1, it may be possible to launch aircraft in rapid succession
+  from the catapults (with some limitations noted below).
+- CASE-3 for night or IFR operations involves extending 7nm from the carrier and flying a DME
+  arc to a CV rendezvous point where the aircraft rejoin before turning on course to an initial
+  waypoint. In CASE-3, aircraft are launched one at a time at 30-60s intervals.
+
+The following figure illustartes an overhead view of a CASE-1 departure.
+
+![](images/CASE_1.png)
+
+As this departure is straight-forward, it's timeline is simple to reach an initial waypoint
+50nm from the carrier at an altitude of 35K MSL (note this picks up where the start up timeline
+left off),
+
+|Event|Time|Notes|
+|:---:|:---:|---|
+|Extend to 7nm, direct WP1| T + 0:20-0:22|In cruise at angels 35 by WP1
+
+A CASE-3 depature looks like this,
+
+![](images/CASE_3.png)
+
+The timeline under this departure is slightly more complicated.
+
+|Event|Time|Notes|
+|:---:|:---:|---|
+|Extend to 7nm, 10 DME arc|T + 0:18-0:20|Arc to outbound departure radial
+|Fly to CV rendezvous, single orbit|T + 0:23-0:25|More orbits may be necessary if slow to join or many jets are gathering
+|Fly to WP1|T + 0:26-0:28|In cruise at angels 35 by WP1
+
+In CASE-3 conditions then, it could take almost 30 minutes for the first aircraft to reach an
+initial waypoint 50nm from their carrier. Roughly speaking, in the first wave of 8 slots, you
+can expect 2-ship sections to get airborne and reach WP1 roughly every two to four minutes.
+
+> For the Tomcat, the ED Super Carrier limits at most to two Tomcats on the catapults at the
+> same time. CASE-1 can still shoot in tighter intervals than in CASE-3, but it still takes the
+> same amount of time to hook up two more jets to launch. As a result, even in CASE-1
+> conditions you are likely limited to putting up a 2-ship section every three minutes, same as
+> CASE-3.
+
+### Ground-Based Airframes
+
+Ground-based aircraft do not face the space constraints present on a carrier. Because parking
+is not at a premium, there is no need to sequence slotting as there may be for naval units.
+This allows ground-based airframe to get in the air more rapidly.
+
+Unlike a carrier, taxi time may be important depending on the airfield and location on the
+airfield that the mission locates its jets in. Mission design will need to consider carefully
+how to handle that aspect of unit positioning. In practice, long taxi times may not necessarily
+be a bad thing as it may effectively "hide" some of the longer timelines for other units.
+
+For an F-16C, typically ten minutes should be sufficient for slot to wheels up. Using hot jets
+or populating the loadout in the mission editor can accelerate this timeline a little if the
+mission needs more rapid availability.
+
+# Mission Setup SOPs
 
 This section covers a number of standard operating procedures (SOPs) mission designers should
 employ around general mission elements such as communications, navigation, and operational
@@ -9,13 +135,13 @@ Missions should follow the SOPs where possible and practical to provide consiste
 51st VFW missions. That being said, mission designers may deviate from these guidelines
 where necessary due to the specific mission scenario.
 
-## Mission Editor Mission Options
+## DCS Mission Editor Mission Options
 
 The following are the suggested SOP mission options for use in the DCS Mission Editor.
 
 ![](images/51st_SOP_ME_Options.png)
 
-## TACAN Usage Guidelines
+## TACAN Channel Usage Guidelines
 
 TACAN channels in the mission should be assigned according to the following diagrams. The
 first diagram (taken from a discussion of TACAN usage in the Hornet from the ED DCS forums)
@@ -75,7 +201,7 @@ can help set up tankers consistent with the SOPs.
 
 For consistency, missions should follow the default comms plan wherever possible. While these
 defaults can support a wide range of missions, missions may deviate based on their specific
-needs. Generally, the communications plan uses uniform for cross-wing communication and victor
+needs. Generally, the communications plan uses UHF for cross-wing communication and VHF
 for communication within a flight.
 
 Both the 
@@ -92,7 +218,7 @@ ATC frequencies (tower, ground, CTAF, ATIS, etc.) are set according to the publi
 for the airports in theater. We will typically use frequencies in military UHF/VHF bands as
 appropriate. Where published charts are unavailable, a mission may fill in any missing
 frequencies as it sees fit. At controlled airfields, we will use the published tower
-frequency as tower (when AI or human ATC is available) or CTAF (otherwise).
+frequency as either tower (when AI or human ATC is available) or CTAF (otherwise).
 
 A mission may elect to use modules such as [DATIS](https://github.com/rkusa/DATIS) to support
 ATC communications.
@@ -144,18 +270,18 @@ flight names to differentiate the different taker airframes,
 
 Missions may support additional airframes (for example, KC-130), should follow the flight
 naming conventions in the SOP. The following table summarizes the standard communications plan
-for the non-carrier tankers supporting AAR.
+for the non-recovery tankers supporting AAR.
 
 |Tanker|TACAN|Frequency|Notes|   |Tanker|TACAN|Frequency|Notes|
 |---|:---:|:---:|:---|---|---|:---:|:---:|---|
 |Texaco 1-1<br>*Boom*|51Y|251.00|FL250<br>300KIAS|    |Texaco 2-1<br>*Boom*|52Y|252.00|15000 MSL<br>220KIAS
 |Arco 1-1<br>*Probe & Drogue*|53Y|253.00|FL200<br>285KIAS|    |Arco 2-1<br>*Probe & Drogue*|54Y|254.00|FL210<br>285KIAS|
 
-To eliminate some complexity, tanker TACAN channel and frequencies should be related as shown
-in the table above (that is, frequency is always 200 + TACAN channel).
+To eliminate some complexity, tanker TACAN channel and frequencies for non-recovery tankers should be
+related as shown in the table above (that is, frequency is always 200 + TACAN channel).
 
 To allow for multiple carriers in a mission, each carrier may have its own recovery tanker (an
-S-3B with the callsign "Shell") made available. All recovery tankers orbit at 6000MSL at 285KIAS.
+S-3B with the callsign "Shell") available. All recovery tankers orbit at 6000MSL at 285KIAS.
 The following table summarizes the SOP carrier recovery tankers.
 
 |Tanker|TACAN|Frequency|   |Tanker|TACAN|Frequency|
@@ -452,22 +578,12 @@ Beyond that suggestion, missions are free to re-purpose or drop the remaining pr
 needs of the mission. Unassigned or repurposed presets may be assigned to mission-specific
 frequencies as necessary.
 
-# Miscellaneous SOPs
-
-TODO
-
-## Loadout references
-
-- [Desert Storm Era](https://www.dstorm.eu/pages/loadout/loadout.html)
-
-## Create a pull request!
-
-    - Don't commit to master unless you are the main owner/delegated.
-
 # TODO
 
 - [] Add mids and tacan overlap documentation (don't mix the freqs!)
 - [] Standard comms ladder per aircraft?
+
+- loadout references [Desert Storm Era](https://www.dstorm.eu/pages/loadout/loadout.html)
 
 
 
