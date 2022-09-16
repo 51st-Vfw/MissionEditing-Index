@@ -17,18 +17,19 @@ The following are the suggested SOP mission options for use in the DCS Mission E
 
 ## TACAN Usage Guidelines
 
-TACAN channels in the mission should be assigned according to the following diagram.
+TACAN channels in the mission should be assigned according to the following diagrams. The
+first diagram (taken from a discussion of TACAN usage in the Hornet from the ED DCS forums)
+establishes the baseline availability of TACAN channels in DCS.
 
 ![](images/TACAN_usage.png)
 
-Channels marked "unavailable" or "degraded" should be avoided. Default assignments for
-TACAN channels are detailed below in the discussion of the communications plan and are
-consistent with these assignments. The following figure shows which TACAN channels the SOPs
-use.
+Channels marked "unavailable" or "degraded" should be avoided. Based on these constraints,
+the following figure shows the default assignments for TACAN channels that the SOPs use.
 
 ![](images/TACAN_Usage_SOP.png)
 
-Further details follow below.
+Further details on the default assignments are covered below in the discussions of the
+communications plan and airframe SOPs and are consistent with these assignments.
 
 ## Tanker Altitude and Airspeed Guidelines
 
@@ -66,6 +67,10 @@ the DCS Mission Editor to achieve the default KIAS at the default altitude in ca
 Keep in mind that ground speed may change based on altitude or other factors and may need to be
 adjusted accordingly in the mission editor based on the specific scenario.
 
+The
+[51st VFW MapSOP script](https://github.com/51st-Vfw/MissionEditing-Index/tree/master/51stMapSOP)
+can help set up tankers consistent with the SOPs.
+
 ## Default Communications Plan
 
 For consistency, missions should follow the default comms plan wherever possible. While these
@@ -73,13 +78,21 @@ defaults can support a wide range of missions, missions may deviate based on the
 needs. Generally, the communications plan uses uniform for cross-wing communication and victor
 for communication within a flight.
 
+Both the 
+[51st VFW MapSOP script](https://github.com/51st-Vfw/MissionEditing-Index/tree/master/51stMapSOP)
+as well as
+[51st VFW Mission Templates](https://github.com/51st-Vfw/MissionEditing-Templates)
+are set up to align with these SOPs.
+
 The following sections focus on specific pieces of the overall comms plan.
 
 ### ATC Frequencies
 
 ATC frequencies (tower, ground, CTAF, ATIS, etc.) are set according to the published charts
-for the airports in theater. Where published charts are unavailable, a mission may fill in
-any missing frequencies as it sees fit.
+for the airports in theater. We will typically use frequencies in military UHF/VHF bands as
+appropriate. Where published charts are unavailable, a mission may fill in any missing
+frequencies as it sees fit. At controlled airfields, we will use the published tower
+frequency as tower (when AI or human ATC is available) or CTAF (otherwise).
 
 A mission may elect to use modules such as [DATIS](https://github.com/rkusa/DATIS) to support
 ATC communications.
@@ -163,7 +176,8 @@ As missions may require additional tankers, the SOPs set aside TACAN channels 55
 The SOPs include a base set of airframes that includes at least one flight from all of the
 currently active airframes. Based on its needs, missions may change the airframes for a
 particular flight while keeping the intraflight frequency and TACAN channels. The following
-table summarizes the standard communications plan for the wing for the base set of airframes.
+table summarizes the standard communications plan and default flights for the wing for the
+base set of airframes.
 
 |Flight / Arirframe|TACAN|Frequency|   |Flight / Arirframe|TACAN|Frequency|
 |---|:---:|:---:|---|---|:---:|:---:|
@@ -178,7 +192,7 @@ table summarizes the standard communications plan for the wing for the base set 
 The TACAN pairs in this table describe the A2A yardstick setup: the lead uses the lower
 numbered channel of the pair while the wingmen use the higher numbered channel of the pair.
 
-Specific missions may choose different flight names as required. When deviating from the SOP
+Specific missions may choose different flight names as desired. When deviating from the SOPs
 though, please avoid changes that may create confusion. For example, an F-16C flight could use
 a name such as "Venom" or "Viper" that is not listed here; however, it should not use a name
 such as "Enfield" or "Hawg" that is typically associated with a different airframe in the SOPs.
@@ -205,32 +219,39 @@ module does not support these ships.
 ### Default Kneeboards
 
 Missions makers or planners are encouraged to make a summary of the relevant information from
-the comms plan available on a kneeboard. Alternatively, they can use the default comms cards
-below.
+the communications plan available on a kneeboard. Alternatively, they can use the default comms
+cards below.
 
 ![](images/51st_SOP_Comms.png)
 
-The following version shows presets where defined (see the discussion of airframe specific SOPs
-below).
+The following version of the comms card shows presets where defined (see the discussion of
+airframe specific SOPs below).
 
 ![](images/51st_SOP_Comms_Presets.png)
 
-This image is suitable for use as a DCS kneeboard. Based on the mission configuration, not all
-of the information may be relevant to a particular mission.
+Both images are `.png` format suitable for use as a DCS kneeboard. Based on the mission
+configuration, not all of the information may be relevant to a particular mission. In
+addition, `.svg` versions of the [SOP Comms](source/51st_SOP_Comms.svg) and
+[SOP Comms Presets](source/51st_SOP_Comms_Presets.svg) are available as templates to
+allow customization for a particular mission.
 
 # Airframe Specific SOPs
 
 This section covers various airframe-specific SOPs and mission design guidelines that may be
-helpful to keep in mind when designing missions that include the various airframes.
+helpful to keep in mind when designing missions that include the various airframes commonly
+flown by the 51st.
 
 Missions should follow the SOPs where possible and practical to provide consistency across
 51st VFW missions. That being said, mission designers may deviate from these guidelines
-where necessary due to the specific mission scenario.
+where necessary due to the specific mission scenario or goals.
 
-## A-10C
+## A-10C Warthog
 
 The A-10C Warthog is a single-seat, twin-turbofan, straight-wing, subsonic attack aircraft
 designed for close air support (CAS) and forward air controller (FAC) missions.
+
+An `.svg` version of an [A-10C Flight Card](source/51st_SOP_Card_A10.svg) that includes overview,
+comms ladder, and steerpoint information is available for use by mission designers.
 
 ### Mission Design Guidelines for the A-10C
 
@@ -238,11 +259,36 @@ TODO: A-10 design guidelines
 
 ### Comms Presets
 
-TODO: No presets in ME?
+The Warthog has a UHF radio (COMM1, AN/ARC-164), a VHF AM radio (COMM2, AN/ARC-186(V)), and
+a VHF FM radio (COMM3, AN/ARC-186(V)). All three radios have 20 presets. We will use the
+general 20-channel layout for the default comms ladder.
 
-## AH-64D
+|COMM1 Preset<br>(UHF)|Frequency| |COMM2 Preset<br>(VHF AM)|Frequency|
+|:-----:|:---|---|:---:|:---|
+| 1     | Tactical Common                || 1     | Intraflight
+| 2     | Departure ATIS (UHF)           || 2     | Departure ATIS (VHF)
+| 3     | Departure Tower (UHF)          || 3     | Departure Tower (VHF)
+| 4     | _Unassigned_                   || 4-7   | _Unassigned_
+| 5     | AWACS Overlord 1-1             || 8     | JTAC/AFAC Darknight 1-1 (VHF)
+| 6     | AAR Texaco 1-1                 || 9     | JTAC/AFAC Player (VHF)
+| 7     | AAR Texaco 2-1                 || 10-19 | _Unassigned_
+| 8     | JTAC/AFAC Darknight 1-1 (UHF)  || 20    | Guard (VHF)
+| 9     | JTAC/AFAC Player (UHF)
+| 10-19 | _Unassigned_
+| 20    | Guard (UHF)
 
-The AH-64D Apache is a twin-turboshaft attack helicopter with a tailwheel-type landing gear arrangement and a tandem cockpit for a crew of two.
+The COMM3 radio is primarily used for communications with ground JTAC units. The presets for
+this radio are unassigned in the default comms ladder and left to the mission to define.
+
+Missions designers are encouraged to leave preset 1 as Tactical Common or Intraflight frequencies.
+Beyond that suggestion, missions are free to re-purpose or drop the remaining presets based on the
+needs of the mission. Unassigned or repurposed presets may be assigned to mission-specific
+frequencies as necessary.
+
+## AH-64D Apache
+
+The AH-64D Apache is a twin-turboshaft attack helicopter with a tailwheel-type landing gear
+arrangement and a tandem cockpit for a crew of two.
 
 ### Mission Design Guidelines for the AH-64D
 
@@ -252,7 +298,7 @@ TODO: AH-64D design guidelines
 
 TODO
 
-## AV-8B
+## AV-8B Harrier II
 
 The AV-8B Harrier II is a single-seat, single-engine ground-attack aircraft, capable of
 vertical or short takeoff and landing (V/STOL). The aircraft is primarily employed on light
@@ -266,10 +312,13 @@ TODO: AV-8B design guidelines
 
 TODO: V/UHF #1 x26, V/UHF #2 x26, V/UHF RCS x30
 
-## F-14B
+## F-14B Tomcat
 
 The F-14B Tomcat is a two-seat, twin-engine, carrier-capable, variable-sweep wing fighter
 aircraft.
+
+An `.svg` version of an [F-14B Flight Card](source/51st_SOP_Card_F14.svg) that includes overview,
+comms ladder, and steerpoint information is available for use by mission designers.
 
 ### Mission Design Guidelines for the F-14B
 
@@ -295,7 +344,9 @@ comms ladder.
 |COMM1 Preset<br>(UHF)|Frequency||COMM2 Preset<br>(UHF/VHF)|Frequency|
 |:-----:|:---|---|:-----:|:---|
 | 1     | Tactical Common               | | 1     | Intraflight
-| 2-4   | Unassigned                    | | 2-4   | Unassigned
+| 2     | Departure ATIS (UHF)          | | 2     | Departure ATIS (VHF)
+| 3     | Departure Tower (UHF)         | | 3     | Departure Tower (VHF)
+| 4     | _Unassigned_                  | | 4     | _Unassigned_
 | 5     | AWACS Overlord 1-1            | | 5     | AWACS Overlord 1-1
 | 6     | AAR Arco 1-1                  | | 6     | AAR Arco 1-1
 | 7     | AAR Arco 2-1                  | | 7     | AAR Arco 2-1
@@ -304,24 +355,28 @@ comms ladder.
 | 10    | Carrier #1 ATC                | | 10    | Carrier #1 ATC
 | 11    | Carrier #1 Recovery AWACS     | | 11    | Carrier #1 Recovery AWACS
 | 12    | Carrier #1 Recovery AAR       | | 12    | Carrier #1 Recovery AAR
-| 13-14 | Unassigned                    | | 13-14 | Unassigned 
+| 13-14 | _Unassigned_                  | | 13-14 | _Unassigned_ 
 | 15    | Carrier #2 ATC                | | 15    | Carrier #2 ATC
 | 16    | Carrier #2 Recovery AWACS     | | 16    | Carrier #2 Recovery AWACS
 | 17    | Carrier #2 Recovery AAR       | | 17    | Carrier #2 Recovery AAR
-| 18-20 | Unassigned                    | | 18-30 | Unassigned
+| 18-19 | _Unassigned_                  | | 18-19 | _Unassigned_
+| 20    | Guard (UHF)                   | | 20    | Guard (VHF)
 
 For missions that do not include carriers, Carrier #1 and Carrier #2 frequencies are treated as
 unassgiend.
 
-Missions are encouraged to leave preset 1 as Tactical Common or Intraflight frequencies. Beyond
-that suggestion, missions are free to re-purpose the remaining presets based on the needs of
-the mission. Unassigned or repurposed presets may be assigned to ATC at the departure, arrival,
-or alternate fields or other mission-specific frequencies.
+Missions designers are encouraged to leave preset 1 as Tactical Common or Intraflight frequencies.
+Beyond that suggestion, missions are free to re-purpose or drop the remaining presets based on the
+needs of the mission. Unassigned or repurposed presets may be assigned to mission-specific
+frequencies as necessary.
 
-## F-16C
+## F-16C Viper
 
 The F-16C Viper is a single-seat, single-engine multirole fighter aircraft. Designed as an air
 superiority day fighter, it has evolved into a successful all-weather multirole aircraft.
+
+An `.svg` version of an [F-16C Flight Card](source/51st_SOP_Card_F16.svg) that includes overview,
+comms ladder, and steerpoint information is available for use by mission designers.
 
 ### Mission Design Guidelines for the F-16C
 
@@ -335,31 +390,33 @@ have 20 presets. We will use the general 20-channel layout for the default comms
 |COMM1 Preset<br>(UHF)|Frequency| |COMM2 Preset<br>(VHF)|Frequency|
 |:-----:|:---|---|:---:|:---|
 | 1     | Tactical Common                || 1     | Intraflight
-| 2-4   | Unassigned                     || 2-7   | Unassigned
+| 2     | Departure ATIS (UHF)           || 2     | Departure ATIS (VHF)
+| 3     | Departure Tower (UHF)          || 3     | Departure Tower (VHF)
+| 4     | _Unassigned_                   || 4-7   | _Unassigned_
 | 5     | AWACS Overlord 1-1             || 8     | JTAC/AFAC Darknight 1-1 (VHF)
 | 6     | AAR Texaco 1-1                 || 9     | JTAC/AFAC Player (VHF)
-| 7     | AAR Texaco 2-1                 || 10-20 | Unassigned
-| 8     | JTAC/AFAC Darknight 1-1 (UHF)  ||
+| 7     | AAR Texaco 2-1                 || 10-19 | _Unassigned_
+| 8     | JTAC/AFAC Darknight 1-1 (UHF)  || 20    | Guard (VHF)
 | 9     | JTAC/AFAC Player (UHF)
-| 10-20 | Unassigned
+| 10-19 | _Unassigned_
+| 20    | Guard (UHF)
 
-Missions are encouraged to leave preset 1 as Tactical Common or Intraflight frequencies. Beyond
-that suggestion, missions are free to re-purpose the remaining presets based on the needs of
-the mission. Unassigned or repurposed presets may be assigned to ATC at the departure, arrival,
-or alternate fields or other mission-specific frequencies.
+Missions designers are encouraged to leave preset 1 as Tactical Common or Intraflight frequencies.
+Beyond that suggestion, missions are free to re-purpose or drop the remaining presets based on the
+needs of the mission. Unassigned or repurposed presets may be assigned to mission-specific
+frequencies as necessary.
 
-## F/A-18C
+## F/A-18C Hornet
 
 The F/A-18C Hornet is a single-seat, twin-engine, all-weather, carrier-capable, multirole
 combat jet, designed as both a fighter and attack aircraft.
 
+An `.svg` version of an [F-18C Flight Card](source/51st_SOP_Card_F18.svg) that includes overview,
+comms ladder, and steerpoint information is available for use by mission designers.
+
 ### Mission Design Guidelines for the F/A-18C
 
 TODO: F/A-18C design guidelines
-
-### Steerpoints and Bullseye
-
-TODO: SOP to set SP1 to BULLS?
 
 ### Comms Presets
 
@@ -369,7 +426,9 @@ We will use the general 20-channel layout for the default comms ladder.
 |COMM1 Preset<br>(UHF/VHF)|Frequency||COMM2 Preset<br>(UHF/VHF)|Frequency|
 |:-----:|:---|---|:-----:|:---|
 | 1     | Tactical Common               | | 1     | Intraflight
-| 2-4   | Unassigned                    | | 2-4   | Unassigned
+| 2     | Departure ATIS (UHF)          | | 2     | Departure ATIS (VHF)
+| 3     | Departure Tower (UHF)         | | 3     | Departure Tower (VHF)
+| 4     | _Unassigned_                  | | 4     | _Unassigned_
 | 5     | AWACS Overlord 1-1            | | 5     | AWACS Overlord 1-1
 | 6     | AAR Arco 1-1                  | | 6     | AAR Arco 1-1
 | 7     | AAR Arco 2-1                  | | 7     | AAR Arco 2-1
@@ -378,19 +437,20 @@ We will use the general 20-channel layout for the default comms ladder.
 | 10    | Carrier #1 ATC                | | 10    | Carrier #1 ATC
 | 11    | Carrier #1 Recovery AWACS     | | 11    | Carrier #1 Recovery AWACS
 | 12    | Carrier #1 Recovery AAR       | | 12    | Carrier #1 Recovery AAR
-| 13-14 | Unassigned                    | | 13-14 | Unassigned 
+| 13-14 | _Unassigned_                  | | 13-14 | _Unassigned_ 
 | 15    | Carrier #2 ATC                | | 15    | Carrier #2 ATC
 | 16    | Carrier #2 Recovery AWACS     | | 16    | Carrier #2 Recovery AWACS
 | 17    | Carrier #2 Recovery AAR       | | 17    | Carrier #2 Recovery AAR
-| 18-20 | Unassigned                    | | 18-20 | Unassigned
+| 18-19 | _Unassigned_                  | | 18-19 | _Unassigned_
+| 20    | Guard (UHF)                   | | 20    | Guard (VHF)
 
 For missions that do not include carriers, Carrier #1 and Carrier #2 frequencies are treated as
 unassgiend.
 
-Missions are encouraged to leave preset 1 as Tactical Common or Intraflight frequencies. Beyond
-that suggestion, missions are free to re-purpose the remaining presets based on the needs of
-the mission. Unassigned or repurposed presets may be assigned to ATC at the departure, arrival,
-or alternate fields or other mission-specific frequencies.
+Missions designers are encouraged to leave preset 1 as Tactical Common or Intraflight frequencies.
+Beyond that suggestion, missions are free to re-purpose or drop the remaining presets based on the
+needs of the mission. Unassigned or repurposed presets may be assigned to mission-specific
+frequencies as necessary.
 
 # Miscellaneous SOPs
 
