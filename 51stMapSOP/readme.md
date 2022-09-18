@@ -248,6 +248,9 @@
 * Eliminated mysterious aircraft disappearances (remove MOOSE cleanup at SupportBase)
 * Greatly reduced naval rotary aviation accidents (only one helo spawn on carriers) 
 
+* Version 20220917.2*
+* Removed testing tanker loadout values.
+
 ### Known issues:
 * Extra Non-SOP Shell/Magic units act like land-based Tankers/AWACS.
 * Off-duty tankers/AWACS show up in radio menu under -8 callsigns.
