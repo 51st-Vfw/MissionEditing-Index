@@ -664,7 +664,7 @@ recent version of the workflow and you want to update the `Breaking_Bad` mission
 `C:\Users\Raven\Mission\Breaking_Bad`. Invoking the command,
 
 ```
-C:\Users\Raven\Mission\VFW51_Core_Mission> wfupdate.cmd ..\Breaking_Bad
+C:\Users\Raven\Mission\VFW51_Core_Mission> scripts\wfupdate.cmd ..\Breaking_Bad
 ```
 
 Updates the workflow-related files in `Breaking_Bad` to match those in `VFW51_Core_Mission`.
