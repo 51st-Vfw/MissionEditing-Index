@@ -137,11 +137,10 @@ In addition to these directories, the top level of the mission directory typical
 `README` file and a number of packaged `.miz` files that provide different variants of the
 base mission.
 
-Mission files are named `<mission_name>[-v<version>][-<variant>].miz` where the "base" mission
-does not include `[-<variant>]`. In the mission name, `[-v<version>]` is an optional version
-tag and `[-<variant>]` is the name of an optional automatically-generated "variant" of the
-base mission that differs from the base mission in weather, time of mission, or mission
-options.
+Mission files are named `<mission_name>[-<variant>].miz` where the "base" mission does not
+include `[-<variant>]`. In the mission name, `[-<variant>]` is the name of an optional
+automatically-generated "variant" of the base mission that differs from the base mission in
+weather, time of mission, or mission options.
 
 # Creating a Mission That Uses the Workflow
 
@@ -296,8 +295,6 @@ The `build.cmd` script has several command line arguments. The main arguments in
 - `--base` builds the base mission variant only and does not build any other variants the
   mission directory specifies, see
   [Mission Variants](#Mission-Variants) for further details.
-- `--version {version}` adds the non-zero integer `{version}` to the filenames of the missions
-  built by the script as a version tag
 - `--verbose` turns on logging information.
 
 The `build.cmd` script may build one or more `.miz` packages depending on the configuration
@@ -636,15 +633,16 @@ in `vfw51_variant_settings.lua` like this,
 ```
 VariantSettings = {
     ["variants"] = {
-        ["bad_wx"] = {
+        ["bad-wx"] = {
             ["wx"] = "bad_wx.lua"
         }
     }
 }
 ```
 
-The next build the the `Strike` mission will produce the base variant along with a `bad_wx`
-variant that has the weather imported from the `Test.miz` mission.
+The next build the the `Strike` mission will produce the base variant, `Strike.miz` along
+with a `bad-wx` variant, `Strike-bad-wx.miz` that has the weather imported from the
+`Test.miz` mission.
 
 # Updating the Workflow
 
