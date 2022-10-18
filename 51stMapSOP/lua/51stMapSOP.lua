@@ -1,4 +1,5 @@
 -- 51st MapSOP
+MAPSOP_VERSION = "20221017.1"
 -- Initial version by Blackdog Jan 2022
 --
 -- Tested against MOOSE GITHUB Commit Hash ID:
@@ -53,14 +54,13 @@
 --                    - Tested/included MOOSE version bump.
 -- Version 20220917.1 - Eliminated mysterious aircraft disappearances (remove MOOSE cleanup at SupportBase)
 --                    - Greatly reduced naval rotary aviation accidents (only one helo spawn on carriers) 
+-- Version LATEST     - Fixed 'Invisible' Tanker/AWACs setting.
 --
 --
 -- Known issues:
 --   - Extra Non-SOP Shell/Magic units act like land-based Tankers/AWACS.
 --   - Off-duty tankers/AWACS show up in radio menu under -8 callsigns.
 --   - ACLS does not work for CVN-70 (USS Carl Vincent, apparently not a 'real' DCS SuperCarrier).
-
-MAPSOP_VERSION = "20220917.1"
 
 env.info("=== Loading 51stMapSOP v" .. MAPSOP_VERSION .. " ===")
 
@@ -92,6 +92,10 @@ ENUMS.SupportUnitTemplateFields = {
     CHAFF       = 4,
     GUNS        = 5
 }
+
+-- BASE:TraceOnOff(false)
+-- BASE:TraceClass("SPAWN")
+-- BASE:TraceLevel(3)
 
 -- Loadouts for different support aircraft
 ENUMS.SupportUnitTemplate = {
@@ -188,14 +192,32 @@ function TEMPLATE.SetPayload(Template, Fuel, Flare, Chaff, Gun, Pylons, UnitNum)
 end
 
 local SupportBeacons = {}
-local SpawnSchedule = {}
 
 function ServerPause()
+  BASE:I("ServerPause")
+  BASE:I(net.dostring_in("gui", "return DCS.isServer()"))
+  BASE:I(net.dostring_in("gui", "return DCS.isMultiplayer()"))
+  BASE:I(net.dostring_in("gui", "return DCS.getPause()"))
+  SET_CLIENT:New():FilterOnce():ForEach(function() BASE:I() end  , {})
+  if not net.dostring_in("gui", "return DCS.isServer()") or not net.dostring_in("gui", "return DCS.isMultiplayer()") then
+    return false
+  end
+  local modeltime = net.dostring_in("gui", "return DCS.getModelTime()")
+  if (not modeltime or tonumber(modeltime) <= 0) then
+    return false
+  end
   BASE:I("***Pausing server...***")
   return net.dostring_in("gui", "return DCS.setPause(true)")
 end
 
 function ServerUnpause()
+  if not net.dostring_in("gui", "return DCS.isServer()") or not net.dostring_in("gui", "return DCS.isMultiplayer()") then
+    return false
+  end
+  local modeltime = net.dostring_in("gui", "return DCS.getModelTime()")
+  if (not modeltime or tonumber(modeltime) <= 0) then
+    return false
+  end
   BASE:I("***Unpausing server...***")
   return net.dostring_in("gui", "return DCS.setPause(false)")
 end
@@ -725,13 +747,13 @@ function CARRIER:_ActivateBeacons()
   
     -- Activate TACAN.
     if self.TACANon then
-      self:I(self.lid..string.format("Activating TACAN Channel %d%s (%s)", self.TACANchannel, self.TACANmode, self.TACANmorse))
+      self:T(self.lid..string.format("Activating TACAN Channel %d%s (%s)", self.TACANchannel, self.TACANmode, self.TACANmorse))
       self.beacon:ActivateTACAN(self.TACANchannel, self.TACANmode, self.TACANmorse, true)
     end
   
     -- Activate ICLS.
     if self.ICLSon then
-      self:I(self.lid..string.format("Activating ICLS Channel %d (%s)", self.ICLSchannel, self.ICLSmorse))
+      self:T(self.lid..string.format("Activating ICLS Channel %d (%s)", self.ICLSchannel, self.ICLSmorse))
       self.beacon:ActivateICLS(self.ICLSchannel, self.ICLSmorse)
     end
   
@@ -1467,28 +1489,314 @@ function InitSupportBases()
     return SupportBase, RedSupportBase, AircraftCarriers
 end
 
+function ManageFlightsMenuWrapper(ParamTable)
+  -- Arguments-as-table for MENU_COMMAND friendliness
+  local SpawnGroup, SupportUnit, NewTrack
+  SpawnGroup = ParamTable[1]
+  SupportUnit = ParamTable[2]
+  NewTrack = ParamTable[3]
+  ManageFlights( SpawnGroup, SupportUnit, NewTrack )
+end
+
+function ManageFlights( SpawnGroup, SupportUnit, NewTrack )
+
+  -- Arguments-as-table for MENU_COMMAND friendliness
+
+
+  BASE:I(SupportUnit)
+  BASE:I(SUPPORTUNITS["_"][SupportUnit].UnlimitedAirframes)
+
+  local supportunitfields, track, newtrack
+
+  if NewTrack and SUPPORTUNITS[NewTrack] and SUPPORTUNITS[NewTrack][SupportUnit] then
+    supportunitfields = SUPPORTUNITS[NewTrack][SupportUnit]
+    track = NewTrack
+    newtrack = true
+  else
+    track = CURRENTUNITTRACK[SupportUnit] or "_"
+    supportunitfields = SUPPORTUNITS[track][SupportUnit] or SUPPORTUNITS["_"][SupportUnit]
+    newtrack = nil
+  end
+
+  ---local SupportUnitInfo = supportunitfields[ENUMS.SupportUnitFields.TEMPLATE]
+
+  local Spawn = SUPPORTUNITS["_"][SupportUnit].Spawn
+  local UnlimitedAirframes = SUPPORTUNITS["_"][SupportUnit].UnlimitedAirframes
+  local SupportBase = SUPPORTUNITS["_"][SupportUnit].SupportBase
+
+  local OrbitPt1 = supportunitfields.CoordP1
+  local OrbitPt2 = supportunitfields.CoordP2
+
+  local OrbitLeg, OrbitPt, OrbitDir
+  if OrbitPt1 and OrbitPt2 then
+      OrbitLeg = UTILS.MetersToNM( OrbitPt1:Get2DDistance(OrbitPt2) )
+      OrbitPt = OrbitPt1
+      OrbitDir = OrbitPt1:GetAngleDegrees( OrbitPt1:GetDirectionVec3( OrbitPt2 ) )
+  end
+
+  local Mission = nil
+  local unittype = supportunitfields[ENUMS.SupportUnitFields.TYPE]
+
+  --local RouteToMission = nil
+  local FlightGroup
+  if SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup and SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup:IsAlive() 
+    and SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup:GetGroup():GetName() == SpawnGroup:GetName() then
+    FlightGroup = SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup
+  else
+    FlightGroup = FLIGHTGROUP:New(SpawnGroup)
+  end
+
+  if not SupportBase then
+    SupportBase = FlightGroup:GetClosestAirbase()
+  end
+
+  -- Set Radios / TACANS / Callsigns for off-mission support units
+  function FlightGroup:PrePostMissionSettings()
+    if supportunitfields.invisible then
+      BASE:I("Setting " .. SpawnGroup:GetName() .. " invisible to AI.")
+      SpawnGroup:SetCommandInvisible(supportunitfields.invisible)
+    end
+    if SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup and SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup:IsAlive() 
+        and SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup:GetName() ~= self:GetName() then
+      
+      BASE:I("PrePostMissionSettings " .. self:GetName())
+
+      self:SwitchRadio(258.0)
+      self:GetGroup():CommandSetCallsign(supportunitfields[ENUMS.SupportUnitFields.CALLSIGN], 8)
+
+      if unittype ~= ENUMS.UnitType.AWACS then
+        self:SwitchTACAN( 58, "OFF", FlightGroup:GetUnit(), "Y")
+        self:TurnOffTACAN()
+      end
+    end
+    return self
+  end
+
+  if not NewMission then
+    FlightGroup:PrePostMissionSettings()
+  end
+
+  if supportunitfields then
+    -- Tanker/AWACS Support Mission
+    if unittype == ENUMS.UnitType.AWACS then
+        Mission=AUFTRAG:NewAWACS(OrbitPt, supportunitfields[ENUMS.SupportUnitFields.ALTITUDE], 
+          UTILS.KnotsToAltKIAS(SupportUnitFields[ENUMS.SupportUnitFields.SPEED], 
+          supportunitfields[ENUMS.SupportUnitFields.ALTITUDE]), OrbitDir, OrbitLeg)
+    else
+        Mission=AUFTRAG:NewTANKER(OrbitPt, supportunitfields[ENUMS.SupportUnitFields.ALTITUDE], 
+          UTILS.KnotsToAltKIAS(supportunitfields[ENUMS.SupportUnitFields.SPEED], 
+          supportunitfields[ENUMS.SupportUnitFields.ALTITUDE]), OrbitDir, OrbitLeg, 
+          supportunitfields[ENUMS.SupportUnitFields.REFUELINGSYSTEM])
+    end
+    Mission.missionAltitude=Mission.orbitAltitude
+
+    function Mission:OnAfterExecuting(From, Event, To)
+      self:I("Executing mission " .. self:GetName() .. ".")
+
+      if FlightGroup ~= SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup then 
+        if SUPPORTUNITS["_"][SupportUnit].PreviousMission.mission then --and SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup then
+          SUPPORTUNITS["_"][SupportUnit].PreviousMission.mission:I("Relief flight on station " .. SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup:GetName() .. " is RTB.")
+          SUPPORTUNITS["_"][SupportUnit].PreviousMission.mission:Success()
+          SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup:RTB(SupportBase)
+
+          if unittype ~= ENUMS.UnitType.AWACS then
+            -- Stop relieved flight's TACAN schedule
+            if SUPPORTUNITS["_"][SupportUnit].TacanScheduler and SUPPORTUNITS["_"][SupportUnit].TacanScheduleID then
+              SUPPORTUNITS["_"][SupportUnit].TacanScheduler:Stop(SUPPORTUNITS["_"][SupportUnit].TacanScheduleID)
+            end
+            SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup:PrePostMissionSettings()
+          end
+        end
+      end
+
+      if newtrack and SUPPORTUNITS["_"][SupportUnit].PreviousMission.mission then
+        SUPPORTUNITS["_"][SupportUnit].PreviousMission.mission:Success()
+      end
+      SUPPORTUNITS["_"][SupportUnit].PreviousMission.mission = self
+      SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup = FlightGroup
+
+      SpawnGroup:CommandSetCallsign(supportunitfields[ENUMS.SupportUnitFields.CALLSIGN], supportunitfields[ENUMS.SupportUnitFields.CALLSIGN_NUM])
+      FlightGroup:SwitchRadio(tonumber(supportunitfields[ENUMS.SupportUnitFields.RADIOFREQ]))
+
+      if unittype ~= ENUMS.UnitType.AWACS then
+        -- Start Tacan after 1 second and every 5 minutes
+        if SUPPORTUNITS["_"][SupportUnit].TacanScheduler and SUPPORTUNITS["_"][SupportUnit].TacanScheduleID then
+          SUPPORTUNITS["_"][SupportUnit].TacanScheduler:Stop(SUPPORTUNITS["_"][SupportUnit].TacanScheduleID)
+        end
+        SUPPORTUNITS["_"][SupportUnit].TacanScheduler, SUPPORTUNITS["_"][SupportUnit].TacanScheduleID = SCHEDULER:New( nil, 
+            function( TacanFlightGroup )
+                BASE:I(TacanFlightGroup.lid..string.format(" %s: Activating TACAN Channel %d%s (%s)", TacanFlightGroup:GetName(), 
+                supportunitfields[ENUMS.SupportUnitFields.TACANCHAN], supportunitfields[ENUMS.SupportUnitFields.TACANBAND], supportunitfields[ENUMS.SupportUnitFields.TACANMORSE]))
+                TacanFlightGroup:SwitchTACAN( supportunitfields[ENUMS.SupportUnitFields.TACANCHAN],
+                                              supportunitfields[ENUMS.SupportUnitFields.TACANMORSE],
+                                              FlightGroup:GetUnit(),
+                                              supportunitfields[ENUMS.SupportUnitFields.TACANBAND])
+            end, { SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup }, 1, 300
+        )
+      end
+
+    end --Mission:OnAfterExecuting
+
+    local tracktemp = track
+    if track == '_' then
+      tracktemp = 'Default'
+    end
+
+    -- SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup = FlightGroup
+    Mission:SetName(FlightGroup:GetName() .. "-" .. tracktemp .. "-ID:#" .. Mission.auftragsnummer )
+
+    BASE:I(track)
+    BASE:I(SupportUnit)
+
+    -- if SUPPORTUNITS[track] and SUPPORTUNITS[track][SupportUnit] and not SUPPORTUNITS[track][SupportUnit].Mission then
+    --   BASE:I()
+    --   SUPPORTUNITS[track][SupportUnit].Mission = Mission
+    -- end
+  else
+    self:E("Support Unit Info Not Found -- track: " .. track .. " Support Unit: " .. SupportUnit)
+  end
+
+  FlightGroup:SetFuelLowRefuel(false)
+        :AddMission( Mission )
+        :SetFuelLowThreshold(math.random(30,35))  
+        :SetFuelLowRTB(false)
+        :SetFuelCriticalThreshold(15)
+        :SetFuelCriticalRTB(true)
+        :SetDefaultSpeed(350)
+        :SetHomebase(SupportBase)
+        :SetDestinationbase(SupportBase)
+        :SetDefaultTACAN( supportunitfields[ENUMS.SupportUnitFields.TACANCHAN],
+                          supportunitfields[ENUMS.SupportUnitFields.TACANMORSE],
+                          FlightGroup:GetUnit(),
+                          supportunitfields[ENUMS.SupportUnitFields.TACANBAND],
+                          true)
+        :PrePostMissionSettings()
+
+  function FlightGroup:OnAfterMissionStart(From, Event, To, Mission)
+    -- Set things to the pre-executing mission values
+    self:PrePostMissionSettings()
+    return self
+  end
+
+  function FlightGroup:OnAfterMissionDone(From, Event, To, Mission)
+    -- Set things to the pre-executing mission values
+    self:PrePostMissionSettings()
+    return self
+  end
+
+  -- function FlightGroup:OnAfterDestroyed(From, Event, To)
+  --   self:I(self:GetName() .. " destroyed, launching relief flight.")
+  --   Spawn:SpawnAtAirbase( SupportBase, SPAWN.Takeoff.Cold, nil, AIRBASE.TerminalType.OpenBig, true )
+  -- end
+
+  function FlightGroup:OnAfterElementDead(From, Event, To, Element)
+    BASE:I(FlightGroup:GetName() .. " OnAfterElementDead()")
+    if FlightGroup:GetGroup():IsAlive() then
+      BASE:I(FlightGroup:GetGroup():GetName() .. " is Alive?")
+      BASE:I("First alive Spawn group for " .. Spawn.SpawnTemplatePrefix ..  " is: " .. Spawn:GetFirstAliveGroup():GetName() )
+    end
+    BASE:I(SupportUnit .. " is no longer alive, stopping TACAN.")
+    if SUPPORTUNITS["_"][SupportUnit].TacanScheduler and SUPPORTUNITS["_"][SupportUnit].TacanScheduleID then
+      SUPPORTUNITS["_"][SupportUnit].TacanScheduler:Stop(SUPPORTUNITS["_"][SupportUnit].TacanScheduleID)
+    end
+    FlightGroup:Destroy()
+    self:I("SpawnIndex: " .. Spawn.SpawnIndex)
+		self:I("SpawnCount: " ..  Spawn.SpawnCount)
+    self:I("AliveUnits: " .. Spawn.AliveUnits)
+    self:I("SpawnMaxUnitsAlive: " .. Spawn.SpawnMaxUnitsAlive)
+    self:I("SpawnMaxGroups: " .. Spawn.SpawnMaxGroups)
+
+    Spawn:FixAliveGroupCount()
+  end
+
+  function FlightGroup:OnAfterDead(From, Event, To)
+    BASE:I(FlightGroup:GetName() .. " OnAfterDead()")
+    if FlightGroup:GetGroup():IsAlive() then
+      BASE:I(FlightGroup:GetGroup():GetName() .. " is Alive?")
+      BASE:I("First alive Spawn group for " .. Spawn.SpawnTemplatePrefix ..  " is: " .. Spawn:GetFirstAliveGroup():GetName() )
+    end
+    self:I("SpawnIndex: " .. Spawn.SpawnIndex)
+		self:I("SpawnCount: " ..  Spawn.SpawnCount)
+    self:I("AliveUnits: " .. Spawn.AliveUnits)
+    self:I("SpawnMaxUnitsAlive: " .. Spawn.SpawnMaxUnitsAlive)
+    self:I("SpawnMaxGroups: " .. Spawn.SpawnMaxGroups)
+  end
+
+  function FlightGroup:OnAfterFuelLow(From, Event, To)
+    self:I(self:GetName() .. " fuel low, launching relief flight.")
+    local FirstGroup = Spawn:GetFirstAliveGroup()
+    local LastGroup = Spawn:GetLastAliveGroup()
+    if FirstGroup:IsAlive() then
+      self:I("First Group: " .. FirstGroup:GetName() .. " is Alive.")
+    else
+      self:I("First Group: " .. FirstGroup:GetName() .. " is not Alive.")
+    end
+    if LastGroup:IsAlive() then
+      self:I("Last Group: " .. LastGroup:GetName() .. " is Alive.")
+    else
+      self:I("Last Group: " .. LastGroup:GetName() .. " is not Alive.")
+    end
+    self:I("SpawnIndex: " .. Spawn.SpawnIndex)
+		self:I("SpawnCount: " ..  Spawn.SpawnCount)
+    self:I("AliveUnits: " .. Spawn.AliveUnits)
+    self:I("SpawnMaxUnitsAlive: " .. Spawn.SpawnMaxUnitsAlive)
+    self:I("SpawnMaxGroups: " .. Spawn.SpawnMaxGroups)
+    Spawn:FixAliveGroupCount()
+    self:I("Fixed AliveUnits: " .. Spawn.AliveUnits)
+    local SpawnedGroup = Spawn:SpawnAtAirbase( SupportBase, SPAWN.Takeoff.Hot )
+    if SpawnedGroup then
+      self:I("Spawned group: " .. SpawnedGroup:GetName())
+    else
+      self:I("No group spawned.")
+    end
+
+  end
+
+  function FlightGroup:OnAfterArrived(From, Event, To)
+    -- Make airframe available again in 60 minutes if airframes limited.
+    if not UnlimitedAirframes then
+      local SupportUnitFields = SUPPORTUNITS["_"][SupportUnit]
+      local airframes = SupportUnitFields.airframes or 0
+      FlightGroup:I(FlightGroup:GetName() .. " landed, airframe will be refueling for 1 hour before operational. " .. airframes .. " airframes available for this mission.")
+      SCHEDULER:New( nil,
+        function()
+          if SupportUnitFields.airframes then
+            SUPPORTUNITS["_"][SupportUnit].airframes = tonumber(SupportUnitFields.airframes) + 1
+            Flight:InitLimit( 2, SUPPORTUNITS["_"][SupportUnit].airframes )
+          end
+          FlightGroup:I(FlightGroup:GetName() .. " refueled and airframe available for new tasking. " .. airframes .. " airframes available for this mission.")
+        end, {}, 3600)
+    end
+  end
+end
 
 function InitSupport( SupportBaseParam, RedSupportBase, InAir ) 
 
   for SupportUnit,SupportUnitFields in pairs(SUPPORTUNITS["_"]) do
 
+    BASE:I(SupportUnit)
+
     local SupportBase = SupportBaseParam
     local red = nil
     local UnitName = nil
     local NoRedSupportUnit = nil
-    local pattern = "^(RED)-" .. "(.*)"
-    local Scheduler = {}
-    Scheduler[SupportUnit] = {}
-    Scheduler[SupportUnit].Scheduler = nil 
-    Scheduler[SupportUnit].TacanScheduleID = nil
+    local pattern = "^([Rr][Ee][Dd])-" .. "(.*)"
 
     red, UnitName =  string.match(SupportUnit,  pattern)
+    if red then
+      red = string.upper(red)
+    end
 
     if red == "RED" then
+      red = true
       NoRedSupportUnit = UnitName
       SupportUnit = "RED-" .. UnitName
       SupportBase = RedSupportBase
+    else
+      red = nil
     end
+
+    BASE:I(SupportUnit)
 
     if not SUPPORTUNITS["_"][SupportUnit].PreviousMission then
       SUPPORTUNITS["_"][SupportUnit].PreviousMission = {}
@@ -1524,11 +1832,18 @@ function InitSupport( SupportBaseParam, RedSupportBase, InAir )
             local OrbitLeg = UTILS.MetersToNM( OrbitPt1:Get2DDistance(OrbitPt2) )
             local OrbitPt = OrbitPt1
             local OrbitDir = OrbitPt1:GetAngleDegrees( OrbitPt1:GetDirectionVec3( OrbitPt2 ) )
-
-            local SetSupportBase = SET_AIRBASE:New():FilterCoalitions("red"):FilterCoalitions("airdrome"):FilterOnce()
+            
+            local SetSupportBase
+            if red then
+              SetSupportBase = SET_AIRBASE:New():FilterCoalitions("red"):FilterCoalitions("airdrome"):FilterOnce()
+            else
+              SetSupportBase = SET_AIRBASE:New():FilterCoalitions("blue"):FilterCoalitions("airdrome"):FilterOnce()
+            end
+            
             if not SupportBase then
               SupportBase = SetSupportBase:FindNearestAirbaseFromPointVec2(POINT_VEC2:NewFromVec3(OrbitPt1:GetVec3()))
             end
+            SUPPORTUNITS["_"][SupportUnit].SupportBase = SupportBase
 
             local airframes = SupportUnitFields.airframes or '0'
             airframes = tonumber(airframes)
@@ -1540,213 +1855,92 @@ function InitSupport( SupportBaseParam, RedSupportBase, InAir )
             else
               BASE:I(SupportUnit .. ' available airframes set to ' .. tostring(airframes) .. '.')
             end
+
+            SUPPORTUNITS["_"][SupportUnit].UnlimitedAirframes = UnlimitedAirframes
             
-            local Flight = SPAWN:NewWithAlias(SupportUnit, SupportUnit .. " Flight")
+            local Spawn = SPAWN:NewWithAlias(SupportUnit, SupportUnit .. " Flight")
                 :InitLimit( 2, airframes )
                 :InitHeading(OrbitDir-180)
+
+            -- Apparent bug workaround... only written to handle single-unit tanker/awacs groups
+            function Spawn:FixAliveGroupCount()
+              self:F( { self.SpawnTemplatePrefix, self.SpawnAliasPrefix } )
+              
+              local alivecount=0
+              for SpawnIndex = self.SpawnCount, 1, -1 do -- Added
+                local SpawnGroup = self:GetGroupFromIndex( SpawnIndex )
+                if SpawnGroup and SpawnGroup:IsAlive() then
+                  alivecount = alivecount + 1 
+                end
+              end
+
+              if (self.AliveUnits ~= alivecount) then
+                self.AliveUnits = alivecount
+                self:I("New AliveUnits: " .. self.AliveUnits)
+              end
+              return self.AliveUnits
+            end
             
             if red then
-              Flight:InitCoalition(coalition.side.RED)
-              Flight:InitCountry(country.id.CJTF_RED)
+              Spawn:InitCoalition(coalition.side.RED)
+              Spawn:InitCountry(country.id.CJTF_RED)
             end
 
-            Flight:OnSpawnGroup(
-                    function( SpawnGroup, SupportUnit, SupportUnitInfo, Spawn, SupportBaseIn, OrbitLeg, OrbitPt, OrbitDir )
-
-                      BASE:I(SpawnGroup:GetName())
-                      BASE:I(SupportUnit)
-                      BASE:I(CURRENTUNITTRACK[SupportUnit])
-
-                      if SupportBaseIn then
-                        SupportBase = SupportBaseIn
-                      else
-                        SupportBase = self:GetClosestAirbase()
-                      end
-
-                      local SupportUnitFields = SUPPORTUNITS[CURRENTUNITTRACK[SupportUnit]][SupportUnit]
-
-                      --local RouteToMission = nil
-                      local FlightGroup = FLIGHTGROUP:New( SpawnGroup )
-
-                      -- Set Radios / TACANS / Callsigns for off-mission support units
-                      function FlightGroup:PrePostMissionSettings()
-                        if SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup and SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup:IsAlive() 
-                            and SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup:GetName() ~= self:GetName() then
-                          
-                          BASE:I("PrePostMissionSettings " .. self:GetName())
-                          self:SwitchRadio(258.0)
-                          self:GetGroup():CommandSetCallsign(SupportUnitFields[ENUMS.SupportUnitFields.CALLSIGN], 8)
-
-                          if SupportUnitInfo ~= ENUMS.SupportUnitTemplate.AWACS and
-                              SupportUnitInfo ~= ENUMS.SupportUnitTemplate.NAVYAWACS then
-                            self:SwitchTACAN( 58, "OFF", FlightGroup:GetUnit(), "Y")
-                            self:TurnOffTACAN()
-                          end
-                        end
-                        return self
-                      end
-
-                      FlightGroup:PrePostMissionSettings()
-
-                      if SupportUnitFields.invisible then
-                        BASE:I("Setting " .. SpawnGroup:GetName() .. " invisible to AI.")
-                      end
-
-                      SpawnGroup:SetCommandInvisible(SupportUnitFields.invisible)
-                      
-                      local track = CURRENTUNITTRACK[SupportUnit]
-                      local supportunitfields = SUPPORTUNITS[track][SupportUnit] or SUPPORTUNITS["_"][SupportUnit]
-                      local Mission = nil
-
-                      if supportunitfields then
-                        -- Tanker/AWACS Support Mission
-                        if SupportUnitInfo == ENUMS.SupportUnitTemplate.AWACS then
-                            Mission=AUFTRAG:NewAWACS(OrbitPt, supportunitfields[ENUMS.SupportUnitFields.ALTITUDE], 
-                              UTILS.KnotsToAltKIAS(SupportUnitFields[ENUMS.SupportUnitFields.SPEED], 
-                              supportunitfields[ENUMS.SupportUnitFields.ALTITUDE]), OrbitDir, OrbitLeg)
-                        else
-                            Mission=AUFTRAG:NewTANKER(OrbitPt, supportunitfields[ENUMS.SupportUnitFields.ALTITUDE], 
-                              UTILS.KnotsToAltKIAS(SupportUnitFields[ENUMS.SupportUnitFields.SPEED], 
-                              supportunitfields[ENUMS.SupportUnitFields.ALTITUDE]), OrbitDir, OrbitLeg, 
-                              supportunitfields[ENUMS.SupportUnitFields.REFUELINGSYSTEM])
-                        end
-                        Mission.missionAltitude=Mission.orbitAltitude
-                        --Mission:SetRadio(SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ])
-                        Mission:SetName( "Mission " .. FlightGroup:GetName() .. " - MissionID: " .. Mission.auftragsnummer)
-                        Mission:SetVerbosity(99)
-
-                        function Mission:OnAfterExecuting(From, Event, To)
-                          self:I("Executing mission " .. self:GetName() .. ".")
-
-                          if FlightGroup ~= SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup then 
-                            if SUPPORTUNITS["_"][SupportUnit].PreviousMission.mission then --and SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup then
-                              SUPPORTUNITS["_"][SupportUnit].PreviousMission.mission:I("Relief flight on station " .. SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup:GetName() .. " is RTB.")
-                              SUPPORTUNITS["_"][SupportUnit].PreviousMission.mission:Success()
-                              SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup:RTB(SupportBase)
-
-                              if SupportUnitInfo ~= ENUMS.SupportUnitTemplate.AWACS and
-                                    SupportUnitInfo ~= ENUMS.SupportUnitTemplate.NAVYAWACS then
-                                -- Stop relieved flight's TACAN schedule
-                                if Scheduler[SupportUnit].Scheduler and Scheduler[SupportUnit].TacanScheduleID then
-                                  Scheduler[SupportUnit].Scheduler:Stop(Scheduler[SupportUnit].TacanScheduleID)
-                                end
-                                SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup:PrePostMissionSettings()
-                              end
-                            end
-                          end
-                          SUPPORTUNITS["_"][SupportUnit].PreviousMission.mission = self
-                          SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup = FlightGroup
-
-                          SpawnGroup:CommandSetCallsign(supportunitfields[ENUMS.SupportUnitFields.CALLSIGN], supportunitfields[ENUMS.SupportUnitFields.CALLSIGN_NUM])
-                          FlightGroup:SwitchRadio(tonumber(supportunitfields[ENUMS.SupportUnitFields.RADIOFREQ]))
-
-                          if SupportUnitInfo ~= ENUMS.SupportUnitTemplate.AWACS and
-                            SupportUnitInfo ~= ENUMS.SupportUnitTemplate.NAVYAWACS then
-                            -- Start Tacan after 1 second and every 5 minutes
-                            Scheduler[SupportUnit].Scheduler, Scheduler[SupportUnit].TacanScheduleID = SCHEDULER:New( nil, 
-                                function( TacanFlightGroup )
-                                    BASE:I(TacanFlightGroup.lid..string.format(" %s: Activating TACAN Channel %d%s (%s)", TacanFlightGroup:GetName(), 
-                                    supportunitfields[ENUMS.SupportUnitFields.TACANCHAN], supportunitfields[ENUMS.SupportUnitFields.TACANBAND], supportunitfields[ENUMS.SupportUnitFields.TACANMORSE]))
-                                    TacanFlightGroup:SwitchTACAN( supportunitfields[ENUMS.SupportUnitFields.TACANCHAN],
-                                                                  supportunitfields[ENUMS.SupportUnitFields.TACANMORSE],
-                                                                  FlightGroup:GetUnit(),
-                                                                  supportunitfields[ENUMS.SupportUnitFields.TACANBAND])
-                                end, { SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup }, 1, 300
-                            )
-                          end
-
-                        end --Mission:OnAfterExecuting
-
-                        local tracktemp = track
-                        if track == '_' then
-                          tracktemp = 'Default'
-                        end
-                        Mission:SetName(FlightGroup:GetName() .. "-" .. tracktemp .. "-ID:#" .. Mission.auftragsnummer )
-
-                        BASE:I(track)
-                        BASE:I(SupportUnit)
-
-                        -- if SUPPORTUNITS[track] and SUPPORTUNITS[track][SupportUnit] and not SUPPORTUNITS[track][SupportUnit].Mission then
-                        --   BASE:I()
-                        --   SUPPORTUNITS[track][SupportUnit].Mission = Mission
-                        -- end
-                      else
-                        self:E("Support Unit Info Not Found -- track: " .. track .. " Support Unit: " .. SupportUnit)
-                      end
-
-
-                      FlightGroup:SetFuelLowRefuel(false)
-                            :AddMission( Mission )
-                            :SetFuelLowThreshold(math.random(25,30))  
-                            :SetFuelLowRTB(false)
-                            :SetFuelCriticalThreshold(15)
-                            :SetFuelCriticalRTB(true)
-                            :SetDefaultSpeed(350)
-                            :SetHomebase(SupportBase)
-                            :SetDestinationbase(SupportBase)
-                            :SetDefaultTACAN( SupportUnitFields[ENUMS.SupportUnitFields.TACANCHAN],
-                                              SupportUnitFields[ENUMS.SupportUnitFields.TACANMORSE],
-                                              FlightGroup:GetUnit(),
-                                              SupportUnitFields[ENUMS.SupportUnitFields.TACANBAND],
-                                              true)
-                            :PrePostMissionSettings()
-
-                      function FlightGroup:OnAfterMissionStart(From, Event, To, Mission)
-                        -- Set things to the pre-executing mission values
-                        self:PrePostMissionSettings()
-                        return self
-                      end
-
-                      function FlightGroup:OnAfterMissionDone(From, Event, To, Mission)
-                        -- Set things to the pre-executing mission values
-                        self:PrePostMissionSettings()
-                        return self
-                      end
-
-                      function FlightGroup:OnAfterDestroyed(From, Event, To)
-                          self:I(self:GetName() .. " destroyed, launching relief flight.")
-                          Spawn:SpawnAtAirbase( SupportBase, SPAWN.Takeoff.Cold, nil, AIRBASE.TerminalType.OpenBig, true )
-                      end
-
-                      function FlightGroup:OnAfterFuelLow(From, Event, To)
-                        self:I(self:GetName() .. " fuel low, launching relief flight.")
-                        Spawn:SpawnAtAirbase( SupportBase, SPAWN.Takeoff.Hot, nil, AIRBASE.TerminalType.OpenBig, true )
-                      end
-
-                      function FlightGroup:OnAfterArrived(From, Event, To)
-                        -- Make airframe available again in 60 minutes if airframes limited.
-                        if not UnlimitedAirframes then
-                          FlightGroup:I(FlightGroup:GetName() .. " landed, airframe will be refueling for 1 hour before operational. " .. airframes .. " airframes available for this mission.")
-                          SCHEDULER:New( nil,
-                            function()
-                              if SupportUnitFields.airframes  then
-                                SupportUnitFields.airframes = tonumber(SupportUnitFields.airframes) + 1
-                                airframes = tonumber(SupportUnitFields.airframes)
-                                Flight:InitLimit( 2, airframes )
-                              end
-                              FlightGroup:I(FlightGroup:GetName() .. " refueled and airframe available for new tasking. " .. airframes .. " airframes available for this mission.")
-                            end, {}, 3600)
-                        end
-                      end
-                    end, SupportUnit, SupportUnitInfo, Flight, SupportBase, OrbitLeg, OrbitPt, OrbitDir
+            BASE:I(SupportUnit)
+            BASE:I(SUPPORTUNITS["_"][SupportUnit].UnlimitedAirframes)
+            Spawn:OnSpawnGroup(
+                    --ManageFlights, SupportUnit, SupportUnitInfo, Spawn, SupportBase, OrbitLeg, OrbitPt, OrbitDir, UnlimitedAirframes, Scheduler, nil
+                    ManageFlights, SupportUnit, nil
                   )
-            if SpawnSchedule[SupportUnit] == nil then
-              SpawnSchedule[SupportUnit] = SCHEDULER:New( nil,
+            SUPPORTUNITS["_"][SupportUnit].Spawn = Spawn
+            if SUPPORTUNITS["_"][SupportUnit].Scheduler == nil then
+              SUPPORTUNITS["_"][SupportUnit].Scheduler, SUPPORTUNITS["_"][SupportUnit].ScheduleID = SCHEDULER:New( nil,
                 function()
-                  if (Flight:GetFirstAliveGroup() == nil) then
+                  if (Spawn:GetFirstAliveGroup() == nil) then
+                    Spawn:FixAliveGroupCount()
                     if InAir and not SupportUnitFields[ ENUMS.SupportUnitFields.GROUNDSTART ] and not ( timer.getAbsTime()-timer.getTime0() > 30 ) then
-                      Flight:InitAirbase(SupportBase, SPAWN.Takeoff.Hot)
+                      Spawn:InitAirbase(SupportBase, SPAWN.Takeoff.Hot)
                       local SpawnPt = OrbitPt:Translate( UTILS.NMToMeters(3), OrbitDir-30, true, false)
                         :SetAltitude(UTILS.FeetToMeters(SupportUnitFields[ENUMS.SupportUnitFields.ALTITUDE]+100), false)
-                      Flight:SpawnFromCoordinate(SpawnPt)
+                      Spawn:SpawnFromCoordinate(SpawnPt)
                     else
-                      Flight:SpawnAtAirbase( SupportBase, SPAWN.Takeoff.Hot, nil, AIRBASE.TerminalType.OpenBig, true )
+                      Spawn:SpawnAtAirbase( SupportBase, SPAWN.Takeoff.Hot)
                     end
                   end
                 end, {}, 1, 60)
             end
+            
         end
     end 
+  end
+
+  -- Fix update menu on mission start.
+  BASE:I("***Menu Setup***")
+  local TankerMenu = MENU_MISSION:New("Tanker Command")
+  local AWACSMenu = MENU_MISSION:New("AWACS Command")
+  for Track,SupportUnits in pairs(SUPPORTUNITS) do
+    for SupportUnit,SupportUnitFields in pairs(SupportUnits) do
+      local menu = nil
+      if SupportUnitFields[ENUMS.SupportUnitFields.TYPE] == ENUMS.UnitType.TANKER then
+        BASE:I(SupportUnit .. " is type " .. ENUMS.UnitType.TANKER)
+        menu = TankerMenu
+      elseif SupportUnitFields[ENUMS.SupportUnitFields.TYPE] == ENUMS.UnitType.AWACS then
+        BASE:I(SupportUnit .. " is type " .. ENUMS.UnitType.AWACS)
+        menu = AWACSMenu
+      end
+      if menu then
+        local track = "Initial"
+        if Track ~= "_" then
+          track = Track
+        end
+        if track ~= "Initial" then 
+          BASE:I("Adding menu for " .. SupportUnit .. " track " .. track .. " type " .. " " .. SupportUnitFields[ENUMS.SupportUnitFields.TYPE])
+          if SUPPORTUNITS["_"][SupportUnit].PreviousMission.mission then
+            MENU_COALITION_COMMAND:New(coalition.side.BLUE, SupportUnit .. " push track " .. track, menu, ManageFlightsMenuWrapper, {SUPPORTUNITS["_"][SupportUnit].PreviousMission.mission:GetGroup(), SupportUnit, track} )
+          end
+        end
+      end
+    end
   end
 end
 
@@ -1792,10 +1986,10 @@ function InitNavySupport( AircraftCarriers, CarrierMenu, InAir )
 
                   local ScheduleRecoveryTankerTacanStart = SCHEDULER:New( nil, 
                       function( tanker )
-                          BASE:I(tanker.lid..string.format(" %s: Activating TACAN Channel %d%s (%s)", SupportUnit, 
+                          BASE:T(tanker.lid..string.format(" %s: Activating TACAN Channel %d%s (%s)", SupportUnit, 
                             tanker.TACANchannel, tanker.TACANmode, tanker.TACANmorse))
                           tanker:_ActivateTACAN()
-                          BASE:I(tanker.lid..string.format(" %s: Set callsign", SupportUnit))
+                          BASE:T(tanker.lid..string.format(" %s: Set callsign", SupportUnit))
                           tanker:SetCallsign(SupportUnitFields[ENUMS.SupportUnitFields.CALLSIGN], SupportUnitFields[ENUMS.SupportUnitFields.CALLSIGN_NUM])
                       end, { tanker }, 300, 300
                   )
@@ -2016,8 +2210,6 @@ local AirStart = SupportFlightAirStart or true
 
 local CarrierMenu = nil
 local TacanMenu = MENU_MISSION:New("TACANs")
-local TankerMenu = MENU_MISSION:New("Tanker Command")
-local AWACSMenu = MENU_MISSION:New("AWACS Command")
 AUXTRACKS = {}
 
 -- Initialize Airbase & Carriers
@@ -2103,7 +2295,9 @@ if tonumber(PauseTime) > 0 then
   )
   PauseScheduler = SCHEDULER:New( nil, 
   function()
-    if ClientSet:CountAlive() == 0 then
+    -- if ClientSet:CountAlive() == 0 then
+    BASE:I("Clients: " .. ClientSet:Count())
+    if ClientSet:Count() < 2 then
       if ConsecutiveNoAlive then
         ServerPause()
       else 
