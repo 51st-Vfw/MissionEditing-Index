@@ -167,7 +167,7 @@ There are basically three sets of rules a PvP mission can adopt,
 - _Contested Comms, No Disruption_ - Players may monitor known enemy frequencies that are
   in the clear (i.e., not encrypted) but are prohibited from disrupting or jamming those
   frequencies.
-- _Contest Comms_ - Players are free to use tactics that monitor, deny, or disrupt
+- _Contested Comms_ - Players are free to use tactics that monitor, deny, or disrupt
   enemy communications on frequencies that are in the clear.
 
 The specific boundaries must be communicated to the players during perparation, planning,
