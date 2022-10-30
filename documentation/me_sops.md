@@ -124,6 +124,64 @@ For an F-16C, typically ten minutes should be sufficient for slot to wheels up. 
 or populating the loadout in the mission editor can accelerate this timeline a little if the
 mission needs more rapid availability.
 
+## Communications in a Contested Environment
+
+When using PvP elements in a mission, the mission designer is responsible for setting the
+ground rules for denial or monitoring of communications by enemy forces. DCS can support
+communications tactics such as,
+
+- Denial of communications by "jamming" enemy communications (e.g., by broadcasting noise
+  over a known enemy frequency).
+- Monitoring of enemy communications by monitoring a known enemy frequncy for information.
+- Disruption of enemy communications by passing bad information on a known enemy
+  frequency.
+
+DCS also supports mitigations to these tactics such as encrypted communications, multiple
+frequencies, etc. Typically, 51st VFW servers are set up to allow all of these tactics.
+
+- _Encryption_ - Many airframes support encrypted communications to secure communications.
+  Keys for encrypted communications are assumed to be secret (though DCS only models fixed
+  keys that are effectively not secret) which implies that encryption will prevent denial,
+  disruption, or monitoring of an encrypted frequency even if it is known to the enemy.
+- _Brevity_ - To obfuscate information, a coalition may elect to use brevity to communicate
+  key events. This may make it more difficult for an enemy to gain information by monitoring
+  a knonwn frequency or disrupt by providing false information on a frequency.
+- _Backups_ - A coalition may define a set of frequencies for a particular purpose (e.g.,
+  tactical common, inter-flight) that it will switch between under known circumstances
+  (e.g., if communications are compromised, every N minutes).
+
+As DCS AI does not perform any of these tactics, these considerations primarily apply to
+missions that include a PvP element where red, for example, could potentially employ these
+techniques to gain an advantage over blue if they know or figure out a blue frequency. The
+mission designer should be clear on what is allowed and rely on the honor system for players
+to stay within the rules.
+
+> This document does not include information on how to employ these technicques and
+> mitigations. See the manuals for specific airframes for information on how to set up
+> encryption on the airframe's radios, for example.
+
+There are basically three sets of rules a PvP mission can adopt,
+
+- _Uncontested Comms_ - Players are prohibited from denying, disrupting, or monitoring
+  enemy communications.
+- _Contested Comms, No Disruption_ - Players may monitor known enemy frequencies that are
+  in the clear (i.e., not encrypted) but are prohibited from disrupting or jamming those
+  frequencies.
+- _Contest Comms_ - Players are free to use tactics that monitor, deny, or disrupt
+  enemy communications on frequencies that are in the clear.
+
+The specific boundaries must be communicated to the players during perparation, planning,
+and briefing so coalitions can develop communications plans to deal with the potential
+threats that are within the boundary of the mission.
+
+Note that there is tension between the goals of these SOPs (reducing the effort necessary to
+set up a mission, providing consistency for pilots from mission to mission) and secure
+communications. Fully embracing secure communications would imply that _all_+ frequencies are
+changed _every_ mission and there is no "SOP" for tactical common, a tanker, JTAC, etc. We
+expect the mission designer to balance this appropriately. Scrambling comms every mission
+adds a lot of work (mission setup, comms card reuse, etc.) without providing much value in
+PvE missions, for example.
+
 # Mission Setup SOPs
 
 This section covers a number of standard operating procedures (SOPs) mission designers should
@@ -203,6 +261,11 @@ For consistency, missions should follow the default comms plan wherever possible
 defaults can support a wide range of missions, missions may deviate based on their specific
 needs. Generally, the communications plan uses UHF for cross-wing communication and VHF
 for communication within a flight.
+
+> The communications plan provides the base setup for communications in the mission. It
+> does _not_ include mission-specific information such as encryption or backup frequencies
+> as these depend on the mission design goals. See the earlier discussion of communications
+> in a contested environment above.
 
 Both the 
 [51st VFW MapSOP script](https://github.com/51st-Vfw/MissionEditing-Index/tree/master/51stMapSOP)
