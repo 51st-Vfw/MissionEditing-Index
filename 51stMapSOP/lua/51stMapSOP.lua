@@ -1427,7 +1427,12 @@ function InitSupportBases()
           if IsRed then
             FullCallsign = "RED-" .. FullCallsign
           end
-          local P2 = ZONE:FindByName(FullCallsign .. "-P2")
+          local P2
+          if trackname == "_" then
+            P2 = ZONE:FindByName(FullCallsign .. "-P2")
+          else
+            P2 = ZONE:FindByName(FullCallsign .. "-P2 " .. trackname)
+          end
           if P2 and SUPPORTUNITS[trackname] and SUPPORTUNITS[trackname][ FullCallsign ] then
             SUPPORTUNITS[trackname][ FullCallsign ].CoordP2 = P2:GetCoordinate()
             SUPPORTUNITS[trackname][ FullCallsign ].zoneP2exists = true
@@ -1492,17 +1497,32 @@ end
 function ManageFlightsMenuWrapper(ParamTable)
   -- Arguments-as-table for MENU_COMMAND friendliness
   local SpawnGroup, SupportUnit, NewTrack
+  
   SpawnGroup = ParamTable[1]
+  local SpawnGroupText = SpawnGroup or ""
+  BASE:I("SpawnGroup: " .. SpawnGroupText)
   SupportUnit = ParamTable[2]
+  BASE:I("SupportUnit: " .. SupportUnit)
   NewTrack = ParamTable[3]
-  ManageFlights( SpawnGroup, SupportUnit, NewTrack )
+  BASE:I("NewTrack: " .. NewTrack)
+  ManageFlights( SpawnGroup, SupportUnit, NewTrack)
+  BASE:I("Post ManageFlights function.")
 end
 
-function ManageFlights( SpawnGroup, SupportUnit, NewTrack )
+function ManageFlights( SpawnGroupIn, SupportUnit, NewTrack )
+  local SpawnGroup = SpawnGroupIn
 
-  -- Arguments-as-table for MENU_COMMAND friendliness
-
-
+  if SpawnGroup == nil then
+    if SUPPORTUNITS["_"][SupportUnit].PreviousMission
+    and SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup 
+    and SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup:IsAlive() then
+      SpawnGroup = SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup:GetGroup()
+    else
+      BASE:I("ManageFlights: No group found for " .. SupportUnit .. " track " .. NewTrack .. ".")
+      return
+    end
+  end
+  
   BASE:I(SupportUnit)
   BASE:I(SUPPORTUNITS["_"][SupportUnit].UnlimitedAirframes)
 
@@ -1541,6 +1561,7 @@ function ManageFlights( SpawnGroup, SupportUnit, NewTrack )
   local FlightGroup
   if SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup and SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup:IsAlive() 
     and SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup:GetGroup():GetName() == SpawnGroup:GetName() then
+    BASE:I("Using existing flight group " .. SpawnGroup:GetName())
     FlightGroup = SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup
   else
     FlightGroup = FLIGHTGROUP:New(SpawnGroup)
@@ -1572,7 +1593,7 @@ function ManageFlights( SpawnGroup, SupportUnit, NewTrack )
     return self
   end
 
-  if not NewMission then
+  if not newtrack then
     FlightGroup:PrePostMissionSettings()
   end
 
@@ -1654,6 +1675,11 @@ function ManageFlights( SpawnGroup, SupportUnit, NewTrack )
     -- end
   else
     self:E("Support Unit Info Not Found -- track: " .. track .. " Support Unit: " .. SupportUnit)
+    return nil
+  end
+
+  if newtrack and FlightGroup and FlightGroup:IsAlive() then
+    FlightGroup:CancelAllMissions()
   end
 
   FlightGroup:SetFuelLowRefuel(false)
@@ -1914,34 +1940,36 @@ function InitSupport( SupportBaseParam, RedSupportBase, InAir )
     end 
   end
 
-  -- Fix update menu on mission start.
-  BASE:I("***Menu Setup***")
-  local TankerMenu = MENU_MISSION:New("Tanker Command")
-  local AWACSMenu = MENU_MISSION:New("AWACS Command")
-  for Track,SupportUnits in pairs(SUPPORTUNITS) do
-    for SupportUnit,SupportUnitFields in pairs(SupportUnits) do
-      local menu = nil
-      if SupportUnitFields[ENUMS.SupportUnitFields.TYPE] == ENUMS.UnitType.TANKER then
-        BASE:I(SupportUnit .. " is type " .. ENUMS.UnitType.TANKER)
-        menu = TankerMenu
-      elseif SupportUnitFields[ENUMS.SupportUnitFields.TYPE] == ENUMS.UnitType.AWACS then
-        BASE:I(SupportUnit .. " is type " .. ENUMS.UnitType.AWACS)
-        menu = AWACSMenu
-      end
-      if menu then
-        local track = "Initial"
-        if Track ~= "_" then
-          track = Track
-        end
-        if track ~= "Initial" then 
-          BASE:I("Adding menu for " .. SupportUnit .. " track " .. track .. " type " .. " " .. SupportUnitFields[ENUMS.SupportUnitFields.TYPE])
-          if SUPPORTUNITS["_"][SupportUnit].PreviousMission.mission then
-            MENU_COALITION_COMMAND:New(coalition.side.BLUE, SupportUnit .. " push track " .. track, menu, ManageFlightsMenuWrapper, {SUPPORTUNITS["_"][SupportUnit].PreviousMission.mission:GetGroup(), SupportUnit, track} )
-          end
-        end
-      end
-    end
-  end
+
+  -- local SupportMenuSetup = SCHEDULER:New( nil, 
+  -- function ()
+  --     BASE:I("***Menu Setup***")
+
+  --     for Track,SupportUnits in pairs(SUPPORTUNITS) do
+  --       for SupportUnit,SupportUnitFields in pairs(SupportUnits) do
+  --         local menu = nil
+  --         if SupportUnitFields[ENUMS.SupportUnitFields.TYPE] == ENUMS.UnitType.TANKER then
+  --           BASE:I(SupportUnit .. " is type " .. ENUMS.UnitType.TANKER)
+  --           menu = TankerMenu
+  --         elseif SupportUnitFields[ENUMS.SupportUnitFields.TYPE] == ENUMS.UnitType.AWACS then
+  --           BASE:I(SupportUnit .. " is type " .. ENUMS.UnitType.AWACS)
+  --           menu = AWACSMenu
+  --         end
+  --         if menu then
+  --           local track = "Initial"
+  --           if Track ~= "_" then
+  --             track = Track
+  --           end
+  --           if track ~= "Initial" then 
+  --             BASE:I("Adding menu for " .. SupportUnit .. " track " .. track .. " type " .. SupportUnitFields[ENUMS.SupportUnitFields.TYPE])
+  --             if SUPPORTUNITS["_"][SupportUnit].PreviousMission.mission then
+  --               MENU_COALITION_COMMAND:New(coalition.side.BLUE, SupportUnit .. " push track " .. track, menu, ManageFlightsMenuWrapper, {SUPPORTUNITS["_"][SupportUnit].PreviousMission.mission:GetGroup(), SupportUnit, track} )
+  --             end
+  --           end
+  --         end
+  --       end
+  --     end
+  --   end, nil, 5, nil)
 end
 
 function InitNavySupport( AircraftCarriers, CarrierMenu, InAir )
@@ -2212,6 +2240,13 @@ local CarrierMenu = nil
 local TacanMenu = MENU_MISSION:New("TACANs")
 AUXTRACKS = {}
 
+-- Enable TACAN reset menu
+local TacanMenu1 = MENU_MISSION_COMMAND:New("Emergency TACAN reset", TacanMenu, EmergencyTacanReset, { SupportBeacons, Carriers } )
+local TankerMenu = MENU_COALITION:New(coalition.side.BLUE, "Tanker Command")
+local AWACSMenu = MENU_COALITION:New(coalition.side.BLUE, "AWACS Command")
+local RedTankerMenu = MENU_COALITION:New(coalition.side.RED, "Tanker Command")
+local RedAWACSMenu = MENU_COALITION:New(coalition.side.RED, "AWACS Command")
+
 -- Initialize Airbase & Carriers
 SupportBase, RedSupportBase, AircraftCarriers = InitSupportBases()
 
@@ -2224,23 +2259,86 @@ local SupportFlightScheduler = SCHEDULER:New( nil, InitSupportWings, {SupportBas
 -- Setup carrier and carrier group support units
 local Carriers = InitNavySupport(AircraftCarriers, CarrierMenu, AirStart)
 
-for track,trackvalues in pairs(SUPPORTUNITS) do
-  if track ~= "_" then
+for track,trackvalues in pairs(SUPPORTUNITS) do 
     for TrackFlight,TrackFlightValues in pairs(trackvalues) do
-      --BASE:I({track,TrackFlight,TrackFlightValues})
-      if not AUXTRACKS[TrackFlight] then
-        AUXTRACKS[TrackFlight] = {}
+      BASE:I("Track added:")
+      BASE:I({TrackFlight,track})
+      if track ~= "_" then
+        --BASE:I({track,TrackFlight,TrackFlightValues})
+        if not AUXTRACKS[TrackFlight] then
+          AUXTRACKS[TrackFlight] = {}
+        end
+        AUXTRACKS[TrackFlight][track] = TrackFlightValues
+        BASE:I(AUXTRACKS[TrackFlight][track])
       end
-      AUXTRACKS[TrackFlight][track] = TrackFlightValues
-    BASE:I("Track added:")
-    BASE:I({TrackFlight,track})
-    BASE:I(AUXTRACKS[TrackFlight][track])
+
+  
+      --for Track,SupportUnits in pairs(SUPPORTUNITS) do
+      --for SupportUnit,SupportUnitFields in pairs(SupportUnits) do
+      local menu = nil
+      local side = coalition.side.BLUE
+
+      if string.find(TrackFlight, "^RED%-") then
+        side = coalition.side.RED
+      end
+
+      if TrackFlightValues[ENUMS.SupportUnitFields.TYPE] == ENUMS.UnitType.TANKER then
+        BASE:I(TrackFlight .. " is type " .. ENUMS.UnitType.TANKER)
+        if side == coalition.side.RED then
+          menu = RedTankerMenu
+        else
+          menu = TankerMenu
+        end
+      elseif TrackFlightValues[ENUMS.SupportUnitFields.TYPE] == ENUMS.UnitType.AWACS then
+        BASE:I(TrackFlight .. " is type " .. ENUMS.UnitType.AWACS)
+        if side == coalition.side.RED then
+          menu = RedAWACSMenu
+        else
+          menu = AWACSMenu
+        end
+      end
+      if menu then
+        local TrackText = "Initial"
+        if track and track ~= "_" then
+          TrackText = track
+        end
+        --if TrackText ~= "Initial" then 
+          BASE:I("Adding menu for " .. TrackFlight .. " track " .. TrackText .. " type " .. TrackFlightValues[ENUMS.SupportUnitFields.TYPE])
+          --if SUPPORTUNITS["_"][TrackFlight].PreviousMission.mission then
+          --- MENU_COALITION constructor. Creates a new radio command item for a coalition, which can invoke a function with parameters.
+          -- @param #MENU_COALITION_COMMAND self
+          -- @param DCS#coalition.side Coalition The coalition owning the menu.
+          -- @param #string MenuText The text for the menu.
+          -- @param Core.Menu#MENU_COALITION ParentMenu The parent menu.
+          -- @param CommandMenuFunction A function that is called when the menu key is pressed.
+          -- @param CommandMenuArgument An argument for the function. There can only be ONE argument given. So multiple arguments must be wrapped into a table. See the below example how to do this.
+          -- @return #MENU_COALITION_COMMAND
+          local MenuString = TrackFlight .. " push track " .. TrackText
+          BASE:I("Menu String: " .. MenuString)
+          BASE:I({side, MenuString, menu})
+          local spawngroup
+          if SUPPORTUNITS["_"][TrackFlight].PreviousMission
+             and SUPPORTUNITS["_"][TrackFlight].PreviousMission.mission
+             and SUPPORTUNITS["_"][TrackFlight].PreviousMission.mission:GetGroup() then
+                spawngroup = SUPPORTUNITS["_"][TrackFlight].PreviousMission.mission:GetGroup()
+          else
+                spawngroup = nil
+          end
+          BASE:I({spawngroup, TrackFlight, track})
+          if SUPPORTUNITS["_"][TrackFlight].Menu == nil then
+            SUPPORTUNITS["_"][TrackFlight].Menu = MENU_COALITION:New( side, TrackFlight, menu )
+          end
+          MENU_COALITION_COMMAND:New(side, MenuString, SUPPORTUNITS["_"][TrackFlight].Menu, ManageFlights, spawngroup, TrackFlight, track )
+          --end
+        --end
+      end
+
     end
-  end
 end
 
--- Enable TACAN reset menu
-local TacanMenu1 = MENU_MISSION_COMMAND:New("Emergency TACAN reset", TacanMenu, EmergencyTacanReset, { SupportBeacons, Carriers } )
+-- SCHEDULER:New( nil, 
+--   ManageFlights, { nil, "Texaco6", "Alpha" }, 120
+-- )
 
 -- Setup either MANTIS or SKYNET IADS
 RedIADS = nil
