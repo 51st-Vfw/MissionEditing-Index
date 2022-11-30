@@ -156,7 +156,12 @@ ENUMS.SupportUnitFields = {
     MODEX           =   13, -- 511 -- Number -- Board number, etc.
     REFUELINGSYSTEM =   14, -- ENUMS.RefuelingSystem.BOOM -- Tanker refueling system
     GROUNDSTART     =   15, -- false -- whether to takeoff from the gound (and no airspawn for carrier units)
-    TEMPLATE        =   16  -- ENUMS.SupportUnitTemplate.BOOMTANKER -- Unit template type
+    TEMPLATE        =   16,  -- ENUMS.SupportUnitTemplate.BOOMTANKER -- Unit template type
+    PUSHTIME        =   17   -- 300 -- Seconds after start to autopush track. Default/'SOP' is always nil.
+                             --        nil = Autostart default/initial track at mission start,
+                             --              never autopush other tracks (menu push only).
+                             --        0/  = Do not autostart default/initial track,
+                             --              never autopush other tracks (menu push only).
 }
 
 local SUPPORTUNITS = {}
@@ -225,6 +230,7 @@ function TEMPLATE.SetPayload(Template, Fuel, Flare, Chaff, Gun, Pylons, UnitNum)
     return Template
 end
 
+-- time hh:mm:ss mm:ss :ss or ss -- returns seconds in integers
 function time2sec( time )
 
   local timestring = time or 0
@@ -370,9 +376,10 @@ function UpdateFlightMenu(TrackFlight, track, oldtrack)
     --   SUPPORTUNITS[track][TrackFlight].Menu = MENU_COALITION:New( side, TrackFlight, menu )
     -- end
 
-    BASE:I({side, MenuString, "SUPPORTUNITS[_][TrackFlight].FlightMenu", "ManageFlights", spawngroup, TrackFlight, track})
+    BASE:I({side, MenuString, "SUPPORTUNITS[_][TrackFlight].FlightMenu", "ManageFlights", "spawngroup", TrackFlight, track, oldtrack})
 
     if oldtrack then
+      BASE:I("oldtrack " .. oldtrack .. " " .. TrackFlight)
       if SUPPORTUNITS[oldtrack][TrackFlight].Menu then
         SUPPORTUNITS[oldtrack][TrackFlight].Menu:Remove()
       end
@@ -380,11 +387,22 @@ function UpdateFlightMenu(TrackFlight, track, oldtrack)
         MENU_COALITION_COMMAND:New(side, OldMenuString, SUPPORTUNITS["_"][TrackFlight].FlightMenu, ManageFlights, spawngroup, TrackFlight, oldtrack )
     end
 
+    BASE:I("track " .. track .. " " .. TrackFlight)
     if SUPPORTUNITS[track][TrackFlight].Menu then
       SUPPORTUNITS[track][TrackFlight].Menu:Remove() 
     end
+    BASE:I("spawngroup, TrackFlight, track")
+    BASE:I(spawngroup)
+    BASE:I(TrackFlight)
+    BASE:I(track)
     SUPPORTUNITS[track][TrackFlight].Menu =
       MENU_COALITION_COMMAND:New(side, MenuString, SUPPORTUNITS["_"][TrackFlight].FlightMenu, ManageFlights, spawngroup, TrackFlight, track )
+
+    -- Enables flight spawning if not already
+    if SUPPORTUNITS["_"][TrackFlight].Scheduler and CURRENTUNITTRACK[TrackFlight] then
+      BASE:I("Starting scheduler for track " .. TrackFlight)
+      SUPPORTUNITS["_"][TrackFlight].Scheduler:Start()
+    end
   
     --menu:Refresh()
     return true
@@ -1279,7 +1297,8 @@ function InitSupportBases()
     INVISIBLE = "Invisible",
     IMMORTAL = "Immortal",
     AIRFRAMES = "Airframes",
-    GROUNDSTART = "GroundStart"
+    GROUNDSTART = "GroundStart",
+    PUSHTIME = "PushTime"
   }
 
 
@@ -1423,7 +1442,6 @@ function InitSupportBases()
                 end
                 if trackname == "_" then
                   BASE:I("Set CURRENTUNITTRACK to _ for " .. FullCallsign)
-                  CURRENTUNITTRACK[ FullCallsign ] = "_"
                   SUPPORTUNITS["_"][ FullCallsign ] = routines.utils.deepCopy(BASESUPPORTUNITS["_"][callsign .. template])
                 else
                   -- Initial "_" track will have already gone thanks to sort, so can copy it
@@ -1435,10 +1453,6 @@ function InitSupportBases()
                   end
                 end
                 SUPPORTUNITS[trackname][ FullCallsign ][ ENUMS.SupportUnitFields.CALLSIGN_NUM ] = num
-              else
-                if trackname == "_" then
-                  CURRENTUNITTRACK[ FullCallsign ] = "_"
-                end
               end
               
               local op,parsealt = string.match(token, "FL([mp]?)(%d+)")
@@ -1554,6 +1568,15 @@ function InitSupportBases()
                 groundstart = groundstart or nil
               end
 
+              local pushtime, pushtimeprop
+              pushtimeprop = P1ZoneObj:GetProperty(ENUMS.MapsopZoneProperties.PUSHTIME)
+              pushtime = time2sec(pushtimeprop)
+              
+              if trackname == '_' and not pushtimeprop then
+                CURRENTUNITTRACK[ FullCallsign ] = "_"
+              end
+
+
               airframes = airframes or string.match(token, "QTY(%d+)") or P1ZoneObj:GetProperty(ENUMS.MapsopZoneProperties.AIRFRAMES)
               if airframes and airframes == SOP then
                 airframes = airframes or nil
@@ -1602,6 +1625,11 @@ function InitSupportBases()
           if groundstart then
             BASE:I(FullCallsign .. " SOP override initial flight to ground takeoff.")
             SUPPORTUNITS[trackname][ FullCallsign ][ ENUMS.SupportUnitFields.GROUNDSTART ] = true
+          end
+
+          if pushtime and pushtime > 0 then
+            BASE:I(FullCallsign .. " SOP override push time to " .. pushtime .. " seconds.")
+            SUPPORTUNITS[trackname][ FullCallsign ][ ENUMS.SupportUnitFields.PUSHTIME ] = pushtime
           end
 
           if SUPPORTUNITS[trackname][ FullCallsign ][ ENUMS.SupportUnitFields.TACANCHAN ] then
@@ -1775,11 +1803,18 @@ end
 
 function ManageFlights( SpawnGroupIn, SupportUnit, NewTrack )
   local SpawnGroup = SpawnGroupIn
-
+  
   BASE:I(SpawnGroup)
-  BASE:I(SupportUnit)
+  BASE:I("ManageFlights for " .. SupportUnit)
   BASE:I(NewTrack)
   BASE:I(SUPPORTUNITS["_"][SupportUnit].PreviousMission)
+  BASE:I( CURRENTUNITTRACK[SupportUnit] )
+
+  -- if NewTrack and SUPPORTUNITS["_"][SupportUnit].Scheduler then
+  --   -- Noop if already started
+  --   BASE:I("Start scheduler for " .. SupportUnit)
+  --   SUPPORTUNITS["_"][SupportUnit].Scheduler:Start()
+  -- end
 
   if SpawnGroup == nil then
     if SUPPORTUNITS["_"][SupportUnit].PreviousMission
@@ -1788,6 +1823,13 @@ function ManageFlights( SpawnGroupIn, SupportUnit, NewTrack )
       SpawnGroup = SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup:GetGroup()
     else
       BASE:I("ManageFlights: No group found for " .. SupportUnit .. " track " .. NewTrack .. ".")
+      if NewTrack then
+        BASE:I("Starting scheduler for " .. SupportUnit .. " track " .. NewTrack)
+        local old = CURRENTUNITTRACK[SupportUnit]
+        CURRENTUNITTRACK[SupportUnit] = NewTrack
+        UpdateFlightMenu(SupportUnit, NewTrack, old)
+        SUPPORTUNITS["_"][SupportUnit].Scheduler:Start()
+      end
       return
     end
   end
@@ -1801,6 +1843,7 @@ function ManageFlights( SpawnGroupIn, SupportUnit, NewTrack )
     supportunitfields = SUPPORTUNITS[NewTrack][SupportUnit]
     track = NewTrack
     local oldtrack = CURRENTUNITTRACK[SupportUnit]
+    BASE:I({SupportUnit, track, oldtrack})
     newtrack = UpdateFlightMenu(SupportUnit, track, oldtrack)
     if not newtrack then
       BASE:I(SupportUnit .. " track not changed, already on track " .. track)
@@ -1808,7 +1851,14 @@ function ManageFlights( SpawnGroupIn, SupportUnit, NewTrack )
     end
     CURRENTUNITTRACK[SupportUnit] = track
   else
-    track = CURRENTUNITTRACK[SupportUnit] or "_"
+    track = CURRENTUNITTRACK[SupportUnit]
+    if not track then 
+      BASE:I("No track set for " .. SupportUnit .. " doing nothing.")
+      -- if SUPPORTUNITS["_"][SupportUnit].Scheduler then
+      --   SUPPORTUNITS["_"][SupportUnit].Scheduler
+      -- end
+      return
+    end
     supportunitfields = SUPPORTUNITS[track][SupportUnit] or SUPPORTUNITS["_"][SupportUnit]
     newtrack = nil
   end
@@ -1845,7 +1895,10 @@ function ManageFlights( SpawnGroupIn, SupportUnit, NewTrack )
     FlightGroup = SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup
   else
     FlightGroup = FLIGHTGROUP:New(SpawnGroup)
-    SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup = FlightGroup
+    BASE:I(FlightGroup:GetName())
+    if not SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup then
+      SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup = FlightGroup
+    end
   end
 
   if not SupportBase then
@@ -1911,7 +1964,11 @@ function ManageFlights( SpawnGroupIn, SupportUnit, NewTrack )
     function Mission:OnAfterExecuting(From, Event, To)
       self:I("Executing mission " .. self:GetName() .. ".")
 
+      BASE:I(self:GetOpsGroups()[1]:GetName())
+      BASE:I(FlightGroup:GetName())
+      BASE:I(SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup:GetName())
       if FlightGroup ~= SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup then 
+        BASE:I("No match")
         if SUPPORTUNITS["_"][SupportUnit].PreviousMission.mission then --and SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup then
           SUPPORTUNITS["_"][SupportUnit].PreviousMission.mission:I("Relief flight on station " .. SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup:GetName() .. " is RTB.")
           SUPPORTUNITS["_"][SupportUnit].PreviousMission.mission:Success()
@@ -1930,6 +1987,7 @@ function ManageFlights( SpawnGroupIn, SupportUnit, NewTrack )
       if newtrack and SUPPORTUNITS["_"][SupportUnit].PreviousMission.mission then
         SUPPORTUNITS["_"][SupportUnit].PreviousMission.mission:Success()
       end
+      BASE:I("Setting previous mission flight group to " .. FlightGroup:GetName())
       SUPPORTUNITS["_"][SupportUnit].PreviousMission.mission = self
       SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup = FlightGroup
 
@@ -2070,7 +2128,11 @@ function ManageFlights( SpawnGroupIn, SupportUnit, NewTrack )
     self:I("SpawnMaxGroups: " .. Spawn.SpawnMaxGroups)
     Spawn:FixAliveGroupCount()
     self:I("Fixed AliveUnits: " .. Spawn.AliveUnits)
-    local SpawnedGroup = Spawn:SpawnAtAirbase( SupportBase, SPAWN.Takeoff.Hot )
+    
+    local SpawnedGroup
+    if CURRENTUNITTRACK[SupportUnit] then
+      SpawnedGroup = Spawn:SpawnAtAirbase( SupportBase, SPAWN.Takeoff.Hot )
+    end
     if SpawnedGroup then
       self:I("Spawned group: " .. SpawnedGroup:GetName())
     else
@@ -2203,7 +2265,11 @@ function InitSupport( SupportBaseParam, RedSupportBase, InAir )
             end
             table.sort(MenuTable, function (k1, k2) return k1.track < k2.track end)
             if SUPPORTUNITS["_"][SupportUnit] then
-              table.insert(MenuTable, {unit=SupportUnit, track="_" })
+              if CURRENTUNITTRACK[SupportUnit] then
+                table.insert(MenuTable, {unit=SupportUnit, track="_" })
+              else
+                table.insert(MenuTable, 1, {unit=SupportUnit, track="_" })
+              end
             end
             BASE:I(MenuTable)
             for _,values in pairs(MenuTable) do
@@ -2242,23 +2308,30 @@ function InitSupport( SupportBaseParam, RedSupportBase, InAir )
                   )
             SUPPORTUNITS["_"][SupportUnit].Spawn = Spawn
             if SUPPORTUNITS["_"][SupportUnit].Scheduler == nil then
-              SUPPORTUNITS["_"][SupportUnit].Scheduler, SUPPORTUNITS["_"][SupportUnit].ScheduleID = SCHEDULER:New( nil,
-                function()
-                  if (Spawn:GetFirstAliveGroup() == nil) then
-                    Spawn:FixAliveGroupCount()
-                    if InAir and not SupportUnitFields[ ENUMS.SupportUnitFields.GROUNDSTART ] and not ( timer.getAbsTime()-timer.getTime0() > 30 ) then
-                      Spawn:InitAirbase(SupportBase, SPAWN.Takeoff.Hot)
-                      local SpawnPt = OrbitPt:Translate( UTILS.NMToMeters(3), OrbitDir-30, true, false)
-                        :SetAltitude(UTILS.FeetToMeters(SupportUnitFields[ENUMS.SupportUnitFields.ALTITUDE]+100), false)
-                      Spawn:SpawnFromCoordinate(SpawnPt)
-                    else
-                      Spawn:TraceOnOff( true )
-                      Spawn:TraceLevel(5)
-                      BASE:I(Spawn.SpawnTemplatePrefix)
-                      Spawn:SpawnAtAirbase( SupportBase, SPAWN.Takeoff.Hot)
+              --if CURRENTUNITTRACK[SupportUnit] then
+                SUPPORTUNITS["_"][SupportUnit].Scheduler, SUPPORTUNITS["_"][SupportUnit].ScheduleID = SCHEDULER:New( nil,
+                  function()
+                    if (Spawn:GetFirstAliveGroup() == nil) then
+                      Spawn:FixAliveGroupCount()
+                      if InAir and not SupportUnitFields[ ENUMS.SupportUnitFields.GROUNDSTART ] and not ( timer.getAbsTime()-timer.getTime0() > 30 ) then
+                        Spawn:InitAirbase(SupportBase, SPAWN.Takeoff.Hot)
+                        local SpawnPt = OrbitPt:Translate( UTILS.NMToMeters(3), OrbitDir-30, true, false)
+                          :SetAltitude(UTILS.FeetToMeters(SupportUnitFields[ENUMS.SupportUnitFields.ALTITUDE]+100), false)
+                        Spawn:SpawnFromCoordinate(SpawnPt)
+                      else
+                        Spawn:TraceOnOff( true )
+                        Spawn:TraceLevel(5)
+                        BASE:I(Spawn.SpawnTemplatePrefix)
+                        BASE:I(CURRENTUNITTRACK[SupportUnit])
+                        Spawn:SpawnAtAirbase( SupportBase, SPAWN.Takeoff.Hot)
+                      end
                     end
+                  end, {}, 1, 60)
+                  if not CURRENTUNITTRACK[SupportUnit] then
+                    BASE:I("Stopping scheduler for " .. SupportUnit)
+                    SUPPORTUNITS["_"][SupportUnit].Scheduler:Stop()
                   end
-                end, {}, 1, 60)
+              --end
             end
             
         end
