@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-23T11:57:54.0000000Z-fe9a5aea2a1aef5ad6f4feba5ad0df5b43741713 ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2022-11-30T17:37:28.0000000Z-2a8d166c54330c8423dee1e76e95d1636309b220 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -4366,6 +4366,8 @@ elseif theatre==DCSMAP.Syria then
 return 3
 elseif theatre==DCSMAP.MarianaIslands then
 return 10
+elseif theatre==DCSMAP.Falklands then
+return-3
 else
 BASE:E(string.format("ERROR: Unknown Map %s in UTILS.GMTToLocal function. Returning 0",tostring(theatre)))
 return 0
@@ -6051,7 +6053,7 @@ functionsGen={},
 functionsAny={},
 functionsAll={},
 }
-CONDITION.version="0.1.0"
+CONDITION.version="0.2.0"
 function CONDITION:New(Name)
 local self=BASE:Inherit(self,BASE:New())
 self.name=Name or"Condition X"
@@ -6144,6 +6146,38 @@ if arg then
 condition.arg=arg
 end
 return condition
+end
+function CONDITION.IsTimeGreater(Time,Absolute)
+local Tnow=nil
+if Absolute then
+Tnow=timer.getAbsTime()
+else
+Tnow=timer.getTime()
+end
+if Tnow>Time then
+return true
+else
+return false
+end
+return nil
+end
+function CONDITION.IsRandomSuccess(Probability)
+Probability=Probability or 50
+math.random()
+math.random()
+math.random()
+local N=math.random()*100
+if N<Probability then
+return true
+else
+return false
+end
+end
+function CONDITION.ReturnTrue()
+return true
+end
+function CONDITION.ReturnFalse()
+return false
 end
 DATABASE={
 ClassName="DATABASE",
@@ -9410,6 +9444,10 @@ function MESSAGE:ToAllIf(Condition)
 if Condition and Condition==true then
 self:ToAll()
 end
+return self
+end
+function MESSAGE:ToLog()
+env.info(self.MessageCategory..self.MessageText:gsub("\n$",""):gsub("\n$",""))
 return self
 end
 do
@@ -19779,7 +19817,7 @@ ay=7
 az=17
 end
 local _nspots=nspots or group:GetSize()
-self:E(string.format("%s: Looking for %d parking spot(s) for aircraft of size %.1f m (x=%.1f,y=%.1f,z=%.1f) at terminal type %s.",airport,_nspots,_aircraftsize,ax,ay,az,tostring(terminaltype)))
+self:T(string.format("%s: Looking for %d parking spot(s) for aircraft of size %.1f m (x=%.1f,y=%.1f,z=%.1f) at terminal type %s.",airport,_nspots,_aircraftsize,ax,ay,az,tostring(terminaltype)))
 local validspots={}
 local nvalid=0
 local _test=false
@@ -21676,7 +21714,7 @@ self:Route(route,DelaySeconds)
 return self
 end
 function CONTROLLABLE:TaskGroundOnRoad(ToCoordinate,Speed,OffRoadFormation,Shortcut,FromCoordinate,WaypointFunction,WaypointFunctionArguments)
-self:I({ToCoordinate=ToCoordinate,Speed=Speed,OffRoadFormation=OffRoadFormation,WaypointFunction=WaypointFunction,Args=WaypointFunctionArguments})
+self:T({ToCoordinate=ToCoordinate,Speed=Speed,OffRoadFormation=OffRoadFormation,WaypointFunction=WaypointFunction,Args=WaypointFunctionArguments})
 Speed=Speed or 20
 OffRoadFormation=OffRoadFormation or"Off Road"
 FromCoordinate=FromCoordinate or self:GetCoordinate()
@@ -43373,6 +43411,9 @@ RAT.ATC.flight[flight].Tonfinal=timer.getTime()
 trigger.action.setUserFlag(flight,1)
 local flagvalue=trigger.misc.getUserFlag(flight)
 local text1=string.format("ATC %s: Flight %s cleared for landing (flag=%d).",airport,flight,flagvalue)
+if string.find(flight,"#")then
+flight=string.match(flight,"^(.+)#")
+end
 local text2=string.format("ATC %s: Flight %s you are cleared for landing.",airport,flight)
 BASE:T(RAT.id..text1)
 MESSAGE:New(text2,10):ToAllIf(RAT.ATC.messages)
@@ -43392,6 +43433,9 @@ local TrafficPerHour=RAT.ATC.airport[dest].traffic/(timer.getTime()-RAT.ATC.T0)*
 local text1=string.format("ATC %s: Flight %s landed. Tholding = %i:%02d, Tfinal = %i:%02d.",dest,name,Thold/60,Thold%60,Tfinal/60,Tfinal%60)
 local text2=string.format("ATC %s: Number of flights still on final %d.",dest,RAT.ATC.airport[dest].Nonfinal)
 local text3=string.format("ATC %s: Traffic report: Number of planes landed in total %d. Flights/hour = %3.2f.",dest,RAT.ATC.airport[dest].traffic,TrafficPerHour)
+if string.find(name,"#")then
+name=string.match(name,"^(.+)#")
+end
 local text4=string.format("ATC %s: Flight %s landed. Welcome to %s.",dest,name,dest)
 BASE:T(RAT.id..text1)
 BASE:T(RAT.id..text2)
@@ -60271,7 +60315,7 @@ RSBNChannel={filename="RSBNChannel.ogg",duration=1.14},
 Zulu={filename="Zulu.ogg",duration=0.62},
 }
 _ATIS={}
-ATIS.version="0.9.11"
+ATIS.version="0.9.12"
 function ATIS:New(AirbaseName,Frequency,Modulation)
 local self=BASE:Inherit(self,FSM:New())
 self.airbasename=AirbaseName
@@ -60371,6 +60415,9 @@ else
 self.usemarker=false
 end
 return self
+end
+function ATIS:GetSRSText()
+return self.SRSText
 end
 function ATIS:SetRunwayHeadingsMagnetic(headings)
 if type(headings)=="table"then
@@ -61372,6 +61419,7 @@ local text=string.gsub(text,";"," . ")
 self:T("SRS TTS: "..text)
 local duration=STTS.getSpeechTime(text,0.95)
 self.msrsQ:NewTransmission(text,duration,self.msrs,nil,2)
+self.SRSText=text
 end
 end
 function ATIS:OnEventBaseCaptured(EventData)
@@ -73240,7 +73288,7 @@ CTLD.UnitTypes={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.19"
+CTLD.version="1.0.20"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -75002,6 +75050,7 @@ local timeout=self.droppedbeacontimeout or 600
 local livebeacontable={}
 for _,_beacon in pairs(self.droppedBeacons)do
 local beacon=_beacon
+if not beacon.timestamp then beacon.timestamp=timer.getTime()end
 local T0=beacon.timestamp
 if timer.getTime()-T0>timeout then
 local name=beacon.name
@@ -92926,7 +92975,7 @@ TARGETLOCATION="Zielposition",
 COORDINATE="Koordinate",
 },
 }
-PLAYERTASKCONTROLLER.version="0.1.49"
+PLAYERTASKCONTROLLER.version="0.1.50"
 function PLAYERTASKCONTROLLER:New(Name,Coalition,Type,ClientFilter)
 local self=BASE:Inherit(self,FSM:New())
 self.Name=Name or"CentCom"
@@ -93718,13 +93767,15 @@ self.TaskQueue:Push(task)
 self:__TaskAdded(10,task)
 return self
 end
-function PLAYERTASKCONTROLLER:AddPlayerTaskToQueue(PlayerTask)
+function PLAYERTASKCONTROLLER:AddPlayerTaskToQueue(PlayerTask,Silent)
 self:T(self.lid.."AddPlayerTaskToQueue")
 if PlayerTask and PlayerTask.ClassName and PlayerTask.ClassName=="PLAYERTASK"then
 PlayerTask:_SetController(self)
 PlayerTask:SetCoalition(self.Coalition)
 self.TaskQueue:Push(PlayerTask)
+if not Silent then
 self:__TaskAdded(10,PlayerTask)
+end
 else
 self:E(self.lid.."***** NO valid PAYERTASK object sent!")
 end
@@ -108049,7 +108100,7 @@ end
 end
 local Task=Tasks[math.random(1,#Tasks)]
 if Task then
-self:I("Assigning task "..Task:GetName().." using auto assign method "..self.AutoAssignMethod.." to "..TaskGroup:GetName().." with task priority "..AssignPriority)
+self:T("Assigning task "..Task:GetName().." using auto assign method "..self.AutoAssignMethod.." to "..TaskGroup:GetName().." with task priority "..AssignPriority)
 if not self.AutoAcceptTasks==true then
 Task:SetAutoAssignMethod(ACT_ASSIGN_MENU_ACCEPT:New(Task.TaskBriefing))
 end
@@ -108223,7 +108274,7 @@ function MISSION:GetShortText()
 return string.format('Mission "%s"',self.Name)
 end
 function MISSION:JoinUnit(PlayerUnit,PlayerGroup)
-self:I({Mission=self:GetName(),PlayerUnit=PlayerUnit,PlayerGroup=PlayerGroup})
+self:T({Mission=self:GetName(),PlayerUnit=PlayerUnit,PlayerGroup=PlayerGroup})
 local PlayerUnitAdded=false
 for TaskID,Task in pairs(self:GetTasks())do
 local Task=Task
@@ -108303,7 +108354,7 @@ function MISSION:SetGroupAssigned(MissionGroup)
 local MissionName=self:GetName()
 local MissionGroupName=MissionGroup:GetName()
 self.AssignedGroups[MissionGroupName]=MissionGroup
-self:I(string.format("Mission %s is assigned to %s",MissionName,MissionGroupName))
+self:T(string.format("Mission %s is assigned to %s",MissionName,MissionGroupName))
 return self
 end
 function MISSION:ClearGroupAssignment(MissionGroup)
@@ -108358,14 +108409,14 @@ return self.TaskNumber
 end
 function MISSION:AddTask(Task)
 local TaskName=Task:GetTaskName()
-self:I({"==> Adding TASK ",MissionName=self:GetName(),TaskName=TaskName})
+self:T({"==> Adding TASK ",MissionName=self:GetName(),TaskName=TaskName})
 self.Tasks[TaskName]=Task
 self:GetCommandCenter():SetMenu()
 return Task
 end
 function MISSION:RemoveTask(Task)
 local TaskName=Task:GetTaskName()
-self:I({"<== Removing TASK ",MissionName=self:GetName(),TaskName=TaskName})
+self:T({"<== Removing TASK ",MissionName=self:GetName(),TaskName=TaskName})
 self:F(TaskName)
 self.Tasks[TaskName]=self.Tasks[TaskName]or{n=0}
 self.Tasks[TaskName]=nil

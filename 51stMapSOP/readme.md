@@ -4,6 +4,7 @@
 
 **MapSOP** does the following:
 * Deploys Tanker and AWACs flights that set radio frequencies, TACANs, altitude, and speed in accordance with 51st VFW SOPs. Orbit endpoints are defined by creating named trigger zones in the DCS Mission Editor. When the on-station Tanker/AWACS flights get low on fuel, a relief flight is automatically launched from the designated support airbase. When the relief flight arrives on-station, the original flight checks-out and RTBs.
+* Allows for multiple orbit racetracks to be defined for each Tanker/AWACs flight. These tracks can be pushed via either the coalition F10 menu, or at a designated time after mission start.
 * Sets the radio frequency and TACANS/ICLS/ACLS/Link4 for multiple aircraft carriers, automatically loops the carrier group's waypoints, and adds a radio F10 menu option to turn the carrier into the wind for launch and recovery operations, as well as displaying the frequencies for each carrier.
 * Automatically launches and maintains a Recovery Tanker, E-2 AWACS, and a Rescue Helicopter that position themselves relative to the Carrier Group. Tanker/AWACs use SOP Radio/TACAN/Altitude/Speed.
 * Restarts Tanker/Carrier TACAN/ICLS beacons every 5 minutes to ensure they keep working. Also provides an F10 menu option to reset all TACANs on demand.
@@ -15,6 +16,7 @@
 ## Setup
 ***(Note: All Zone/Unit names are case-sensitive.)***
 1. In the DCS Mission Editor Triggers menu, load the `MOOSE _Moose.lua` and `51stMapSOP.lua` scripts with '*DO SCRIPT FILE*' on '*MISSION START*': ![Load Moose Script with MISSION START Trigger](images/MapSOP-load.png)
+
 2. **(OPTIONAL)** If you wish to use **Skynet** instead of MOOSE's **MANTIS** for IADS, load the MIST and *Skynet* scripts from the [Skynet Github Repo](https://github.com/walder/Skynet-IADS) under *'demo-missions'* before 51stMapSOP.lua as shown: 
 
     ![Load MIST/Skynet Scripts with MISSION START Trigger](images/SKYNET-load.png)
@@ -24,6 +26,8 @@
     Optionally, Trigger Zone(s) starting with `Unpause Client` can be created. An 'Unpause Client' zone created over a 'Client' aircraft unit(s) will cause the mission to only automatically unpause when an aircraft unit in such a Zone slots in. Instead of placing such a zone over a unit, a property called `Unit` can be created in an 'Unpause Client' zone with its value set to the name of an aircraft unit to trigger unpause when slotted. This is helpful for selecting individual units when units are stacked on top of each other, such as when onboard an aircraft carrier.
 
     The property `PauseAfter` can also be added to an 'Unpause Client' Zone and given a number value. This will pause the server after the PauseAfter number of seconds instead of the default '30'. Setting a PauseAfter value of '0' will disable automatic mission pausing altogether.
+
+    The pause/unpause functionality is disabled when running locally in single-player mode.
     
     ![Optionally create zone(s) starting with 'Unpause Client'](images/Unpause-Client-Zones.png)
     
@@ -35,6 +39,7 @@
 4. **(OPTIONAL)** Enable AI ATC. By default MapSOP disables all AI ATC for land airbases. To re-enable AI ATC for an airbase, create one or more zones starting with a name starting with `Enable ATC` over the Airbase(s) to enable it. 
 
     ![Enable ATC at an Airbase](images/Enable-ATC.png)
+
 5. **(OPTIONAL)** designate the home airbase for Tanker and AWACS flights be creating a Trigger Zone called `Support Airbase` (BlueFor) or `Red Support Airbase` (RedFor) over an airbase:
 
     ![Optionally create a trigger zone called 'Support Airbase'](images/SupportAirbase.png)
@@ -47,94 +52,82 @@
     | Nevada           | Nellis                      |
     | Syria            | Incirlik                    |
     | Persian Gulf     | Al Dhafra                   |
-6. Enable Tanker and AWACS flights by creating two Trigger Zones for each desired flight to mark the racetrack endpoints. The Trigger Zones should start with the callsign of the flight, and end with -P1 and -P2, for example **Texaco1-P1** and **Texaco2-P2** -- see the following table for the list of supported flights:
-    | **Flight**       | **Type**                    | **Point 1**  | **Point 2**  |
-    | ---------------- | --------------------------- | ------------ | ------------ |
-    | Texaco1          | Boom Tanker for F-16s       | Texaco1-P1   | Texaco1-P2   |
-    | Texaco2          | Boom Tanker for A-10s       | Texaco1-P1   | Texaco1-P2   |
-    | Arco1            | Probe & Drogue Tanker       | Arco1-P1     | Arco1-P2     |
-    | Arco2            | Probe & Drogue Tanker       | Arco2-P1     | Arco2-P2     |
-    | Overlord1        | AWACS                       | Overlord1-P1 | Overlord1-P2 |
-    | Magic1           | (Carrier*) AWACS            | Magic1-P1    | Magic1-P2    |
-    | Shell1           | (Carrier*) S-3B Tanker      | Shell1-P1    | Shell1-P2    |
-    * Presence of -P2 zone for a Carrier AWACS/Tanker will prevent auto creation of auto-creation of carrier-following flights for the cooresponding callsign.
+    | South Atlantic   | Mount Pleasant              |
 
-    ![Create Trigger Zones to designate Tanker/AWACS Orbits](images/OrbitPoints.png)
-7. **(OPTIONAL)** SOP flight parameters can be overridden in two different ways.
+6. Enable Tanker and AWACS flights by creating two Trigger Zones for each desired flight to mark the Default racetrack endpoints. The Trigger Zones should start with the callsign of the flight, and end with -P1 and -P2, for example **Texaco1-P1** and **Texaco2-P2** -- see the following table for the list of supported flights:
+    | **Flight**       | **Type**                    | **Point 1**   | **Point 2**  |
+    | ---------------- | --------------------------- | ------------- | ------------ |
+    | Texaco1          | Boom Tanker for F-16s       | Texaco1-P1    | Texaco1-P2   |
+    | Texaco2          | Boom Tanker for A-10s       | Texaco1-P1    | Texaco1-P2   |
+    | Arco1            | Probe & Drogue Tanker       | Arco1-P1      | Arco1-P2     |
+    | Arco2            | Probe & Drogue Tanker       | Arco2-P1      | Arco2-P2     |
+    | Overlord1        | AWACS                       | Overlord1-P1  | Overlord1-P2 |
+    | Magic1           | (Carrier*) AWACS            | Magic1-P1     | Magic1-P2    |
+    | Shell1           | (Carrier*) S-3B Tanker      | Shell1-P1     | Shell1-P2    |
+    * Magic/Shell Carrier units have a callsign number that cooresponds to their Carrier, see the [51st VFW SOP](https://github.com/51st-Vfw/MissionEditing-Index/blob/master/documentation/missionsEditingSOPs.md) for details.
+    * Presence of only a -P1 zone for a Carrier AWACS/Tanker will allow for overriding of parameters via Zone Properties (see below).
+    * Presence of only a -P2 zone for a Carrier AWACS/Tanker will prevent auto-creation of carrier-following flights for the cooresponding callsign.
+    * Presence of both a -P1 and -P2 zone for a Carrier AWACS/Tanker will cause that flight to operate like a non-Carrier Tanker/AWACS, using the -P1 and -P2 zones as orbit track endpoints.
 
-    ***The original method*** is to add specially named parameters to the -P1 Trigger zone for a callsign, for example, a Trigger Zone named `Texaco1-FL230-P1` in conjunction with a `Texaco-P2` Trigger Zone will create a Texaco1 tanker flight according to the SOP, **except** that the altitude will be overridden to 23k feet.
-
-    The speed and altitude allow for a special additional syntax that allows adding lowercase  **p** (plus/addition) or **m** (minus/subtraction) immediately after **FL** or **SP** to add or subtract from the SOP values.  For example, a trigger zone named `Texaco1-FLp30-SPm50-P1` would override the speed and altitude SOP values for Texaco1 by adding (**p**) 3k feet to the SOP altitude, and subtracting (**m**) 50 knots from its orbit speed.
-
-    Overrides for each callsign are processed in numerical order, so if `Texaco1-FLp30-P1` and `Texaco2-T1-P1` Zones were both present, *Texaco2* would also inherit the `FLp30` flight level override from *Texaco1*
-    Prepending RED- to both P1 and P2 trigger zones will spawn a RedFor (Combined Joint Task Force Red) version of the flight. 
-
-    Consult the table below for the complete list of SOP override paramters:
-
-    | **Parameter**           | **Notation** | **Example**               | **Effect**                                           |
-    |-------------------------|--------------|---------------------------|------------------------------------------------------|
-    | Flight SOP base template|T***n***      |Texaco3-T***2***-P1        |Override all SOP values to those of Texaco***2***     |
-    | Orbit Altitude          |FL***n***     |Texaco1-FL***230***-P1     |Override Texaco1 orbit altitude to 23k feet           |
-    | Increase Orbit Altitude |FLp***n***    |Texaco1-FLp***30***-P1     |Increase Texaco1 orbit altitude by 3k feet from SOP   |
-    | Decrease Orbit Altitude |FLm***n***    |Texaco1-FLm***30***-P1     |Decrease Texaco1 orbit altitude by 3k feet from SOP   |
-    | Orbit Speed             |SP***n***     |Texaco1-SP***400***-P1     |Override Texaco1 orbit speed to 400 KIAS              |    
-    | Increase Orbit Speed    |SPp***n***    |Texaco1-SPp***50***-P1     |Increase Texaco1 orbit altitude by 50 knots           |
-    | Decrease Orbit Speed    |SPm***n***    |Texaco1-SPm***50***-P1     |Decrease Texaco1 orbit altitude by 50 knots           |
-    | Set Radio Frequency     |FR***nnn.nn***|Texaco1-FR***256.00***-P1  |Override Texaco1 radio setting to 256.00 MHz AM       |
-    | Set TACAN Freq/Band     |TC***nnY***   |Texaco1-TC***56Y***-P1     |Override Texaco1 TACAN to 56Y                         |
-    | Make invisible to AI    |INV           |Texaco1-INV-P1             |Makes Texaco1 invisible to the AI                     |
-    | Limit available flights |QTY***n***    |Texaco1-QTY***4***-P1      |Limits Texaco1 to ***4*** spawns during the mission   |
-    | Initial ground start    |GND           |Texaco1-GND-P1             |Makes initial Texaco1 takeoff from support Airbase    |
-    | Spawn flight as RedFor* |RED-          |RED-Texaco1-P1             |Spawns flight as RedFor. RED- must be prefix.         |
-    * Remember to override Radio/TACAN settings to avoid overlap with cooresponding BlueFor flights.
-
-    ***The new method*** is to add special Properties to the -P1 zone for the Tanker/AWACS. A property set to 'SOP' will be ignored.
-    ![Create Trigger Zones with Properties to change SOP Tanker/AWACS values](images/Zone-Props.png)
-    | **Parameter**           | **Zone Parameter**   | **Example Value** | **Effect**                                           |
-    |-------------------------|--------------|---------------------------|------------------------------------------------------|
-    | Flight SOP base template|Template      |***2***                    |Override all SOP values to those of Texaco***2***     |
-    | Orbit Altitude          |Altitude      |***23000***                |Override Texaco1 orbit altitude to 23k feet           |
-    | Increase Orbit Altitude |Altitude      |***+3000***                |Increase Texaco1 orbit altitude by 3000 feet from SOP |
-    | Decrease Orbit Altitude |Altitude      |***-3000***                |Decrease Texaco1 orbit altitude by 3000 feet from SOP |
-    | Orbit Speed (KIAS)      |Speed         |***400***                  |Override Texaco1 orbit speed to 400 KIAS              |    
-    | Increase Orbit Speed    |Speed         |***+50***                  |Increase Texaco1 orbit altitude by 50 knots           |
-    | Decrease Orbit Speed    |Speed         |***-50***                  |Decrease Texaco1 orbit altitude by 50 knots           |
-    | Set Radio Frequency     |Frequency     |***256.00***               |Override Texaco1 radio setting to 256.00 MHz AM       |
-    | Set TACAN Freq/Band     |TACAN         |***56Y***                  |Override Texaco1 TACAN to 56Y                         |
-    | Make invisible to AI    |Invisible     |***true***                 |Makes Texaco1 invisible to the AI                     |
-    | Limit available flights |Airframes     |***4***                    |Limits Texaco1 to ***4*** spawns during the mission   |
-    | Initial ground start    |GroundStart   |***true***                 |Makes initial Texaco1 takeoff from support Airbase    |
-    * Setting the value **SOP** for any value will use the SOP value for the flight/template as if the property was not present. 
-
-8.  **(OPTIONAL)** Additional flights beyond those specified in the SOP can be created by specifying additional -P1 and -P2 trigger with a name cooresponding to the callsign of the new flight. All values will default to the SOP settings of the **1** callsign with the same name (Texaco1/Acro1/Shell1/Overlord1/Magic1).  
+7.  **(OPTIONAL)** Additional flights beyond those specified in the SOP can be created by specifying additional -P1 and -P2 trigger with a name cooresponding to the callsign of the new flight. All values will default to the SOP settings of the **1** callsign with the same name (Texaco1/Acro1/Shell1/Overlord1/Magic1).  
 
     ***NOTES:***
       - Additional Shell/Magic callsigns will operate from the land airbase using -P1 and -P2 endpoints instead of following the carrier.
       - Off-duty Tankers/AWACS will use a -8 flight callsign, and set TACAN to 58Y.
 
-    The -T***N***- zone name parameter or ***Template*** zone property can be used to default to the SOP values from another flight, see the table above.
+    The ***Template*** zone property can be used to default to the SOP values from another flight, see the table above.
 
-    To avoid collisions with SOP values, parameter overrides should be used to override relevant SOP settings. For example, a Texaco3 flight might be created using the following -P1 Trigger Zone (and an accompanying **Texaco3-P2** Trigger Zone):
-        
-    `Texaco3-T2-FLp10-SP375-FR256.0-TC56Y-P1`
+    To avoid collisions with SOP values, parameter overrides should be used to override relevant SOP settings. For example, a Texaco3 flight might be created, using the following Zone Properties:
 
-    The same settings could be configured by setting the value Zone Properties / Values in a `Texaco3-P1` zone
     |***Property***  |***Value*** |
     |----------------|------------|
     |Template        | 2          |
     |Altitude        | +1000      |
-    |Speed           | 375        |
+    |Speed           | 290        |
     |Frequency       | 256.0      |
     |TACAN           | 56Y        |
 
-    This creates a 'Texaco3' tanker flight starting with the Texaco2 SOP values, but lowers orbit altitude by 1000 feet, sets orbit speed to 375 knots, sets the radio to 256.0 MHz, and sets TACAN to 56Y.
+    This creates a 'Texaco3' tanker flight starting with the Texaco2 SOP values, but increases orbit altitude by 1000 feet, sets orbit speed to 290 KIAS, sets the radio to 256.0 MHz, and sets TACAN to 56Y.
 
-9. To add Aircraft Carrier support, name the carrier **unit** with the hull number of the carrier, for example `CVN-75`.  The Tarawa `LHA-1` is supported for TACAN only.  This will set up Radio, TACAN, and ICLS for the carrier, loop the waypoints of the carrier group, and launch recovery tanker, AWACS, and rescue helicopter flights around the carrier group.  This will also enable an Radio F10 menu option to turn the carrier into the wind for takeoff and recovery.
+    ![Create Trigger Zones to designate Tanker/AWACS Orbits](images/OrbitPoints.png)
+
+8. **(OPTIONAL)** Enable additional orbit tracks for Tanker and/or AWACS flights by creating additional -P1/-P2 Trigger Zone pairs. The Trigger Zone names should be the same as the -P1 and -P2 Trigger Zones, but with a space and a unique track name appended. For example, to create an additional racetrack 'Alpha' for Texaco6, create additional Trigger Zones called 'Texaco6-P1 Alpha' and 'Texaco6-P2 Alpha'. The flight can be switched to this track via the F10 radio menu, or automatically at a designated time after mission start by setting the *PushTime* Zone Property (see below). 
+
+    Note that manually pushing a track via the F10 menu will cancel the time-scheduled push time for that track, if present. If the Default track is set for a scheduled or menu-only push, it will spawn at the designated Support Airbase when any track is triggered via either the F10 menu or a scheduled push time.
+
+    ![Create additional Trigger Zones to designate additional Tanker/AWACS orbit tracks](images/AdditionalOrbitPoints.png)
+    ![A flight can be switched to another track via the F10 menu, or at a scheduled time](images/FlightControlMenu.png)
+
+9. **(OPTIONAL)** SOP flight parameters can be overridden by adding special Properties to the -P1 zone for the Tanker/AWACS. A property set to 'SOP' will be ignored. Properties set in the Default track will be inherited by additional designated tracks for that flight, however the inherited values can be overridden for each track using the same Zone Property options. Note that this could be used to designated different orbit/speed parameters for different tracks so that a Tanker could service multiple types of aircraft.
+
+    ![Create Trigger Zones with Properties to change SOP Tanker/AWACS values](images/Zone-Props.png)
+
+    | **Parameter**           | **Zone Parameter**   | **Example Value** | **Effect**                                               |
+    |-------------------------|--------------|---------------------------|----------------------------------------------------------|
+    | Flight SOP base template|Template      |***2***                    |Override all SOP values to those of Texaco***2***         |
+    | Orbit Altitude          |Altitude      |***23000***                |Override Texaco1 orbit altitude to 23k feet               |
+    | Increase Orbit Altitude |Altitude      |***+3000***                |Increase Texaco1 orbit altitude by 3000 feet from SOP     |
+    | Decrease Orbit Altitude |Altitude      |***-3000***                |Decrease Texaco1 orbit altitude by 3000 feet from SOP     |
+    | Orbit Speed (KIAS)      |Speed         |***400***                  |Override Texaco1 orbit speed to 400 KIAS                  |    
+    | Increase Orbit Speed    |Speed         |***+50***                  |Increase Texaco1 orbit altitude by 50 knots               |
+    | Decrease Orbit Speed    |Speed         |***-50***                  |Decrease Texaco1 orbit altitude by 50 knots               |
+    | Set Radio Frequency     |Frequency     |***256.00***               |Override Texaco1 radio setting to 256.00 MHz AM           |
+    | Set TACAN Freq/Band     |TACAN         |***56Y***                  |Override Texaco1 TACAN to 56Y                             |
+    | Make immortal           |Immortal      |***true***                 |Makes Texaco1 immortal                                    |
+    | Make invisible to AI    |Invisible     |***true***                 |Makes Texaco1 invisible to the AI                         |
+    | Limit available flights |Airframes     |***4***                    |Limits Texaco1 to ***4*** spawns during the mission       |
+    | Initial ground start    |GroundStart   |***true***                 |Makes initial Texaco1 takeoff from support Airbase        |
+    | Push track at time      |PushTime      |***5:00***                 |Automatically push track five minutes after mission start |
+    | Launch Default via menu |PushTime      |***0***                    |When set on Default track, only spawn on menu command     |
+    * Setting the value **SOP** for any value will use the SOP value for the flight/template as if the property was not present.
+    * The old method of changing values via zone name still works, but has been deprecated
+
+10. To add Aircraft Carrier support, name the carrier **unit** with the hull number of the carrier, for example `CVN-75`.  The Tarawa `LHA-1` is supported for TACAN only.  This will set up Radio, TACAN, and ICLS for the carrier, loop the waypoints of the carrier group, and launch recovery tanker, AWACS, and rescue helicopter flights around the carrier group.  This will also enable an Radio F10 menu option to turn the carrier into the wind for takeoff and recovery.
  
     ![Name the carrier unit with the carrier hull number](images/CarrierUnit.png)
     ![Carrier wind turn menu](images/WindTurn.png)
 
-10. IADS:
+11. IADS:
 
     1. Name Red SAM groups a name starting with `Red SAM`, and if using *MANTIS* (Skynet not loaded) include the name of the SAM system (one SAM system type per group). Valid SAM system names for *MANTIS* are as follows *(case sensitive)*:
         * Avenger
@@ -248,7 +241,21 @@
 * Eliminated mysterious aircraft disappearances (remove MOOSE cleanup at SupportBase)
 * Greatly reduced naval rotary aviation accidents (only one helo spawn on carriers) 
 
+*Version 20221130.1*
+* Fixed 'Invisible' Tanker/AWACs setting.
+* Fixed tanker speed issue caused by MOOSE changes.
+* Fixed server pausing if clients still connected (even if they are observers).
+* Pausing feature disabled in single player.
+* Added 'Immortal' Tanker/AWACs setting.
+* Added declaration of multiple orbit tracks for each tanker/AWACs.
+* Added scheduled flight launches and orbit track changes.
+* F10 menu mission starts and track pushes.
+* Deprecated 'zone name' SOP setting overrides in favor of Zone Properties.
+* Tested/included MOOSE version bump.
+* Added Mount Pleasant as default Support Base for South Atlantic map.
+
 ### Known issues:
+* A paused server will not unpause unless a client enters a (valid) aircraft slot.
 * Extra Non-SOP Shell/Magic units act like land-based Tankers/AWACS.
 * Off-duty tankers/AWACS show up in radio menu under -8 callsigns.
 * ACLS does not work for CVN-70 (USS Carl Vincent, apparently not a 'real' DCS SuperCarrier).
