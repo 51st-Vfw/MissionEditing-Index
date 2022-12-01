@@ -136,7 +136,6 @@ ENUMS.SupportUnitTemplateFields = {
 ENUMS.SupportUnitTemplate = {
     --                UNITTYPE, FUEL, FLARE, CHAFF, GUNS
     BOOMTANKER  =   { "KC-135",         90700, 60, 120, 100 },
-    BOOMTANKER  =   { "KC-135",         40700, 60, 120, 100 }, -- TESTING REMOVEME
     PROBETANKER =   { "KC135MPRS",      90700, 60, 120, 100 },
     NAVYTANKER  =   { "S-3B Tanker",     7813, 30,  30, 100 },
     NAVYAWACS   =   { "E-2C",            5624, 30,  30, 100 },
