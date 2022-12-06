@@ -465,13 +465,16 @@ to support SOP comms with naval units using CVN-71 and CVN-75. To change the pre
 the `vfw51_radio_settings.lua` settings file in the `src\radio\` subdirectory.
 
 When building the mission, the workflow will inject the preset information into units in the
-DCS ME files according to the settings. For A-10C units, the workflow creates the `UHF_RADIO`,
-`VHF_AM_RADIO`, and `VHF_FM_RADIO` hierarchy within the `.miz` package.
+DCS ME files according to the settings.
 
 > All radio presets you set up in the DCS ME for a unit that is also specified in the
 > `vfw51_radio_settings.lua` settings file are **replaced** by the workflow the next time the
 > mission is built or synchronized. Any preset changes through the DCS ME changes are **not**
 > synchronized with the settings file.
+
+> Currently, the functionality that supports presets in A-10C units by creating the the
+> `UHF_RADIO`, `VHF_AM_RADIO`, and `VHF_FM_RADIO` hierarchy within the `.miz` package is
+> disabled. This hierarchy appears to over-ride presets set for other airframes.
 
 The settings file contains several Lua tables. The `RadioPresets[Warbird]<Blue|Red>` tables
 establish the maping between a preset button and frequency and description by unit properties.
