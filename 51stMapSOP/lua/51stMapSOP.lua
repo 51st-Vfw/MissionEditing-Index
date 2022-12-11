@@ -1,5 +1,5 @@
 -- 51st MapSOP
-MAPSOP_VERSION = "20221130.1"
+MAPSOP_VERSION = "20221211.1"
 -- Initial version by Blackdog Jan 2022
 --
 -- Tested against MOOSE GITHUB Commit Hash ID:
@@ -62,9 +62,14 @@ MAPSOP_VERSION = "20221130.1"
 --                    - Added declaration of multiple orbit tracks for each tanker/AWACs.
 --                    - Added scheduled flight launches and orbit track changes.
 --                    - F10 menu mission starts and track pushes.
+--                    - Fixed F10 map unit callsign labels.
 --                    - Deprecated 'zone name' SOP setting overrides in favor of Zone Properties.
 --                    - Tested/included MOOSE version bump.
 --                    - Added Mount Pleasant as default Support Base for South Atlantic map.
+-- Version 20221211.1 - New 'MapSOP Settings' zone with global MapSOP setting properties.
+--                    - Moved 'PauseAfter' property from 'Unpause Client' zone(s) to 'MapSOP Settings'.
+--                    - Added RespawnAir option for Tankers/AWACS relief flights to air spawn.
+--                    - Added scripting only functions RemoveFlight() and ReAddFlight().
 --                    
 -- Known issues/limitations:
 --   - A paused server will not unpause unless a client enters a (valid) aircraft slot.
