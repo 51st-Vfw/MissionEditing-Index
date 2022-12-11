@@ -21,13 +21,19 @@
 
     ![Load MIST/Skynet Scripts with MISSION START Trigger](images/SKYNET-load.png)
 
-3. **(OPTIONAL)** By default, MapSOP will pause the server after 30 second of mission time (or after a period when no client units are alive), and unpause it when any client slots into an aircraft. 
+3. **(OPTIONAL)** By default, MapSOP will pause the server after 30 second of mission time if a client has not slotted into an aircraft (or after a period when no clients are connected), and unpause it when any client slots into an aircraft. 
+
+    To change the mission time at which the mission pauses, create a Trigger Zone called `MapSOP Settings` with a property called `PauseAfter` with the number of mission seconds at which the mission should pause. A `PauseAfter` value of `0` disables the pause.
+
+    The pause/unpause functionality is disabled when running locally in single-player mode.
+
+    ![A 'MapSOP Settings' zone with a 'Pause After' property to change the time that the mission will pause](images/MapSOP-Settings-Zone.png)
 
     Optionally, Trigger Zone(s) starting with `Unpause Client` can be created. An 'Unpause Client' zone created over a 'Client' aircraft unit(s) will cause the mission to only automatically unpause when an aircraft unit in such a Zone slots in. Instead of placing such a zone over a unit, a property called `Unit` can be created in an 'Unpause Client' zone with its value set to the name of an aircraft unit to trigger unpause when slotted. This is helpful for selecting individual units when units are stacked on top of each other, such as when onboard an aircraft carrier.
 
-    The property `PauseAfter` can also be added to an 'Unpause Client' Zone and given a number value. This will pause the server after the PauseAfter number of seconds instead of the default '30'. Setting a PauseAfter value of '0' will disable automatic mission pausing altogether.
+    This feature is meant to allow the mission to remain paused while the bulk of clients get slotted, and then unpause only when a certain client unit slots (presumably after confirming everybody else has slotted). Consider passwording the designated `Unpause Client` slot(s) to prevent premature mission unpause.
 
-    The pause/unpause functionality is disabled when running locally in single-player mode.
+    ***WARNING:*** If `Unpause Client` zone(s) are created and their are no client slot aircraft in any of the Zone(s) or valid client unit name(s) listed as a `Unit` property, then the only way to unpause the server will be from the server dashboard.   
     
     ![Optionally create zone(s) starting with 'Unpause Client'](images/Unpause-Client-Zones.png)
     
@@ -102,7 +108,7 @@
 
     ![Create Trigger Zones with Properties to change SOP Tanker/AWACS values](images/Zone-Props.png)
 
-    | **Parameter**           | **Zone Parameter**   | **Example Value** | **Effect**                                               |
+    | **Parameter**           | **Zone Parameter**   | **Example Value** | **Effect (of Property in a Texaco1-P1 zone)**            |
     |-------------------------|--------------|---------------------------|----------------------------------------------------------|
     | Flight SOP base template|Template      |***2***                    |Override all SOP values to those of Texaco***2***         |
     | Orbit Altitude          |Altitude      |***23000***                |Override Texaco1 orbit altitude to 23k feet               |
@@ -117,6 +123,7 @@
     | Make invisible to AI    |Invisible     |***true***                 |Makes Texaco1 invisible to the AI                         |
     | Limit available flights |Airframes     |***4***                    |Limits Texaco1 to ***4*** spawns during the mission       |
     | Initial ground start    |GroundStart   |***true***                 |Makes initial Texaco1 takeoff from support Airbase        |
+    | Non-initial air respawn |RespawnAir    |***true***                 |Makes Texaco1 relief flights respawn in the air           |
     | Push track at time      |PushTime      |***5:00***                 |Automatically push track five minutes after mission start |
     | Launch Default via menu |PushTime      |***0***                    |When set on Default track, only spawn on menu command     |
     * Setting the value **SOP** for any value will use the SOP value for the flight/template as if the property was not present.
@@ -250,9 +257,16 @@
 * Added declaration of multiple orbit tracks for each tanker/AWACs.
 * Added scheduled flight launches and orbit track changes.
 * F10 menu mission starts and track pushes.
+* Fixed F10 map unit callsign labels.
 * Deprecated 'zone name' SOP setting overrides in favor of Zone Properties.
 * Tested/included MOOSE version bump.
 * Added Mount Pleasant as default Support Base for South Atlantic map.
+
+*Version 20221211.1* 
+* New 'MapSOP Settings' zone with global MapSOP setting properties.
+* Moved 'PauseAfter' property from 'Unpause Client' zone(s) to 'MapSOP Settings'.
+* Added RespawnAir option for Tankers/AWACS relief flights to air spawn.
+* Added scripting only functions RemoveFlight() and ReAddFlight().
 
 ### Known issues:
 * A paused server will not unpause unless a client enters a (valid) aircraft slot.
