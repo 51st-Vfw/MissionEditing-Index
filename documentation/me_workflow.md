@@ -176,7 +176,8 @@ The next step depends on whether you are starting from a template or an existing
 The `VFW51_Core_Mission` directory includes basic mission templates for all of the main maps
 the wing supports. These can be found at the top level of the template mission directory in the
 files named `Tmplt_<map>_core.miz` where `<map>` is the abbreviated map name. The supported
-maps include Caucuses (CAU), Marianas (MAR), NTTR (NTTR), Persian Gulf (PG), and Syria (SYR).
+maps include Caucuses (CAU), Marianas (MAR), NTTR (NTTR), Persian Gulf (PG), South Atlantic
+(SAT), and Syria (SYR).
 
 > The template `.miz` files in the directory are not completly set up as they appear in the
 > `VFW51_Core_Mission` directory. The workflow will complete their setup.
