@@ -23,7 +23,7 @@
 
 3. **(OPTIONAL)** By default, MapSOP will pause the server after 30 second of mission time if a client has not slotted into an aircraft (or after a period when no clients are connected), and unpause it when any client slots into an aircraft. 
 
-    To change the mission time at which the mission pauses, create a Trigger Zone called `MapSOP Settings` with a property called `PauseAfter` with the number of mission seconds at which the mission should pause. A `PauseAfter` value of `0` disables the pause.
+    To change the mission time at which the mission pauses, create a Trigger Zone called `MapSOP Settings` with a property called `PauseTime` with the number of mission seconds at which the mission should pause. A `PauseTime` value of `0` disables the pause.
 
     The pause/unpause functionality is disabled when running locally in single-player mode.
 
@@ -264,7 +264,7 @@
 
 *Version 20221211.1* 
 * New 'MapSOP Settings' zone with global MapSOP setting properties.
-* Moved 'PauseAfter' property from 'Unpause Client' zone(s) to 'MapSOP Settings'.
+* Moved 'PauseAfter' property from 'Unpause Client' zone(s) to 'MapSOP Settings' as 'PauseTime'.
 * Added RespawnAir option for Tankers/AWACS relief flights to air spawn.
 * Added scripting only functions RemoveFlight() and ReAddFlight().
 
