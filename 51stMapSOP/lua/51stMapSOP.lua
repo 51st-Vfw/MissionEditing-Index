@@ -1,9 +1,9 @@
 -- 51st MapSOP
-MAPSOP_VERSION = "20221211.1"
+MAPSOP_VERSION = "20230108.1"
 -- Initial version by Blackdog Jan 2022
 --
 -- Tested against MOOSE GITHUB Commit Hash ID:
--- 2022-11-30T17:37:28.0000000Z-2a8d166c54330c8423dee1e76e95d1636309b220
+-- 2023-01-08T18:32:50.0000000Z-cee72c1d09ef9268f801f127ba73d275a66a984c
 --
 -- Version 20220101.1 - Blackdog initial version
 -- Version 20220115.1 - Fix: Tanker speeds adjusted to be close KIAS from SOP + better starting altitudes.
@@ -70,6 +70,13 @@ MAPSOP_VERSION = "20221211.1"
 --                    - Moved 'PauseAfter' property from 'Unpause Client' zone(s) to 'MapSOP Settings' as 'PauseTime'.
 --                    - Added RespawnAir option for Tankers/AWACS relief flights to air spawn.
 --                    - Added scripting only functions RemoveFlight() and ReAddFlight().
+-- Version 20230108.1 - Updated to latest Moose devel branch (Text-to-Speech on Fox3 via MSRS/DCS-gRPC plugin!).
+--                    - Starts DCS-gRPC if present.
+--                    - Fixed 'PauseTime' related Lua error.
+--                    - Added 'PrefixRedSAM', 'PrefixRedEWR', and 'PrefixRedAWACS' to 'MapSOP Settings' zone options.
+--                    - Added 'UseSRS' and 'TacCommon' as a 'MapSOP Settings' zone option for TTS reports.
+--                    - Added support unit SRS report on change track.
+--                    - Added 'UseSubMenu' option to 'MapSOP Settings' that puts MapSOP F10 menus in own sub-menu.
 --                    
 -- Known issues/limitations:
 --   - A paused server will not unpause unless a client enters a (valid) aircraft slot.
@@ -173,6 +180,32 @@ ENUMS.SupportUnitFields = {
     RESPAWNAIR      =   18  -- false -- whether to spawn relief flights in the air.
 }
 
+ENUMS.Voices = {
+  "en-US-Wavenet-A",
+  "en-US-Wavenet-B",
+  "en-US-Wavenet-C",
+  "en-US-Wavenet-D",
+  "en-US-Wavenet-E",
+  "en-US-Wavenet-F",
+  "en-US-Wavenet-G",
+  "en-US-Wavenet-H",
+  "en-US-Wavenet-I",
+  "en-US-Wavenet-J",
+  "en-US-Neural2-A",
+  "en-US-Neural2-C",
+  "en-US-Neural2-D",
+  "en-US-Neural2-E",
+  "en-US-Neural2-F",
+  "en-US-Neural2-G",
+  "en-US-Neural2-H",
+  "en-US-Neural2-I",
+  "en-US-Neural2-J",
+  "en-US-News-K",
+  "en-US-News-L",
+  "en-US-News-M",
+  "en-US-News-N",
+}
+
 local SUPPORTUNITS = {}
 SUPPORTUNITS["_"] = {}
 
@@ -214,7 +247,17 @@ SUPPORTUNITS["_"][ "CVN-75" ] = { nil, nil, ENUMS.UnitType.SHIP,  275.40, 75, EN
 -- Rescue Helo
 SUPPORTUNITS["_"][ "CSAR1" ] = { CALLSIGN.Aircraft.Pontiac , 8, ENUMS.UnitType.HELICOPTER, nil, nil, nil, nil, nil, nil, nil, nil, nil, 265, nil, false, ENUMS.SupportUnitTemplate.RESCUEHELO }
 
-BASESUPPORTUNITS = routines.utils.deepCopy(SUPPORTUNITS)
+local BASESUPPORTUNITS = routines.utils.deepCopy(SUPPORTUNITS)
+
+local MAPSOPSETTINGS = {}
+MAPSOPSETTINGS.Defaults = {}
+MAPSOPSETTINGS.Defaults.PauseTime      = 30
+MAPSOPSETTINGS.Defaults.PrefixRedSAM   = "Red SAM"
+MAPSOPSETTINGS.Defaults.PrefixRedEWR   = "Red EWR"
+MAPSOPSETTINGS.Defaults.PrefixRedAWACS = "Red AWACS"
+MAPSOPSETTINGS.Defaults.TacCommon      = 270.0
+MAPSOPSETTINGS.Defaults.UseSRS         = true
+MAPSOPSETTINGS.Defaults.UseSubMenu     = false
 
 CURRENTUNITTRACK = {}
 
@@ -288,12 +331,6 @@ function ServerUnpause()
   net.dostring_in("gui", "return DCS.setPause(false)")
 end
 
--- Tanker / AWACS menus
-local TankerMenu = MENU_COALITION:New(coalition.side.BLUE, "Tanker Control")
-local AWACSMenu = MENU_COALITION:New(coalition.side.BLUE, "AWACS Control")
-local RedTankerMenu = MENU_COALITION:New(coalition.side.RED, "Tanker Control")
-local RedAWACSMenu = MENU_COALITION:New(coalition.side.RED, "AWACS Control")
-
 function UpdateFlightMenu(TrackFlight, track, oldtrack)
   -- oldtrack only passed when attempting a change, not for init
   if oldtrack == track then
@@ -323,6 +360,7 @@ function UpdateFlightMenu(TrackFlight, track, oldtrack)
   end
 
   if menu then
+    BASE:I("Updating up flight menu for " .. TrackFlight .. "...")
     local TrackText = "Default"
     local OldTrackText = "Default"
     if track and track ~= "_" then
@@ -1855,6 +1893,20 @@ function ManageFlights( SpawnGroupIn, SupportUnit, NewTrack )
       trackname = "Default"
     end
     BASE:I(SupportUnit .. " pushing to track " .. trackname .. ".")
+    
+    if UseSRS and msrsQ then
+      BASE:I(SupportUnit .. " transmitting track switch on TacCommon")
+      local SRStext = ''
+      if trackname == "Default" then
+        SRStext = SupportUnit .. ", pushing to default track."
+      else
+        SRStext = SupportUnit .. ", pushing to track " .. trackname
+      end
+      local duration = STTS.getSpeechTime(SRStext,0.95)
+      msrs:SetLabel(SupportUnit)
+      msrsQ:NewTransmission(SRStext,duration,msrs,1,2)
+      msrs:SetLabel("MapSOP")
+    end
   end
 
   if SpawnGroup == nil then
@@ -1918,6 +1970,7 @@ function ManageFlights( SpawnGroupIn, SupportUnit, NewTrack )
     FlightGroup = FLIGHTGROUP:New(SpawnGroup)
     if not SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup then
       SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup = FlightGroup
+      SUPPORTUNITS["_"][SupportUnit].PreviousMission.voice = ENUMS.Voices[ math.random( #ENUMS.Voices )]
     end
   end
 
@@ -1994,6 +2047,7 @@ function ManageFlights( SpawnGroupIn, SupportUnit, NewTrack )
       end
       SUPPORTUNITS["_"][SupportUnit].PreviousMission.mission = self
       SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup = FlightGroup
+      SUPPORTUNITS["_"][SupportUnit].PreviousMission.voice = ENUMS.Voices[ math.random( #ENUMS.Voices )]
 
       self:GetOpsGroups()[1]:GetGroup():CommandSetCallsign(supportunitfields[ENUMS.SupportUnitFields.CALLSIGN], supportunitfields[ENUMS.SupportUnitFields.CALLSIGN_NUM])
       FlightGroup:SwitchRadio(tonumber(supportunitfields[ENUMS.SupportUnitFields.RADIOFREQ]))
@@ -2147,6 +2201,7 @@ function InitSupport( SupportBaseParam, RedSupportBase)
       SUPPORTUNITS["_"][SupportUnit].PreviousMission = {}
       SUPPORTUNITS["_"][SupportUnit].PreviousMission.flightgroup = nil
       SUPPORTUNITS["_"][SupportUnit].PreviousMission.mission = nil
+      SUPPORTUNITS["_"][SupportUnit].PreviousMission.voice = nil
     end
     
     local SupportUnitInfo = SupportUnitFields[ENUMS.SupportUnitFields.TEMPLATE] 
@@ -2393,7 +2448,7 @@ function InitNavySupport( AircraftCarriers, CarrierMenu)
                 Carriers[SupportUnit]:__Start(math.random(2,10))
 
                 if CarrierMenu == nil then
-                  CarrierMenu = MENU_COALITION:New(coalition.side.BLUE, "Carrier Control")
+                  CarrierMenu = MENU_COALITION:New(coalition.side.BLUE, "Carrier Control", BlueParentMenu)
                 end
                 local CarrierString = string.format("%s\n    -   ATC: %.2f MHz\n    - TACAN: %i%s %s \n    -  ICLS: %i \n    - LINK4: %.2f MHz", 
                                                     SupportUnit, SupportUnitFields[ENUMS.SupportUnitFields.RADIOFREQ], 
@@ -2484,16 +2539,15 @@ function EmergencyTacanReset( BeaconTable )
 
 end
 
-function SetupMANTIS()
-    local RedAwacs = SET_GROUP:New():FilterPrefixes('Red EWR AWACS'):FilterOnce():GetSetNames()
-    SET_GROUP:New():FilterPrefixes('Red SAM'):FilterOnce():GetSetNames()
+function SetupMANTIS(PrefixRedSAM,PrefixRedEWR,PrefixRedAWACS)
+    local NumRedAwacs = SET_GROUP:New():FilterPrefixes(PrefixRedAWACS):FilterOnce():Count()
     local RedIADS = nil
 
     -- Create the IADS network with wor without AWACS
-    if RedAwacs ~= {} then
-        RedIADS = MANTIS:New("RedIADS","Red SAM","Red EWR",nil,"red",false,"Red EWR AWACS")
+    if NumRedAwacs > 0 then
+        RedIADS = MANTIS:New("RedIADS",PrefixRedSAM,PrefixRedEWR,nil,"red",false,PrefixRedAWACS)
     else
-        RedIADS = MANTIS:New("RedIADS","Red SAM","Red EWR",nil,"red",false)
+        RedIADS = MANTIS:New("RedIADS",PrefixRedSAM,PrefixRedEWR,nil,"red",false)
     end
 
     -- Optional Zones for MANTIS IADS
@@ -2507,17 +2561,20 @@ function SetupMANTIS()
     return RedIADS
 end
 
-function SetupSKYNET()
+function SetupSKYNET(PrefixRedSAM,PrefixRedEWR,PrefixRedAWACS)
   local redIADS = nil
 
   --create an instance of the IADS
   redIADS = SkynetIADS:create('Red IADS')
 
-  --add all groups begining with group name 'SAM' to the IADS:
-  redIADS:addSAMSitesByPrefix('Red SAM')
+  --add all groups begining with SAM prefix to the IADS:
+  redIADS:addSAMSitesByPrefix(PrefixRedSAM)
 
-  --add all units with unit name beginning with 'EW' to the IADS:
-  redIADS:addEarlyWarningRadarsByPrefix('Red EWR')
+  --add all units with unit name beginning with EWR prefix to the IADS:
+  redIADS:addEarlyWarningRadarsByPrefix(PrefixRedEWR)
+
+  --add all units with unit name beginning with AWACS prefix to the IADS:
+  redIADS:addEarlyWarningRadarsByPrefix(PrefixRedAWACS)
 
   -- Debug messages to log only
   local iadsDebug = redIADS:getDebugSettings()
@@ -2533,12 +2590,21 @@ function SetupSKYNET()
   return redIADS
 end
 
+-- =============================================================
 -- Init MapSOP
+-- =============================================================
 
 local MapSopSettingsZone = ZONE:FindByName("MapSOP Settings")
 local MapSopSettings = {}
+
 if MapSopSettingsZone then
-  MapSopSettings = MapSopSettingsZone:GetAllProperties()
+  MapSopSettings = MapSopSettingsZone:GetAllProperties() or {}
+end
+
+for setting,value in pairs(MapSopSettings) do
+  if string.lower(value) == 'sop' then
+    MapSopSettings[setting] = nil
+  end
 end
 
 SpawnTemplateKeepCallsign = true -- Use MapSOP SPAWN:_Prepare() callsign hack
@@ -2546,7 +2612,67 @@ SpawnTemplateKeepCallsign = true -- Use MapSOP SPAWN:_Prepare() callsign hack
 local SupportBase = nil
 local RedSupportBase = nil
 local AircraftCarriers = nil
+
+local PrefixRedSAM = MapSopSettings.PrefixRedSAM or MAPSOPSETTINGS.Defaults.PrefixRedSAM
+local PrefixRedEWR = MapSopSettings.PrefixRedEWR or MAPSOPSETTINGS.Defaults.PrefixRedEWR
+local PrefixRedAWACS = MapSopSettings.PrefixRedAWACS or MAPSOPSETTINGS.Defaults.PrefixRedAWACS
+local TacCommon = MapSopSettings.TacCommon or MAPSOPSETTINGS.Defaults.TacCommon
+local PauseTime = MapSopSettings.PauseTime or MAPSOPSETTINGS.Defaults.PauseTime
+local UseSRS = MapSopSettings.UseSRS or MAPSOPSETTINGS.Defaults.UseSRS
+local UseSubMenu = MapSopSettings.UseSubMenu or MAPSOPSETTINGS.Defaults.UseSubMenu
+
+local UseSubMenuText = 'false'
+local UseSRSText = 'false'
+
+if UseSubMenu then
+  UseSubMenuText = 'true'
+end
+
+if UseSRS then
+  UseSRSText = 'true'
+end
+
+env.info("")
+env.info("== MapSOP Settings ==")
+env.info("  PauseTime      : " .. PauseTime)
+env.info("  UseSubMenu     : " .. UseSubMenuText)
+env.info("  UseSRS         : " .. UseSRSText)
+env.info("  TacCommon      : " .. TacCommon)
+env.info("  PrefixRedSAM   : " .. PrefixRedSAM)
+env.info("  PrefixRedEWR   : " .. PrefixRedEWR)
+env.info("  PrefixRedAWACS : " .. PrefixRedAWACS)
+env.info("")
+
+local BlueParentMenu
+local RedParentMenu
+
+-- Parent MapSOP menu if enabled
+if UseSubMenu then
+  BlueParentMenu = MENU_COALITION:New(coalition.side.BLUE, "MapSOP Controls")
+  RedParentMenu = MENU_COALITION:New(coalition.side.RED, "MapSOP Controls")
+end
+
+-- Tanker / AWACS menus
+local TankerMenu = MENU_COALITION:New(coalition.side.BLUE, "Tanker Control", BlueParentMenu)
+local AWACSMenu = MENU_COALITION:New(coalition.side.BLUE, "AWACS Control", BlueParentMenu)
+local RedTankerMenu = MENU_COALITION:New(coalition.side.RED, "Tanker Control", RedParentMenu)
+local RedAWACSMenu = MENU_COALITION:New(coalition.side.RED, "AWACS Control", RedParentMenu)
 local CarrierMenu = nil
+
+local msrs, msrsQ
+if UseSRS then
+  -- If DCS-gRPC is present, make sure it is loaded.
+  if GRPC then
+    GRPC.load()
+  end
+  MSRS.SetDefaultBackendGRPC()
+  msrs = MSRS:New('', TacCommon)
+  msrs:SetLabel("MapSOP")
+  msrs:SetGoogle()
+
+  msrsQ = MSRSQUEUE:New("Support Units")
+  msrsQ:SetTransmitOnlyWithPlayers(true)
+end 
 
 -- Initialize Airbase & Carriers
 SupportBase, RedSupportBase, AircraftCarriers = InitSupportBases()
@@ -2558,14 +2684,14 @@ InitSupport(SupportBase, RedSupportBase)
 local Carriers = InitNavySupport(AircraftCarriers, CarrierMenu)
 
 -- Base Tacan reset menu
-local TacanMenu = MENU_MISSION:New("TACAN Control")
-local TacanMenu1 = MENU_MISSION_COMMAND:New("Emergency TACAN reset", TacanMenu, EmergencyTacanReset, { SupportBeacons, Carriers } )
+local BlueTacanMenu = MENU_COALITION:New(coalition.side.BLUE, "TACAN Control", BlueParentMenu)
+local TacanMenu1 = MENU_COALITION_COMMAND:New(coalition.side.BLUE, "Emergency TACAN reset", BlueTacanMenu, EmergencyTacanReset, { SupportBeacons, Carriers } )
 
 -- Setup either MANTIS or SKYNET IADS
 RedIADS = nil
-local RedSAMs = SET_GROUP:New():FilterPrefixes('Red SAM'):FilterOnce():GetSetNames()
+local NumRedSAMs = SET_GROUP:New():FilterPrefixes(PrefixRedSAM):FilterOnce():Count()
 
-if table.getn(RedSAMs) > 0 then
+if NumRedSAMs > 0 then
   BASE:I("Initializing IADS...")
   if samTypesDB == nil then
     BASE:I("Initializing MANTIS IADS.")
@@ -2581,7 +2707,6 @@ end
 -- Server Pause/Resume behavior
 local UnpauseZoneSet = SET_ZONE:New():FilterPrefixes("Unpause Client"):FilterOnce()
 local UnpauseUnitNames = {}
-local PauseTime = tonumber(MapSopSettings['PauseTime'] or MapSopSettings['pausetime'] or MapSopSettings['PAUSETIME'] or 30)
 
 local ClientSet = SET_CLIENT:New():FilterActive()
 
@@ -2603,7 +2728,6 @@ local ConsecutiveNoAlive = nil
 local UnpauseClientsSlotted = nil
 
 if PauseTime > 0 then
-
   SCHEDULER:New( nil, 
   function()
     if not UnpauseClientsSlotted then
