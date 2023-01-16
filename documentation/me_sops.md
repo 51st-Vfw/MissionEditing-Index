@@ -224,7 +224,7 @@ VFW operates.
 
 |Airframe|Speed (KIAS)|Altitude|Notes|
 |---|:---:|:---:|---|
-|AV-8B|275|FL150-FL200|
+|AV-8B|240-275|FL150-FL200|
 |A-10C|220|FL150|
 |F-14B|275-285|FL300|Source has no data, assumed to match F/A-18C
 |F-16C|315|FL300|
@@ -244,8 +244,8 @@ the DCS Mission Editor to achieve the default KIAS at the default altitude in ca
 |---|:---:|:---:|:---:|:---:|---|
 |KC-135|F-16C|FL250|300|475|Boom, High Speed
 |KC-135|A-10C|FL150|220|276|Boom, Low Speed
-|KC-135 MPRS|AV8-B, F-14B, F/A-18C|FL200|285|384|Probe & Drogue
-|KC-135 MPRS|AV8-B, F-14B, F/A-18C|FL210|285|388|Probe & Drogue
+|KC-135 MPRS|AV8-B, F-14B, F/A-18C|FL200|285|384|Probe & Drogue, Low Speed
+|KC-130J MPRS|AV8-B|FL170|240|336|Probe & Drogue, Low Speed
 |S-3B Tanker|AV8-B, F-14B, F/A-18C|6000 MSL|285|309|Carrier
 
 Keep in mind that ground speed may change based on altitude or other factors and may need to be
@@ -327,7 +327,7 @@ flight names to differentiate the different taker airframes,
 
 - *Texaco* flights support Air Force units (KC-135, boom, land-based), these flights may be
   low speed (for use by A-10C units) or high speed (for use by F-16C units)
-- *Arco* flights support Navy units (KC-135 MPRS, probe & drogue, land-based)
+- *Arco* flights support Navy units (KC-135 MPRS, KC-130 MPRS, probe & drogue, land-based)
 - *Shell* flights support carrier recovery for Navy units (S-3B, probe & drogue,
   carrier-based)
 
@@ -338,7 +338,7 @@ for the non-recovery tankers supporting AAR.
 |Tanker|TACAN|Frequency|Notes|   |Tanker|TACAN|Frequency|Notes|
 |---|:---:|:---:|:---|---|---|:---:|:---:|---|
 |Texaco 1-1<br>*Boom*|51Y|251.00|FL250<br>300KIAS|    |Texaco 2-1<br>*Boom*|52Y|252.00|15000 MSL<br>220KIAS
-|Arco 1-1<br>*Probe & Drogue*|53Y|253.00|FL200<br>285KIAS|    |Arco 2-1<br>*Probe & Drogue*|54Y|254.00|FL210<br>285KIAS|
+|Arco 1-1<br>*Probe & Drogue*|53Y|253.00|FL200<br>285KIAS|    |Arco 2-1<br>*Probe & Drogue*|54Y|254.00|FL170<br>240KIAS|
 
 To eliminate some complexity, tanker TACAN channel and frequencies for non-recovery tankers should be
 related as shown in the table above (that is, frequency is always 200 + TACAN channel).
