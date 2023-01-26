@@ -1,13 +1,13 @@
 # Mission Editing and Packaging Workflow
 
-_Version: 2.0.1 of 24-Sep-22_
+_Version: 2.1.0 of 21-Jan-23_
 
 > The workflow builds on the [VEAF](https://github.com/VEAF) mission creation and conversion
 > tools, using some of the VEAF scripts along with techniques borrowed from VEAF and previous
 > 51st VFW workflows.
 
 This document describes a directory structure and workflows for mission editing that supports
-packaging missions and associated materials. As of DCS 2.7, the handling of assets such as
+packaging missions and associated materials. As of DCS 2.8, the handling of assets such as
 external Lua scripts or kneeboards in the DCS Mission Editor (DCS ME) is clumsy, at best;
 and hostile, at worst. This workflow attempts to help make that less painful.
 
@@ -18,35 +18,35 @@ Generally, when using the workflow, you will need to have a `cmd.exe` shell runn
 > Using all capabilities of the workflow requires some basic familiarity with programming
 > and scripting concepts.
 
-A mission template set up for the workflow is available through the 51st VFW `git` repository
-at
+A mission template set up for the workflow, `VFW51_Core_Mission`, is available through the
+51st VFW `git` repository at
 [51st VFW Mission Templates](https://github.com/51st-Vfw/MissionEditing-Templates).
 For those not familiar with `git`, a `.zip` file with the template is available at
 [TODO](TODO).
-The templates support all of the maps currently active in the wing.
+The template supports all of the maps currently active in the wing.
 
 # Quick Start Guide
 
 To use the workflow,
 
-- Install `7-zip`, `Lua`, and (optional) `ImageMagick` tools, see
+- Install `7-zip`, `Lua`, and (optionally) `ImageMagick` tools, see
   [Before Using the Workflow](#Before-Using-the-Workflow)
   for further details.
 - Copy the entire `VFW51_Core_Mission` directory to where you store your missions and rename it
-  to match the name of your mission. The path to this directory, the "mission directory", should
+  to match the name of your mission. The path to this directory, the "mission directory", must
   contain only alphanumeric, "-", and "_" characters.
-- Start `cmd.exe` and change directories to the mission directory you created in the previous
-  step.
-- If you are creating a new mission, run "`scripts\setup.cmd --map <map>`" where `<map>` is
-  either "CAU" (Caucuses), "MAR" (Marianas), "NTTR" (NTTR), "PG" (Persian Gulf), or "SYR"
-  (Syria) depending on the map your mission uses, see
+- Launch a `cmd.exe` shell and change directories to the mission directory you created in the
+  previous step.
+- If you are creating a new mission, run "`scripts\setup.cmd --map <map>`" in the shell. Here,
+  `<map>` is either "CAU" (Caucuses), "MAR" (Marianas), "NTTR" (NTTR), "PG" (Persian Gulf), "SAT"
+  (South Atlantic) or "SYR" (Syria) depending on the map your mission uses, see
   [Creating a Mission That Uses the Workflow](#Creating-a-Mission-That-Uses-the-Workflow).
-- Run `scripts\build.cmd` to rebuild the mission and synchronize the mission directory with the
-  `.miz` package, see
+- Run `scripts\build.cmd` in the shell to rebuild the mission and synchronize the mission
+  directory with the `.miz` package, see
   [Basic Concepts and Operation](#Basic-Concepts-and-Operation).
   Generally, you should do this every time you make changes to the mission.
 
-It is worth reading on, the wokflow can do a lot more than you can describe in a paragraph or
+It is worth reading on, the wokflow can do a lot more than we can describe in a paragraph or
 two...
 
 # Workflow Capabilities
@@ -58,7 +58,8 @@ source control systems to allow more efficient collaboartion.
 
 The workflow assmebles a `.miz` file for the mission from the associated source files. In
 addition, it supports the automatic generation of mission variants that differ from the base
-mission in DCS mission options (such as dot labels or F10 map setup), weather, or time of day.
+mission in DCS mission options (such as dot labels or F10 map setup, weather, time of day,
+or mission contents).
 
 During assembly, the workflow can make edits to internal mission state on a unit or group
 basis. This allows for easier setup of radio presets or mission steerpoints without requiring
@@ -94,9 +95,9 @@ Each of these tools must appear in the system or user `PATH` environment variabl
 workflow to operate correctly (see below). In addition to these tools that the workflow
 directly uses, you may also want to install,
 
-- [Visual Studio Code](https://code.visualstudio.com/) is an IDE that supports Lua
-  development. You should also install the Lua plug-in from VSC to get syntax checking
-  and other nice things.
+- [Visual Studio Code](https://code.visualstudio.com/) is a free Microsoft IDE that supports
+  Lua development. You should also install the Lua plug-in from VSC to get syntax checking
+  and other nice things if you want to use Lua in your mission.
 - [GitHub](https://desktop.github.com/) is a desktop `git` client to allow access to
   the 51st VFW repositories and enable collaboration between multiple designers on a
   shared mission.
@@ -116,14 +117,14 @@ appropriate directory to your `PATH`.
 The workflow operates in a _Mission Directory_ that contains all of the files related to the
 mission, including source, scripts, internal `.miz` files, etc. A mission directory has the
 same name as the base mission. For example, the mission directory for a mission
-`Breaking_Bad.miz` would be `C:\Users\Raven\DCS_miz\Breaking_Bad`. Due to scripting
+`Breaking_Bad.miz` might be `C:\Users\Raven\DCS_miz\Breaking_Bad`. Due to scripting
 limitations, the full path to a mission directory should only contain alphanumeric,
 "-", and "_" characters. For example, `C:\Users\Raven\DCS Missions\Reactor #5 Strike` is not
 a valid mission directory name.
 
-> Just keep paths to alphanumeric, "-", and "_" characters, and we'll all be happy.
+> Just keep paths to alphanumeric, "-", and "_" characters, and everyone will be happy.
 
-The top level of a mission directory contains the following directories,
+The top level of a mission directory contains the following subdirectories,
 
 - `backup\` holds backups of the previous version of the `.miz` files generated by a mission
   build.
@@ -137,14 +138,14 @@ In addition to these directories, the top level of the mission directory typical
 `README` file and a number of packaged `.miz` files that provide different variants of the
 base mission.
 
-Mission files are named `<mission_name>[-<variant>].miz` where the "base" mission does not
-include `[-<variant>]`. In the mission name, `[-<variant>]` is the name of an optional
-automatically-generated "variant" of the base mission that differs from the base mission in
-weather, time of mission, or mission options.
+Mission files are generally named `<mission_name>[-<variant>].miz` where the "base" mission
+does not include `[-<variant>]`. In the mission name, `[-<variant>]` is the name of an
+optional automatically-generated "variant" of the base mission that differs from the base
+mission in weather, time of mission, mission options, etc.
 
 # Creating a Mission That Uses the Workflow
 
-There are two ways to set up a mission that uses with the 51st VFW workflow: create the
+There are two ways to set up a mission that uses with the 51st VFW workflow: create a new
 mission from a 51st VFW mission template or transition an existing mission to use the
 workflow.
 
@@ -156,14 +157,14 @@ can find this directory in the
 repository on GitHub or as a separate
 [`.zip` package](TODO_LINK).
 
-> If you are working from GitHub, you will want to make a copy of `VFW51_Core_Mission` outside
-> of the repository, since you don't want to change the template in the repository.
+> If you are working from GitHub, you must make a copy of the `VFW51_Core_Mission` directory
+> outside of the repository since you don't want to change the template in the repository.
 
 The copy of the `VFW51_Core_Mission` directory should be moved to where ever you want to store
-your missions and renamed to the mission name. The path to this directory should include only
-alphanumeric, "-" and "_" characters as discussed earlier. For example, assuming the new
-mission is to be called `Breaking_Bad` and the directory where you store missions is
-`C:\Users\Raven\DCS_Missions\` you would do something like this,
+your missions and then renamed to match the mission name. The path to this directory should
+include only alphanumeric, "-" and "_" characters as discussed earlier. For example, assuming
+you want to name the new mission `Breaking_Bad` and the directory where you store missions is
+`C:\Users\Raven\DCS_Missions\` you would use something like this,
 
 ```
 C:\Users\Raven\DCS_Missions\> move VFW51_Core_Mission Breaking_Bad
@@ -183,17 +184,17 @@ maps include Caucuses (CAU), Marianas (MAR), NTTR (NTTR), Persian Gulf (PG), Sou
 > `VFW51_Core_Mission` directory. The workflow will complete their setup.
 
 To complete setup from a template, run the `setup.cmd` script from the root of the mission
-directory. For example, to set up the `Breaking_Bad` mission from the NTTR map,
+directory. For example, to set up the `Breaking_Bad` mission to use the NTTR map,
 
 ```
 C:\Users\Raven\DCS_Missions\Breaking_Bad\> scripts\setup.cmd --map NTTR
 ```
 
-This will create a `Breaking_Bad.miz` file from the template and synchronize it with the
-contents of the mission directory. Setup will also remove any uneeded files such as the
+This will create a `Breaking_Bad.miz` file from the NTTR template and synchronize it with
+the contents of the mission directory. Setup will also remove any uneeded files such as the
 templates for the other maps.
 
-At this point, the mission directory is setup and ready for use.
+At this point, the mission directory is set up and ready for use.
 
 ## Updating an Existing Mission to Use the Workflow
 
@@ -216,10 +217,11 @@ directory and perform some additional setup.
 > directory paths: it should only contain alphanumeric, "-", and "_" characters.
 
 Once this script completes, the mission directory is only partially built. After the first
-run is complete, the `src\miz_core\` subdirectory will contain the files extracted from the
-`.miz` package. Files such as scripts, kneeboards, or briefing panels will need to be
-manually moved into their correct locations in the mission directory. Once this manual step
-is complete, you run `setup.cmd` again with `--finalize` to complete the setup.
+run of `setup.cmd` is complete, the `src\miz_core\` subdirectory will contain the files
+extracted from the `.miz` package. Files such as scripts, kneeboards, or briefing panels
+will need to be manually moved into their correct locations in the mission directory. Once
+this manual step is complete, you run `setup.cmd` again with `--finalize` to complete the
+setup.
 
 ```
 C:\Users\Raven\DCS_Missions\Breaking_Bad\> scripts\setup.cmd --finalize
@@ -245,8 +247,8 @@ a DCS `.miz` package for the mission. Within this directory,
 
 The `scripts\` subdirectory of a mission directory contains the scripts that support the
 workflow. All scripts are run from the root of the mission directory using a shell such as
-`cmd.exe` in Windows. Scripts will also support a `--help` command line argument to output
-some usage infomration.
+`cmd.exe` in Windows. The scripts support a `--help` command line argument to output usage
+and help infomration.
 
 The workflow relies on two main scripts: `sync.cmd` and `build.cmd`. Generally speaking,
 `sync.cmd` moves data from the `.miz` package to the mission directory while `build.cmd`
@@ -291,7 +293,8 @@ The `build.cmd` script has several command line arguments. The main arguments in
 - `--dirty` disables deletion of the mission package build directory, `build\miz_image\`, after
   the build is complete allowing you to examine what was built in to the `.miz` packages.
 - `--dynamic` builds `.miz` mission packages to use dynamic script handling. By default, the
-  workflow will build packages for static script handling.
+  workflow will build packages for static script handling. You should only use `--dynamic` when
+  running the mission locally.
 - `--nosync` prevents `build.cmd` from running `sync.cmd` prior to bulding the `.miz` packages.
 - `--base` builds the base mission variant only and does not build any other variants the
   mission directory specifies, see
@@ -316,8 +319,9 @@ ME before running `build.cmd`.
 The workflow allows you to edit and inject different types of information into the mission
 package. Each type of information has its own subdirectory in the `src\` subdirectory of the
 mission directory. Generally, you will put relevant files into the appropriate subdirectory
-and edit a settings file to make changes. The build scripts will use the settings and
-relevant files to assemble the `.miz` packages at build time via the `build.cmd` script.
+and edit a settings file to incorporate the information into the mission. The build scripts
+will use the settings and relevant files to assemble the `.miz` packages at build time via
+the `build.cmd` script.
 
 > The workflow uses Lua tables to specify settings. Though often it should be clear how
 > to change the settings file, an basic understanding of Lua tables may be helpfu. See this
@@ -344,10 +348,10 @@ AudioSettings = {
 ```
 
 This makes the audio files available to the mission. Playing the audio files requires the use
-of scripting or triggers as usual.
+of scripting or triggers as normal.
 
-When building the mission, the workflow copies the audio files into the `.miz` package as well
-as updating a workflow-managed trigger that ensures the mission references all audio files
+When building the mission, the workflow copies the audio files into the `.miz` package and
+updates a workflow-managed trigger that ensures the mission references all audio files
 (this is necessary to keep the DCS ME from deleting files that do not appear in DCS ME
 triggers, see
 [DCS ME Resource References](#DCS-ME-Resource-References)
@@ -479,7 +483,7 @@ DCS ME files according to the settings.
 
 The settings file contains several Lua tables. The `RadioPresets[Warbird]<Blue|Red>` tables
 establish the maping between a preset button and frequency and description by unit properties.
-A series of rules define the mapping. For example, in `RadioPresetsBlue`
+A series of rules define the mapping. For example, in `RadioPresetsBlue`, the key/value pair
 
 ```
 ["$RADIO_1_10"] = {
@@ -488,15 +492,15 @@ A series of rules define the mapping. For example, in `RadioPresetsBlue`
 },
 ```
 
-sets Preset 10 on radio 1 (UHF) to 271.40MHz (CVN-71 ATC) on blue F-14B and FA-18C airframes
-and unused on all other blue airframes. The `"p"` key defines a pattern of the forma
+will set Preset 10 on radio 1 (UHF) to 271.40MHz (CVN-71 ATC) on blue F-14B and FA-18C
+airframes and unused on all other blue airframes. The `"p"` key defines a pattern of the form
 `<airframe>:<name>:<callsign>` that detemines whether the rule applies to a given unit. To
 match a given row in a `RadioPresets` table, a unit's airframe must match `<airframe>` exactly,
 and the unit's group name and callsign must contain `<name>` and `<callsign>`. The value `"*"`
 matches anything.
 
 When determining the frequency and description to use for a unit, the rules for a preset on
-a radio are applied in order they appear in the array. For example,
+a radio are applied in order they appear in the array. For example, they key/value pair
 
 ```
 ["$RADIO_1_10"] = {
@@ -603,20 +607,22 @@ This would install the waypoints in any group with a name that contains `CAP_`; 
 
 The `src\variants\` subdirectory of a mission directory contains settings for the mission
 variants that are generated when the mission is built. Mission variants differ from the base
-mission in time of day, weather, or DCS mission options. To change variants, update the
-`vfw51_variant_settings.lua` settings file in the `src\variants\` subdirectory.
+mission in time of day, weather, or DCS mission options. Variants may also redact units and
+scripting to make them suitable for planning purposes. To change the variants created by the
+`build.cmd` script, update the `vfw51_variant_settings.lua` settings file in the
+`src\variants\` subdirectory.
 
 When building the mission, the workflow will first build the base variant and then modify
-it to create mission files for each of the variants defined in the settings.
+it to create mission files for each of the variants defined in the variant settings.
 
 > When given the `--base` argument, `build.cmd` will only build the base mission and will not
 > build any of the variants the settings file describes.
 
 The settings file contains the `VariantSettings` Lua table that defines the "moments" (i.e.,
-time of day), weather, and options for each variant. Separate Lua files in the
+time of day), weather, options, and redactions for each variant. Separate Lua files in the
 `src\variants\` subdirectory define the specific weather and option configurations to apply
-to the base to create the variant. These files are in the internal mission format from the DCS
-ME.
+to the base mission build to create the variant. These files are in the internal mission
+format from the DCS ME.
 
 Given a `.miz` mission package with the desired weather or options settings, the `extract.cmd`
 script can be used to extract the information of interest from an existing mission. The output

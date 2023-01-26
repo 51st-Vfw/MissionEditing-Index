@@ -58,3 +58,10 @@ TODO
 
 [IADS](https://github.com/walder/Skynet-IADS)
 
+# Useful Links
+
+Some useful links,
+
+* Desert Storm Era
+  [loadout references](https://www.dstorm.eu/pages/loadout/loadout.html)
+* [SAM Locator](https://v303rdfightergroup.com/index.php?pubs%2Fglobal-sam-site-location-reference.132%2F&fbclid=IwAR2LZmsosNhAiyx2ola0rqnnKCyC1r4iIZQuF3nAsmwXT_5dz8G5GZMVjq0&mibextid=Zxz2cZ) based on publically-available information

@@ -640,13 +640,3 @@ Missions designers are encouraged to leave preset 1 as Tactical Common or Intraf
 Beyond that suggestion, missions are free to re-purpose or drop the remaining presets based on the
 needs of the mission. Unassigned or repurposed presets may be assigned to mission-specific
 frequencies as necessary.
-
-# TODO
-
-- [] Add mids and tacan overlap documentation (don't mix the freqs!)
-- [] Standard comms ladder per aircraft?
-
-- loadout references [Desert Storm Era](https://www.dstorm.eu/pages/loadout/loadout.html)
-
-
-
