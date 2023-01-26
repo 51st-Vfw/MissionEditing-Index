@@ -1,4 +1,4 @@
-env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-08T18:32:50.0000000Z-cee72c1d09ef9268f801f127ba73d275a66a984c ***')
+env.info('*** MOOSE GITHUB Commit Hash ID: 2023-01-22T12:11:13.0000000Z-24d47ef353558883bfa24fe43d0e17698b9025f4 ***')
 env.info('*** MOOSE STATIC INCLUDE START *** ')
 ENUMS={}
 ENUMS.ROE={
@@ -4958,6 +4958,12 @@ return datatable,fires
 end
 function UTILS.LoadSetOfGroups(Path,Filename,Spawn,Structured,Cinematic,Effect,Density)
 local fires={}
+local usedtemplates={}
+local spawn=true
+if Spawn==false then spawn=false end
+local filename=Filename or"SetOfGroups"
+local setdata=SET_GROUP:New()
+local datatable={}
 local function Smokers(name,coord,effect,density)
 local eff=math.random(8)
 if type(effect)=="number"then eff=effect end
@@ -4981,32 +4987,10 @@ if reduced==anzahl then break end
 end
 end
 end
-local spawn=true
-if Spawn==false then spawn=false end
-local filename=Filename or"SetOfGroups"
-local setdata=SET_GROUP:New()
-local datatable={}
-if UTILS.CheckFileExists(Path,filename)then
-local outcome,loadeddata=UTILS.LoadFromFile(Path,Filename)
-table.remove(loadeddata,1)
-for _id,_entry in pairs(loadeddata)do
-local dataset=UTILS.Split(_entry,",")
-local groupname=dataset[1]
-local template=dataset[2]
-local size=tonumber(dataset[3])
-local posx=tonumber(dataset[4])
-local posy=tonumber(dataset[5])
-local posz=tonumber(dataset[6])
-local structure=dataset[7]
-local coordinate=COORDINATE:NewFromVec3({x=posx,y=posy,z=posz})
-local group=nil
-local data={groupname=groupname,size=size,coordinate=coordinate,template=template}
-table.insert(datatable,data)
-if spawn then
-local group=SPAWN:New(template)
-:InitDelayOff()
-:OnSpawnGroup(
-function(spwndgrp)
+local function PostSpawn(args)
+local spwndgrp=args[1]
+local size=args[2]
+local structure=args[3]
 setdata:AddObject(spwndgrp)
 local actualsize=spwndgrp:CountAliveUnits()
 if actualsize>size then
@@ -5039,8 +5023,60 @@ end
 end
 end
 end
-)
-:SpawnFromCoordinate(coordinate)
+local function MultiUse(Data)
+local template=Data.template
+if template and usedtemplates[template]and usedtemplates[template].used and usedtemplates[template].used>1 then
+if not usedtemplates[template].done then
+local spwnd=0
+local spawngrp=SPAWN:New(template)
+spawngrp:InitLimit(0,usedtemplates[template].used)
+for _,_entry in pairs(usedtemplates[template].data)do
+spwnd=spwnd+1
+local sgrp=spawngrp:SpawnFromCoordinate(_entry.coordinate,spwnd)
+BASE:ScheduleOnce(0.5,PostSpawn,{sgrp,_entry.size,_entry.structure})
+end
+usedtemplates[template].done=true
+end
+return true
+else
+return false
+end
+end
+if UTILS.CheckFileExists(Path,filename)then
+local outcome,loadeddata=UTILS.LoadFromFile(Path,Filename)
+table.remove(loadeddata,1)
+for _id,_entry in pairs(loadeddata)do
+local dataset=UTILS.Split(_entry,",")
+local groupname=dataset[1]
+local template=dataset[2]
+local size=tonumber(dataset[3])
+local posx=tonumber(dataset[4])
+local posy=tonumber(dataset[5])
+local posz=tonumber(dataset[6])
+local structure=dataset[7]
+local coordinate=COORDINATE:NewFromVec3({x=posx,y=posy,z=posz})
+local group=nil
+if size>0 then
+local data={groupname=groupname,size=size,coordinate=coordinate,template=template,structure=structure}
+table.insert(datatable,data)
+if usedtemplates[template]then
+usedtemplates[template].used=usedtemplates[template].used+1
+table.insert(usedtemplates[template].data,data)
+else
+usedtemplates[template]={
+data={},
+used=1,
+done=false,
+}
+table.insert(usedtemplates[template].data,data)
+end
+end
+end
+for _id,_entry in pairs(datatable)do
+if spawn and not MultiUse(_entry)and _entry.size>0 then
+local group=SPAWN:New(_entry.template)
+local sgrp=group:SpawnFromCoordinate(_entry.coordinate)
+BASE:ScheduleOnce(0.5,PostSpawn,{sgrp,_entry.size,_entry.structure})
 end
 end
 else
@@ -8079,8 +8115,10 @@ end
 if Event.place then
 if Event.id==EVENTS.LandingAfterEjection then
 else
+if Event.place:isExist()and Event.place:getCategory()~=Object.Category.SCENERY then
 Event.Place=AIRBASE:Find(Event.place)
 Event.PlaceName=Event.Place:GetName()
+end
 end
 end
 if Event.idx then
@@ -16130,7 +16168,7 @@ function SPAWN:NewFromTemplate(SpawnTemplate,SpawnTemplatePrefix,SpawnAliasPrefi
 local self=BASE:Inherit(self,BASE:New())
 self:F({SpawnTemplate,SpawnTemplatePrefix,SpawnAliasPrefix})
 if SpawnAliasPrefix==nil or SpawnAliasPrefix==""then
-BASE:I("ERROR: in function NewFromTemplate, required paramter SpawnAliasPrefix is not set")
+BASE:I("ERROR: in function NewFromTemplate, required parameter SpawnAliasPrefix is not set")
 return nil
 end
 if SpawnTemplate then
@@ -21971,6 +22009,17 @@ priority=Priority or 0
 }
 return DCSTask
 end
+function CONTROLLABLE:EnRouteTaskSEAD(TargetTypes,Priority)
+local DCSTask={
+id='EngageTargets',
+key="SEAD",
+params={
+targetTypes=TargetTypes or{"Air Defence"},
+priority=Priority or 0
+}
+}
+return DCSTask
+end
 function CONTROLLABLE:EnRouteTaskEngageGroup(AttackGroup,Priority,WeaponType,WeaponExpend,AttackQty,Direction,Altitude,AttackQtyLimit)
 local DCSTask={
 id='EngageControllable',
@@ -23513,10 +23562,17 @@ local DCSGroup=self:GetDCSObject()
 if DCSGroup then
 local UnitFound=nil
 local units=DCSGroup:getUnits()or{}
+if units[UnitNumber]then
+local UnitFound=UNIT:Find(units[UnitNumber])
+if UnitFound then
+return UnitFound
+end
+else
 for _,_unit in pairs(units)do
 local UnitFound=UNIT:Find(_unit)
 if UnitFound then
 return UnitFound
+end
 end
 end
 end
@@ -23528,7 +23584,6 @@ if DCSGroup then
 if DCSGroup.getUnit and DCSGroup:getUnit(UnitNumber)then
 return DCSGroup:getUnit(UnitNumber)
 else
-local UnitFound=nil
 local units=DCSGroup:getUnits()or{}
 for _,_unit in pairs(units)do
 if _unit and _unit:isExist()then
@@ -23578,6 +23633,15 @@ if unit and unit:IsAlive()then
 return unit
 end
 end
+end
+return nil
+end
+function GROUP:GetFirstUnit()
+self:F3({self.GroupName})
+local DCSGroup=self:GetDCSObject()
+if DCSGroup then
+local units=self:GetUnits()
+return units[1]
 end
 return nil
 end
@@ -38377,7 +38441,7 @@ eventsmoose=true,
 reportplayername=false,
 }
 PSEUDOATC.id="PseudoATC | "
-PSEUDOATC.version="0.9.3"
+PSEUDOATC.version="0.9.4"
 function PSEUDOATC:New()
 local self=BASE:Inherit(self,BASE:New())
 self:E(PSEUDOATC.id..string.format("PseudoATC version %s",PSEUDOATC.version))
@@ -38556,12 +38620,14 @@ self:F2({unit=unit,place=place})
 local group=unit:GetGroup()
 local GID=group:GetID()
 local UID=unit:GetDCSObject():getID()
-local PlayerName=self.group[GID].player[UID].playername
-local UnitName=self.group[GID].player[UID].unitname
-local GroupName=self.group[GID].player[UID].groupname
-local text=string.format("Player %s in unit %s of group %s (id=%d) landed at %s.",PlayerName,UnitName,GroupName,GID,place)
+local PlayerName=unit:GetPlayerName()or"Ghost"
+local UnitName=unit:GetName()or"Ghostplane"
+local GroupName=group:GetName()or"Ghostgroup"
+if self.Debug then
+local text=string.format("Player %s in unit %s of group %s landed at %s.",PlayerName,UnitName,GroupName,place)
 self:T(PSEUDOATC.id..text)
 MESSAGE:New(text,30):ToAllIf(self.Debug)
+end
 self:AltitudeTimerStop(GID,UID)
 if place and self.chatty then
 local text=string.format("Touchdown! Welcome to %s pilot %s. Have a nice day!",place,PlayerName)
@@ -38571,15 +38637,15 @@ end
 function PSEUDOATC:PlayerTakeOff(unit,place)
 self:F2({unit=unit,place=place})
 local group=unit:GetGroup()
-local GID=group:GetID()
-local UID=unit:GetDCSObject():getID()
-local PlayerName=self.group[GID].player[UID].playername
-local CallSign=self.group[GID].player[UID].callsign
-local UnitName=self.group[GID].player[UID].unitname
-local GroupName=self.group[GID].player[UID].groupname
-local text=string.format("Player %s in unit %s of group %s (id=%d) took off at %s.",PlayerName,UnitName,GroupName,GID,place)
+local PlayerName=unit:GetPlayerName()or"Ghost"
+local UnitName=unit:GetName()or"Ghostplane"
+local GroupName=group:GetName()or"Ghostgroup"
+local CallSign=unit:GetCallsign()or"Ghost11"
+if self.Debug then
+local text=string.format("Player %s in unit %s of group %s took off at %s.",PlayerName,UnitName,GroupName,place)
 self:T(PSEUDOATC.id..text)
 MESSAGE:New(text,30):ToAllIf(self.Debug)
+end
 if place and self.chatty then
 local text=string.format("%s, %s, you are airborne. Have a safe trip!",place,CallSign)
 if self.reportplayername then
@@ -62259,6 +62325,8 @@ conditionStart={},
 conditionSuccess={},
 conditionFailure={},
 conditionPush={},
+conditionSuccessSet=false,
+conditionFailureSet=false,
 }
 _AUFTRAGSNR=0
 AUFTRAG.Type={
@@ -62364,7 +62432,7 @@ HELICOPTER="Helicopter",
 GROUND="Ground",
 NAVAL="Naval",
 }
-AUFTRAG.version="0.9.9"
+AUFTRAG.version="0.9.10"
 function AUFTRAG:New(Type)
 local self=BASE:Inherit(self,FSM:New())
 _AUFTRAGSNR=_AUFTRAGSNR+1
@@ -62620,6 +62688,7 @@ mission.optionROT=ENUMS.ROT.EvadeFire
 mission.missionFraction=1.0
 mission.missionSpeed=Speed and UTILS.KnotsToKmph(Speed)or nil
 mission.missionAltitude=Altitude and UTILS.FeetToMeters(Altitude)or nil
+mission.dTevaluate=15
 mission.categories={AUFTRAG.Category.AIRCRAFT}
 mission.DCStask=mission:GetDCSMissionTask()
 return mission
@@ -63552,6 +63621,7 @@ if arg then
 condition.arg=arg
 end
 table.insert(self.conditionSuccess,condition)
+self.conditionSuccessSet=true
 return self
 end
 function AUFTRAG:AddConditionFailure(ConditionFunction,...)
@@ -63562,6 +63632,7 @@ if arg then
 condition.arg=arg
 end
 table.insert(self.conditionFailure,condition)
+self.conditionFailureSet=true
 return self
 end
 function AUFTRAG:AddConditionPush(ConditionFunction,...)
@@ -63840,6 +63911,14 @@ local asset=_asset
 text=text..string.format("\n[%d] %s: spawned=%s, requested=%s, reserved=%s",i,asset.spawngroupname,tostring(asset.spawned),tostring(asset.requested),tostring(asset.reserved))
 end
 self:I(self.lid..text)
+end
+if self.conditionFailureSet then
+local failed=self:EvalConditionsAny(self.conditionFailure)
+if failed then self:__Failed(-1)end
+end
+if self.conditionSuccessSet then
+local success=self:EvalConditionsAny(self.conditionSuccess)
+if success then self:__Success(-1)end
 end
 local ready2evaluate=self.Tover and Tnow-self.Tover>=self.dTevaluate or false
 if self:IsOver()and ready2evaluate then
@@ -65024,7 +65103,7 @@ end
 do
 AWACS={
 ClassName="AWACS",
-version="0.2.52",
+version="0.2.53",
 lid="",
 coalition=coalition.side.BLUE,
 coalitiontxt="blue",
@@ -66498,6 +66577,7 @@ else
 if contactsAO>0 then
 local dope=self.gettext:GetEntry("DOPE",self.locale)
 text=string.format(dope,self:_GetCallSign(Group,GID)or"Ghost 1",self.callsigntxt)
+textScreen=string.format(dope,self:_GetCallSign(Group,GID)or"Ghost 1",self.callsigntxt)
 local onetxt=self.gettext:GetEntry("ONE",self.locale)
 local grptxt=self.gettext:GetEntry("GROUP",self.locale)
 local groupstxt=self.gettext:GetEntry("GROUPMULTI",self.locale)
@@ -74153,6 +74233,7 @@ CTLD.UnitTypes={
 ["Mi-8MTV2"]={type="Mi-8MTV2",crates=true,troops=true,cratelimit=2,trooplimit=12,length=15,cargoweightlimit=3000},
 ["Mi-8MT"]={type="Mi-8MTV2",crates=true,troops=true,cratelimit=2,trooplimit=12,length=15,cargoweightlimit=3000},
 ["Ka-50"]={type="Ka-50",crates=false,troops=false,cratelimit=0,trooplimit=0,length=15,cargoweightlimit=0},
+["Ka-50_3"]={type="Ka-50_3",crates=false,troops=false,cratelimit=0,trooplimit=0,length=15,cargoweightlimit=0},
 ["Mi-24P"]={type="Mi-24P",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18,cargoweightlimit=700},
 ["Mi-24V"]={type="Mi-24V",crates=true,troops=true,cratelimit=2,trooplimit=8,length=18,cargoweightlimit=700},
 ["Hercules"]={type="Hercules",crates=true,troops=true,cratelimit=7,trooplimit=64,length=25,cargoweightlimit=19000},
@@ -74160,7 +74241,7 @@ CTLD.UnitTypes={
 ["AH-64D_BLK_II"]={type="AH-64D_BLK_II",crates=false,troops=true,cratelimit=0,trooplimit=2,length=17,cargoweightlimit=200},
 ["Bronco-OV-10A"]={type="Bronco-OV-10A",crates=false,troops=true,cratelimit=0,trooplimit=5,length=13,cargoweightlimit=1450},
 }
-CTLD.version="1.0.25"
+CTLD.version="1.0.27"
 function CTLD:New(Coalition,Prefixes,Alias)
 local self=BASE:Inherit(self,FSM:New())
 BASE:T({Coalition,Prefixes,Alias})
@@ -74273,6 +74354,8 @@ self.eventoninject=true
 self.usesubcats=false
 self.subcats={}
 self.nobuildinloadzones=true
+self.movecratesbeforebuild=true
+self.surfacetypes={land.SurfaceType.LAND,land.SurfaceType.ROAD,land.SurfaceType.RUNWAY,land.SurfaceType.SHALLOW_WATER}
 local AliaS=string.gsub(self.alias," ","_")
 self.filename=string.format("CTLD_%s_Persist.csv",AliaS)
 self.allowcratepickupagain=true
@@ -75387,7 +75470,7 @@ local canbuild=false
 if number>0 then
 for _,_crate in pairs(crates)do
 local Crate=_crate
-if Crate:WasDropped()and not Crate:IsRepair()and not Crate:IsStatic()then
+if(Crate:WasDropped()or not self.movecratesbeforebuild)and not Crate:IsRepair()and not Crate:IsStatic()then
 local name=Crate:GetName()
 local required=Crate:GetCratesNeeded()
 local template=Crate:GetTemplates()
@@ -75429,7 +75512,12 @@ end
 local text=string.format("Type: %s | Required %d | Found %d | Can Build %s",name,needed,found,txtok)
 report:Add(text)
 end
-if not foundbuilds then report:Add("     --- None Found ---")end
+if not foundbuilds then
+report:Add("     --- None found! ---")
+if self.movecratesbeforebuild then
+report:Add("*** Crates need to be moved before building!")
+end
+end
 report:Add("------------------------------------------------------------")
 local text=report:Text()
 if not Engineering then
@@ -76454,7 +76542,7 @@ end
 end
 return self
 end
-function CTLD:InjectTroops(Zone,Cargo)
+function CTLD:InjectTroops(Zone,Cargo,Surfacetypes,PreciseLocation)
 self:T(self.lid.." InjectTroops")
 local cargo=Cargo
 local function IsTroopsMatch(cargo)
@@ -76482,7 +76570,10 @@ local name=cargo:GetName()or"none"
 local temptable=cargo:GetTemplates()or{}
 local factor=1.5
 local zone=Zone
-local randomcoord=zone:GetRandomCoordinate(10,30*factor):GetVec2()
+local randomcoord=zone:GetRandomCoordinate(10,30*factor,Surfacetypes):GetVec2()
+if PreciseLocation then
+randomcoord=zone:GetCoordinate():GetVec2()
+end
 for _,_template in pairs(temptable)do
 self.TroopCounter=self.TroopCounter+1
 local alias=string.format("%s-%d",_template,math.random(1,100000))
@@ -76935,7 +77026,7 @@ local injectvehicle=CTLD_CARGO:New(nil,cargoname,cargotemplates,cargotype,true,t
 self:InjectVehicles(dropzone,injectvehicle)
 elseif cargotype==CTLD_CARGO.Enum.TROOPS or cargotype==CTLD_CARGO.Enum.ENGINEERS then
 local injecttroops=CTLD_CARGO:New(nil,cargoname,cargotemplates,cargotype,true,true,size,nil,true,mass)
-self:InjectTroops(dropzone,injecttroops)
+self:InjectTroops(dropzone,injecttroops,self.surfacetypes)
 end
 elseif(type(groupname)=="string"and groupname=="STATIC")or cargotype==CTLD_CARGO.Enum.REPAIR then
 local cargotemplates=dataset[6]
@@ -81409,10 +81500,14 @@ return-1
 end
 function FLIGHTGROUP:GetClosestAirbase()
 local group=self.group
+if group and group:IsAlive()then
 local coord=group:GetCoordinate()
 local coalition=self:GetCoalition()
 local airbase=coord:GetClosestAirbase()
 return airbase
+else
+return nil
+end
 end
 function FLIGHTGROUP:GetParking(airbase)
 local scanradius=50
@@ -93438,7 +93533,6 @@ if unit then
 local inzone=true
 if self.zoneType==OPSZONE.ZoneType.Polygon then
 inzone=unit:IsInZone(self.zone)
-unit:GetCoordinate():MarkToAll(string.format("Unit %s inzone=%s",unit:GetName(),tostring(inzone)))
 end
 if inzone then
 tl=unit:GetThreatLevel()
@@ -93775,7 +93869,7 @@ NextTaskSuccess={},
 NextTaskFailure={},
 FinalState="none",
 }
-PLAYERTASK.version="0.1.11"
+PLAYERTASK.version="0.1.12"
 function PLAYERTASK:New(Type,Target,Repeat,Times,TTSType)
 local self=BASE:Inherit(self,FSM:New())
 self.Type=Type
@@ -94051,6 +94145,7 @@ function PLAYERTASK:onafterStatus(From,Event,To)
 self:T({From,Event,To})
 self:T(self.lid.."onafterStatus")
 local status=self:GetState()
+if status=="Stopped"then return self end
 local targetdead=false
 if self.Type~=AUFTRAG.Type.CTLD and self.Type~=AUFTRAG.Type.CSAR then
 if self.Target:IsDead()or self.Target:IsDestroyed()or self.Target:CountTargets()==0 then
@@ -94060,8 +94155,8 @@ status="Success"
 return self
 end
 end
-if status=="Executing"then
 local clientsalive=false
+if status=="Executing"then
 local ClientTable=self.Clients:GetDataTable()
 for _,_client in pairs(ClientTable)do
 local client=_client
@@ -94073,6 +94168,8 @@ if status=="Executing"and(not clientsalive)and(not targetdead)then
 self:__Failed(-2)
 status="Failed"
 end
+end
+if status~="Done"and status~="Stopped"then
 local successCondition=self:_EvalConditionsAny(self.conditionSuccess)
 local failureCondition=self:_EvalConditionsAny(self.conditionFailure)
 if failureCondition and status~="Failed"then
@@ -94085,10 +94182,8 @@ end
 if self.verbose then
 self:I(self.lid.."Target dead: "..tostring(targetdead).." | Clients alive: "..tostring(clientsalive))
 end
-end
-if status~="Done"then
 self:__Status(-20)
-else
+elseif status~="Stopped"then
 self:__Stop(-1)
 end
 return self
@@ -95417,10 +95512,12 @@ if self.ShowMagnetic then
 text=string.gsub(text,"°M|","° magnetic; ")
 end
 if string.find(CoordText,"MGRS")then
-local Text=string.gsub(CoordText,"%d","%1;")
-Text=string.gsub(Text," $","")
-CoordText=string.gsub(Text,"0","zero")
-CoordText=string.gsub(Text,"MGRS","MGRS;")
+local Text=string.gsub(CoordText,"MGRS ","")
+Text=string.gsub(Text,"%s+","")
+Text=string.gsub(Text,"([%a%d])","%1;")
+Text=string.gsub(Text,"0","zero")
+Text=string.gsub(Text,"9","niner")
+CoordText="MGRS;"..Text
 if self.PathToGoogleKey then
 CoordText=string.format("<say-as interpret-as='characters'>%s</say-as>",CoordText)
 end
