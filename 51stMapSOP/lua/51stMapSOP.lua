@@ -334,6 +334,12 @@ for setting,value in pairs(MAPSOPSETTINGS) do
   end
 end
 
+for setting,value in pairs(MAPSOPSETTINGS.Defaults) do
+  if not MAPSOPSETTINGS[setting] then
+    MAPSOPSETTINGS[setting] = value
+  end
+end
+
 -- Initialize Menus
 local BlueParentMenu
 local RedParentMenu
