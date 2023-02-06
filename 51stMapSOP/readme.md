@@ -452,6 +452,9 @@ The 51st VFW main 'Fox3' and 'CoolCat' servers are configured with DCS-gRPC and 
 * Fixed a potential 'Support Base' / 'Red Support Base' related Lua error.
 * Improved documentation (readme.md)
 
+*Version 20230205.1*
+* Fixed PauseTime related 'nil' error.
+
 ### Known issues:
 * A paused server will not unpause unless a client enters a (valid) aircraft slot.
 * Extra Non-SOP Shell/Magic units act like land-based Tankers/AWACS.
