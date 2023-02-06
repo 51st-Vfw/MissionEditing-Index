@@ -2853,6 +2853,7 @@ env.info("  TacCommon      : " .. (MAPSOPSETTINGS.TacCommon or MAPSOPSETTINGS.De
 env.info("  PrefixRedSAM   : " .. (MAPSOPSETTINGS.PrefixRedSAM or MAPSOPSETTINGS.Defaults.PrefixRedSAM or ""))
 env.info("  PrefixRedEWR   : " .. (MAPSOPSETTINGS.PrefixRedEWR or MAPSOPSETTINGS.Defaults.PrefixRedEWR or ""))
 env.info("  PrefixRedAWACS : " .. (MAPSOPSETTINGS.PrefixRedAWACS or MAPSOPSETTINGS.Defaults.PrefixRedAWACS or ""))
+
 env.info("")
 
 -- Initialize Airbase & Carriers
