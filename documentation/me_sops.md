@@ -1,28 +1,43 @@
 # SOP Introduction
 
+_Revision 2.0, 28-March-2023_
+
 This document covers a variety of topics that attempt to standardize some aspects of mission
-design to reduce the workload on mission designers.
+design to reduce the workload on mission designers and pilots.
 
 - [Mission Design SOPs](#Mission-Design-SOPs) covers guidelines for mission design.
 - [Mission Setup SOPs](#General-51st-VFW-Mission-Setup-SOPs)
   covers general setup topics such as communications, tankers, TACAN, etc.
 - [Airframe Specific SOPs](#Airframe-Specific-SOPs)
-  covers material specific to an airframe such as design guidelines or radio setup.
+  covers material specific to an airframe such as mission design guidelines or radio setup.
 
-These are intented to be guidelines.
+SOPs are defined for all of the airframes the wing supports including: A-10C II (legacy
+A-10C version is _not_ supported), AH-64D, AV8-B, F-14B, F-15E (upon release), F-16C,
+and F/A-18C.
+
+> The SOPs are intented to be _guidelines_ to provide a starting point for mission designers.
+> While mission designers have the ultimate say based on the needs of their mission, we
+> encourage the use of the SOPs where ever it makes sense to reduce the workload on the
+> designer (for example, by eliminating the need to develop a full comms plan) and pilots
+> (for example, by allowing comms environments to be familiar from mission to mission).
 
 # Mission Design SOPs
 
 This section covers a number of general topics in mission design and provides information that
-may be helpful in conceptualizing and buildign a mission.
+may be helpful in conceptualizing and building a mission.
 
 ## Startup and Launch Timeline
 
 The mission design should be conscious of the amount of time it takes for the pilots in the
 mission to slot and depart on the mission proper. As different airframes have different
 timelines for getting from slotting to ready, this can lead to coordination issues depending
-on the mission design. There are a number of ways the mission designer can attempt to align
-schedules, for example,
+on the mission design.
+
+> Generally, keep in mind that the process of getting everyone in a mission and in the air
+> is bound to run into snags due to unexpected system issues or glitches that may require
+> some participants to re-slot or entirely restart DCS.
+
+There are a number of ways the mission designer can attempt to align schedules, for example,
 
 - Have faster groups slot later (perhaps they are allowed a longer pre-mission brief)
   than slower groups.
@@ -30,6 +45,9 @@ schedules, for example,
 - Add tasking or sequencing in the mission that relies on the faster group being ready
   sooner. For example, the mission might task faster groups with early destruction of enemy
   defenses to enable slower groups to perform their tasking.
+- Break a larger mission into smaller focused missions where tasking chains can be broken.
+  For example, break a SEAD+Strike mission into separate SEAD and Strike missions where the
+  outcome of the SEAD mission impacts the environment in which the Strike mission takes place.
 
 This list is not exhaustive.
 
@@ -186,12 +204,14 @@ PvE missions, for example.
 
 This section covers a number of standard operating procedures (SOPs) mission designers should
 employ around general mission elements such as communications, navigation, and operational
-support. These SOPs are built around the airframes the 51st VFW currently supports: A-10C,
+support. These SOPs are built around the airframes the 51st VFW currently supports: A-10C II,
 AH-64D, AV-8B, F-14B, F-15E (soon), F-16C, F/A-18C, and other helicopter airframes.
 
+> The SOPs assume the new A-10C (`A-10C_2`), not the legacy version (`A-10C`).
+
 Missions should follow the SOPs where possible and practical to provide consistency across
-51st VFW missions. That being said, mission designers may deviate from these guidelines
-where necessary due to the specific mission scenario.
+51st VFW missions. That being said, mission designers are always free to deviate from these
+guidelines where ever necessary due to the specific mission scenario or goals.
 
 ## DCS Mission Editor Mission Options
 
@@ -201,7 +221,7 @@ The following are the suggested SOP mission options for use in the DCS Mission E
 
 ## TACAN Channel Usage Guidelines
 
-TACAN channels in the mission should be assigned according to the following diagrams. The
+TACAN channels in the mission should be assigned consistent with the following diagrams. The
 first diagram (taken from a discussion of TACAN usage in the Hornet from the ED DCS forums)
 establishes the baseline availability of TACAN channels in DCS.
 
@@ -215,18 +235,22 @@ the following figure shows the default assignments for TACAN channels that the S
 Further details on the default assignments are covered below in the discussions of the
 communications plan and airframe SOPs and are consistent with these assignments.
 
+When a mission needs additional TACAN channels, the designer is encouraged to select an
+unallocated channel rather than re-purpose an channel that the SOP defines a use for.
+
 ## Tanker Altitude and Airspeed Guidelines
 
 This thread from the [ED DCS Forums](https://forums.eagle.ru/topic/260542-looking-for-actualrecommened-aerial-refueling-speeds/)
 discusses tanker altitude and airspeed guidelines for AAR units based on the the KC-135
-airframe. The following table summarizes the guidelines relevant to the airframes the 51st
-VFW operates.
+airframe. The following table summarizes the guidelines relevant to the airframes that
+the 51st VFW operates.
 
 |Airframe|Speed (KIAS)|Altitude|Notes|
 |---|:---:|:---:|---|
 |AV-8B|240-275|FL150-FL200|
 |A-10C|220|FL150|
 |F-14B|275-285|FL300|Source has no data, assumed to match F/A-18C
+|F-15E|TBD|TBD
 |F-16C|315|FL300|
 |F/A-18C|275-285|FL300|
 
@@ -248,8 +272,9 @@ the DCS Mission Editor to achieve the default KIAS at the default altitude in ca
 |KC-130J MPRS|AV8-B|FL170|240|336|Probe & Drogue, Low Speed
 |S-3B Tanker|AV8-B, F-14B, F/A-18C|6000 MSL|285|309|Carrier
 
-Keep in mind that ground speed may change based on altitude or other factors and may need to be
-adjusted accordingly in the mission editor based on the specific scenario.
+Keep in mind that ground speed may change based on altitude, altimiter setting, or other
+factors and may need to be adjusted accordingly in the mission editor based on the specific
+scenario.
 
 The
 [51st VFW MapSOP script](https://github.com/51st-Vfw/MissionEditing-Index/tree/master/51stMapSOP)
@@ -294,26 +319,26 @@ plan for these elements.
 
 |Element|Frequency|Notes|   |Element|Frequency|Notes|
 |---|:---:|:---|---|---|:---:|---|
-|Tactical Common|270.00|Player AWACS/GCI
-|Overlord 1-1<br>*AWACS*|240.00|FL300<br>AI| |Magic *N*-1<br>*Carrier AWACS*|See Below|FL280<br>AI
+|Darkstar 1-1<br>*Tactical Common*|270.00|Player| |Dragnet 1-1<br>*Strike Common*|275.00|Player
+|Overlord 1-1<br>*AWACS*|240.00|AI<br>FL300| |Magic *N*-1<br>*Carrier AWACS*|See Below|AI<br>FL280
 |Darknight 1-1<br>*JTAC*|138.00<br>238.00|AI| |Various<br>*JTAC/AFAC*|138.10<br>238.10|Player
 
 The frequencies are selected to support both human and AI in AWACS and JTAC/AFAC roles. For
 AWACS/GCI, a mission that uses a human in the role would place the AWACS/GCI on the tactical
-common frequency. Placing any AI AWACS/GCI on different frequencies prevents the AI from flooding
-the radio. A mission that relies on only AI AWACS/GCI would place the tactical common frequncy
-on one of the AWACS/GCI frequencies. For JTAC/AFAC, we include both VHF and UHF frequencies. The
-VHF frequencies are preferred; UHF should only be used in the event VHF is not usable due to
-avionics limitations.
+or strike common frequency. Placing any AI AWACS/GCI on different frequencies prevents the AI
+from flooding the radio. A mission that relies on only AI AWACS/GCI would place the tactical
+common frequncy on one of the AWACS/GCI frequencies. For JTAC/AFAC, we include both VHF and UHF
+frequencies. The VHF frequencies are preferred; UHF should only be used in the event VHF is not
+usable due to avionics limitations.
 
 To allow multiple carriers in a mission, each carrier may have its own AWACS (an S-3B with the
 callsign "Magic"). The following table summarizes the SOP carrier AWACS units.
 
 |Element|Frequency|Notes|   |Element|Frequency|Notes|
 |---|:---:|:---|---|---|:---:|---|
-|Magic 9-1<br>*CVN-70 AWACS*|270.60|FL280<br>AI| |Magic 1-1<br>*CVN-71 AWACS*|271.60|FL280<br>AI
-|Magic 2-1<br>*CVN-72 AWACS*|272.60|FL280<br>AI| |Magic 3-1<br>*CVN-73 AWACS*|273.60|FL280<br>AI
-|Magic 4-1<br>*CVN-74 AWACS*|274.60|FL280<br>AI| |Magic 5-1<br>*CVN-75 AWACS*|275.60|FL280<br>AI
+|Magic 9-1<br>*CVN-70 AWACS*|270.60|AI<br>FL280| |Magic 1-1<br>*CVN-71 AWACS*|271.60|AI<br>FL280
+|Magic 2-1<br>*CVN-72 AWACS*|272.60|AI<br>FL280| |Magic 3-1<br>*CVN-73 AWACS*|273.60|AI<br>FL280
+|Magic 4-1<br>*CVN-74 AWACS*|274.60|AI<br>FL280| |Magic 5-1<br>*CVN-75 AWACS*|275.60|AI<br>FL280
 
 Frequencies for the carrier AWACS units generally follow the hull number of their associated
 carrier and line up with the other carrier-related frequencies like the carrier AWACS or Link4
@@ -365,23 +390,29 @@ As missions may require additional tankers, the SOPs set aside TACAN channels 55
 The SOPs include a base set of airframes that includes at least one flight from all of the
 currently active airframes. Based on its needs, missions may change the airframes for a
 particular flight while keeping the intraflight frequency and TACAN channels. The following
-table summarizes the standard communications plan and default flights for the wing for the
-base set of airframes.
+table summarizes the standard communications plan and default flight callsigns for the base
+set of wing airframes.
 
 |Flight / Arirframe|TACAN|Frequency|   |Flight / Arirframe|TACAN|Frequency|
 |---|:---:|:---:|---|---|:---:|:---:|
 |Cowboy 1<br>*F-16C*|38Y<br>101Y|138.25|    |Lobo 1<br>*F-16C*|39Y<br>102Y|138.75|
 |Enfield 1<br>*F/A-18C*|40Y<br>103Y|139.25|    |Springfield 1<br>*F/A-18C*|41Y<br>104Y|139.75|
 |Dodge 1<br>*F-14B*|42Y<br>105Y|140.25|    |Dodge 2<br>*F-14B*|43Y<br>106Y|140.75|
-|Hawg 1<br>*A-10C*|44Y<br>107Y|141.25|    |Pig 1<br>*A-10C*|45Y<br>108Y|141.75|
-|Pontiac 1<br>*AV-8B*|46Y<br>109Y|142.25|    |Pontiac 2<br>*AV-8B*|47Y<br>110Y|142.75|
+|Hawg 1<br>*A-10C*|44Y<br>107Y|241.25|    |Pig 1<br>*A-10C*|45Y<br>108Y|241.75|
+|Spade 1<br>*AV-8B*|46Y<br>109Y|142.25|    |Shank 1<br>*AV-8B*|47Y<br>110Y|142.75|
 |Dude 1<br>*F-15E*|48Y<br>111Y|143.25|    |Jazz 1<br>*F-15E*|49Y<br>112Y|143.75|
 |Sioux 1<br>*AH-64D*|50Y<br>113Y|144.25|    |Gunslinger 1<br>*AH-64D*|37Y<br>100Y|144.75|
 
 The TACAN pairs in this table describe the A2A yardstick setup: the lead uses the lower
 numbered channel of the pair while the wingmen use the higher numbered channel of the pair.
 
-Specific missions may choose different flight names as desired. When deviating from the SOPs
+> The A-10C has a UHF intrafight frequency due to its radio configuration. Other airframes
+> use VHF frequencies.
+
+> AV-8B airframes will typically use Pontiac 1 and 2 for call signs in the DCS Mission Editor
+> as DCS does not currently support Spade and Shank as call signs.
+
+Specific missions may choose different flight callsigns as desired. When deviating from the SOPs
 though, please avoid changes that may create confusion. For example, an F-16C flight could use
 a name such as "Venom" or "Viper" that is not listed here; however, it should not use a name
 such as "Enfield" or "Hawg" that is typically associated with a different airframe in the SOPs.
@@ -405,6 +436,22 @@ A mission may deploy multiple carriers. When doing so, it is suggested that the 
 avoid using CVN-70 (*Carl Vinson*) and CVN-74 (*John C. Stennis*) as the DCS Supercarrier
 module does not support these ships.
 
+### Comms Presets
+
+The SOPs define a set of standard presets for the key frequencies that might be used in a mission
+(e.g., tanker frequencies, intraflight, tactical common, etc.). Though the SOPs attempt to use
+similar layouts across all airframes, the specific preset mappings depend on the radios available
+in the airframe.
+
+The discussion of of airframe specific SOPs below lists the preset assignments for each airframe.
+Presets that are not relevant to a particular mission (for example, carrier recorvery frequencies
+in a land-based mission with no carriers) should be considered unassigned and may be used by the
+mission designer as they see fit.
+
+Mission designers are encouraged to avoid moving presets unless absolutely necessary. For example,
+ideally missions that use a tactical common frequency should continue to assign it to the presets
+listed below (even if the mission changes the frequency), not re-assign it to a different preset.
+
 ### Default Kneeboards
 
 Missions makers or planners are encouraged to make a summary of the relevant information from
@@ -414,14 +461,16 @@ cards below.
 ![](images/51st_SOP_Comms.png)
 
 The following version of the comms card shows presets where defined (see the discussion of
-airframe specific SOPs below).
+airframe specific SOPs below; not all airframes set all of these presets). The (1) and (2)
+symbols refer to the COMM1 and COMM2 radios in the airframe, respectively. That is, "(1) 5"
+is COMM1, preset 5.
 
 ![](images/51st_SOP_Comms_Presets.png)
 
-Both images are `.png` format suitable for use as a DCS kneeboard. Based on the mission
-configuration, not all of the information may be relevant to a particular mission. In
-addition, `.svg` versions of the [SOP Comms](source/51st_SOP_Comms.svg) and
-[SOP Comms Presets](source/51st_SOP_Comms_Presets.svg) are available as templates to
+Both images above are `.png` format suitable for use as a DCS kneeboard. Based on the mission
+configuration, not all of the information may be relevant to a particular mission. There
+are `.svg` versions of the [SOP Comms (SVG)](source/51st_SOP_Comms.svg) and
+[SOP Comms Presets (SVG)](source/51st_SOP_Comms_Presets.svg) available as templates to
 allow customization for a particular mission.
 
 # Airframe Specific SOPs
@@ -431,13 +480,15 @@ helpful to keep in mind when designing missions that include the various airfram
 flown by the 51st.
 
 Missions should follow the SOPs where possible and practical to provide consistency across
-51st VFW missions. That being said, mission designers may deviate from these guidelines
-where necessary due to the specific mission scenario or goals.
+51st VFW missions. That being said, as always, mission designers may deviate from these
+guidelines where necessary due to the specific mission scenario or goals.
 
 ## A-10C Warthog
 
 The A-10C Warthog is a single-seat, twin-turbofan, straight-wing, subsonic attack aircraft
 designed for close air support (CAS) and forward air controller (FAC) missions.
+
+> The SOPs support the `A-10C_2` version of the airframe, not the legacy `A-10C` version.
 
 An `.svg` version of an [A-10C Flight Card](source/51st_SOP_Card_A10.svg) that includes overview,
 comms ladder, and steerpoint information is available for use by mission designers.
@@ -448,31 +499,26 @@ TODO: A-10 design guidelines
 
 ### Comms Presets
 
-The Warthog has a UHF radio (COMM1, AN/ARC-164), a VHF AM radio (COMM2, AN/ARC-186(V)), and
-a VHF FM radio (COMM3, AN/ARC-186(V)). All three radios have 20 presets. We will use the
-general 20-channel layout for the default comms ladder.
+The Warthog has a VHF/UHF radio (COMM1, AN/ARC-210), a UHF AM radio (COMM2, AN/ARC-164), and
+a VHF FM radio (COMM3, AN/ARC-186(V)). All three radios support 20 presets. We will use a
+variation of the general 20-channel layout for the default comms ladder.
 
-|COMM1 Preset<br>(UHF)|Frequency| |COMM2 Preset<br>(VHF AM)|Frequency|
+|COMM1 Preset<br>(VHF/UHF)|Frequency| |COMM2 Preset<br>(UHF)|Frequency|
 |:-----:|:---|---|:---:|:---|
 | 1     | Tactical Common                || 1     | Intraflight
-| 2     | Departure ATIS (UHF)           || 2     | Departure ATIS (VHF)
-| 3     | Departure Tower (UHF)          || 3     | Departure Tower (VHF)
-| 4     | _Unassigned_                   || 4-7   | _Unassigned_
-| 5     | AWACS Overlord 1-1             || 8     | JTAC/AFAC Darknight 1-1 (VHF)
-| 6     | AAR Texaco 1-1                 || 9     | JTAC/AFAC Player (VHF)
-| 7     | AAR Texaco 2-1                 || 10-19 | _Unassigned_
-| 8     | JTAC/AFAC Darknight 1-1 (UHF)  || 20    | Guard (VHF)
-| 9     | JTAC/AFAC Player (UHF)
-| 10-19 | _Unassigned_
-| 20    | Guard (UHF)
+| 2     | Strike Common                  || 2     | _Unassigned_
+| 3     | Departure ATIS (UHF)           || 3     | Departure ATIS (UHF)
+| 4     | Departure Tower (UHF)          || 4     | Departure Tower (UHF)
+| 5     | AWACS Overlord 1-1             || 5     | _Unassigned_
+| 6     | AAR Texaco 1-1                 || 6     | _Unassigned_
+| 7     | AAR Texaco 2-1                 || 7     | _Unassigned_
+| 8     | JTAC/AFAC Darknight 1-1 (UHF)  || 8     | JTAC/AFAC Darknight 1-1 (UHF)
+| 9     | JTAC/AFAC Player (UHF)         || 9     | JTAC/AFAC Player (UHF)
+| 10-19 | _Unassigned_                   || 10-19 | _Unassigned_
+| 20    | Guard (UHF)                    || 20    | Guard (UHF)
 
 The COMM3 radio is primarily used for communications with ground JTAC units. The presets for
 this radio are unassigned in the default comms ladder and left to the mission to define.
-
-Missions designers are encouraged to leave preset 1 as Tactical Common or Intraflight frequencies.
-Beyond that suggestion, missions are free to re-purpose or drop the remaining presets based on the
-needs of the mission. Unassigned or repurposed presets may be assigned to mission-specific
-frequencies as necessary.
 
 ## AH-64D Apache
 
@@ -521,8 +567,9 @@ editor for a Tomcat unit as the following figure illustrates.
 
 ![Tomcat INS Reference Alignment](images/TomcatINS.png)
 
-Checking the "INS Reference Alignment Stored" option here will ensure the jet has a reference
-alignment during cold starts.
+Checking the "INS Reference Alignment Stored" option in this panel as shown will ensure the
+jet has a reference alignment during cold starts allowing for faster start up from cold to
+green jet.
 
 ### Comms Presets
 
@@ -551,14 +598,6 @@ comms ladder.
 | 18-19 | _Unassigned_                  | | 18-19 | _Unassigned_
 | 20    | Guard (UHF)                   | | 20    | Guard (VHF)
 
-For missions that do not include carriers, Carrier #1 and Carrier #2 frequencies are treated as
-unassgiend.
-
-Missions designers are encouraged to leave preset 1 as Tactical Common or Intraflight frequencies.
-Beyond that suggestion, missions are free to re-purpose or drop the remaining presets based on the
-needs of the mission. Unassigned or repurposed presets may be assigned to mission-specific
-frequencies as necessary.
-
 ## F-16C Viper
 
 The F-16C Viper is a single-seat, single-engine multirole fighter aircraft. Designed as an air
@@ -579,21 +618,16 @@ have 20 presets. We will use the general 20-channel layout for the default comms
 |COMM1 Preset<br>(UHF)|Frequency| |COMM2 Preset<br>(VHF)|Frequency|
 |:-----:|:---|---|:---:|:---|
 | 1     | Tactical Common                || 1     | Intraflight
-| 2     | Departure ATIS (UHF)           || 2     | Departure ATIS (VHF)
-| 3     | Departure Tower (UHF)          || 3     | Departure Tower (VHF)
-| 4     | _Unassigned_                   || 4-7   | _Unassigned_
-| 5     | AWACS Overlord 1-1             || 8     | JTAC/AFAC Darknight 1-1 (VHF)
-| 6     | AAR Texaco 1-1                 || 9     | JTAC/AFAC Player (VHF)
-| 7     | AAR Texaco 2-1                 || 10-19 | _Unassigned_
-| 8     | JTAC/AFAC Darknight 1-1 (UHF)  || 20    | Guard (VHF)
-| 9     | JTAC/AFAC Player (UHF)
-| 10-19 | _Unassigned_
-| 20    | Guard (UHF)
-
-Missions designers are encouraged to leave preset 1 as Tactical Common or Intraflight frequencies.
-Beyond that suggestion, missions are free to re-purpose or drop the remaining presets based on the
-needs of the mission. Unassigned or repurposed presets may be assigned to mission-specific
-frequencies as necessary.
+| 2     | Strike Common                  || 2     | _Unassigned_
+| 3     | Departure ATIS (UHF)           || 3     | Departure ATIS (VHF)
+| 4     | Departure Tower (UHF)          || 4     | Departure Tower (VHF)
+| 5     | AWACS Overlord 1-1             || 5     | _Unassigned_
+| 6     | AAR Texaco 1-1                 || 6     | _Unassigned_
+| 7     | AAR Texaco 2-1                 || 7     | _Unassigned_
+| 8     | JTAC/AFAC Darknight 1-1 (UHF)  || 8     | JTAC/AFAC Darknight 1-1 (VHF)
+| 9     | JTAC/AFAC Player (UHF)         || 9     | JTAC/AFAC Player (VHF)
+| 10-19 | _Unassigned_                   || 10-19 | _Unassigned_
+| 20    | Guard (UHF)                    || 20    | Guard (VHF)
 
 ## F/A-18C Hornet
 
@@ -615,9 +649,9 @@ We will use the general 20-channel layout for the default comms ladder.
 |COMM1 Preset<br>(UHF/VHF)|Frequency||COMM2 Preset<br>(UHF/VHF)|Frequency|
 |:-----:|:---|---|:-----:|:---|
 | 1     | Tactical Common               | | 1     | Intraflight
-| 2     | Departure ATIS (UHF)          | | 2     | Departure ATIS (VHF)
-| 3     | Departure Tower (UHF)         | | 3     | Departure Tower (VHF)
-| 4     | _Unassigned_                  | | 4     | _Unassigned_
+| 2     | Strike Common                 | | 2     | _Unassigned_
+| 3     | Departure ATIS (UHF)          | | 3     | Departure ATIS (VHF)
+| 4     | Departure Tower (UHF)         | | 4     | Departure Tower (VHF)
 | 5     | AWACS Overlord 1-1            | | 5     | AWACS Overlord 1-1
 | 6     | AAR Arco 1-1                  | | 6     | AAR Arco 1-1
 | 7     | AAR Arco 2-1                  | | 7     | AAR Arco 2-1
@@ -632,11 +666,3 @@ We will use the general 20-channel layout for the default comms ladder.
 | 17    | Carrier #2 Recovery AAR       | | 17    | Carrier #2 Recovery AAR
 | 18-19 | _Unassigned_                  | | 18-19 | _Unassigned_
 | 20    | Guard (UHF)                   | | 20    | Guard (VHF)
-
-For missions that do not include carriers, Carrier #1 and Carrier #2 frequencies are treated as
-unassgiend.
-
-Missions designers are encouraged to leave preset 1 as Tactical Common or Intraflight frequencies.
-Beyond that suggestion, missions are free to re-purpose or drop the remaining presets based on the
-needs of the mission. Unassigned or repurposed presets may be assigned to mission-specific
-frequencies as necessary.
