@@ -729,10 +729,10 @@
                 <rect id="C2-Border" stroke="#32372A" stroke-width="4" x="254" y="0" width="258" height="48"></rect>
                 <rect id="C1-Border" stroke="#32372A" stroke-width="4" x="0" y="0" width="254" height="48"></rect>
                 <text id="C6" font-family="HelveticaNeue-Medium, Helvetica Neue" font-size="34" font-weight="400" fill="#FFFFFF">
-                    <tspan x="1042" y="33">285KIAS</tspan>
+                    <tspan x="1042" y="33">240KIAS, Drogue</tspan>
                 </text>
                 <text id="C5" font-family="HelveticaNeue-Medium, Helvetica Neue" font-size="34" font-weight="400" fill="#FFFFFF">
-                    <tspan x="947.644" y="33">210</tspan>
+                    <tspan x="947.644" y="33">170</tspan>
                 </text>
                 <text id="C4" font-family="HelveticaNeue-Medium, Helvetica Neue" font-size="34" font-weight="400" fill="#FFFFFF">
                     <tspan x="805.58" y="33">54Y</tspan>
@@ -742,7 +742,7 @@
                     <tspan x="632.322" y="30" font-family="HelveticaNeue-Medium, Helvetica Neue" font-weight="400"> 7</tspan>
                 </text>
                 <text id="C2" font-family="HelveticaNeue-Medium, Helvetica Neue" font-size="34" font-weight="400" fill="#FFFFFF">
-                    <tspan x="269.45" y="33">KC-135 MPRS</tspan>
+                    <tspan x="314.483" y="33">KC-130J</tspan>
                 </text>
                 <text id="C1" font-family="HelveticaNeue-Medium, Helvetica Neue" font-size="34" font-weight="400" fill="#FFFFFF">
                     <tspan x="59.707" y="33">Arco 2-1</tspan>
@@ -756,7 +756,7 @@
                 <rect id="C2-Border" stroke="#32372A" stroke-width="4" x="254" y="0" width="258" height="48"></rect>
                 <rect id="C1-Border" stroke="#32372A" stroke-width="4" x="0" y="0" width="254" height="48"></rect>
                 <text id="C6" font-family="HelveticaNeue-Medium, Helvetica Neue" font-size="34" font-weight="400" fill="#FFFFFF">
-                    <tspan x="1042" y="33">285KIAS</tspan>
+                    <tspan x="1042" y="33">285KIAS, Drogue</tspan>
                 </text>
                 <text id="C5" font-family="HelveticaNeue-Medium, Helvetica Neue" font-size="34" font-weight="400" fill="#FFFFFF">
                     <tspan x="947.644" y="33">200</tspan>
@@ -783,7 +783,7 @@
                 <rect id="C2-Border" stroke="#32372A" stroke-width="4" x="254" y="0" width="258" height="48"></rect>
                 <rect id="C1-Border" stroke="#32372A" stroke-width="4" x="0" y="0" width="254" height="48"></rect>
                 <text id="C6" font-family="HelveticaNeue-Medium, Helvetica Neue" font-size="34" font-weight="400" fill="#FFFFFF">
-                    <tspan x="1042" y="33">220KIAS</tspan>
+                    <tspan x="1042" y="33">220KIAS, Boom</tspan>
                 </text>
                 <text id="C5" font-family="HelveticaNeue-Medium, Helvetica Neue" font-size="34" font-weight="400" fill="#FFFFFF">
                     <tspan x="947.644" y="33">150</tspan>
@@ -810,7 +810,7 @@
                 <rect id="C2-Border" stroke="#32372A" stroke-width="4" x="254" y="0" width="258" height="48"></rect>
                 <rect id="C1-Border" stroke="#32372A" stroke-width="4" x="0" y="0" width="254" height="48"></rect>
                 <text id="C6" font-family="HelveticaNeue-Medium, Helvetica Neue" font-size="34" font-weight="400" fill="#FFFFFF">
-                    <tspan x="1042" y="33">300KIAS</tspan>
+                    <tspan x="1042" y="33">300KIAS, Boom</tspan>
                 </text>
                 <text id="C5" font-family="HelveticaNeue-Medium, Helvetica Neue" font-size="34" font-weight="400" fill="#FFFFFF">
                     <tspan x="947.644" y="33">250</tspan>

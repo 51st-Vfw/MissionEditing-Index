@@ -1,6 +1,6 @@
 # SOP Introduction
 
-_Revision 2.0, 28-March-2023_
+_Revision 2.1, 4-April-2023_
 
 This document covers a variety of topics that attempt to standardize some aspects of mission
 design to reduce the workload on mission designers and pilots.
@@ -207,7 +207,7 @@ employ around general mission elements such as communications, navigation, and o
 support. These SOPs are built around the airframes the 51st VFW currently supports: A-10C II,
 AH-64D, AV-8B, F-14B, F-15E (soon), F-16C, F/A-18C, and other helicopter airframes.
 
-> The SOPs assume the new A-10C (`A-10C_2`), not the legacy version (`A-10C`).
+> The SOPs support the new DCS A-10C module (`A-10C_2`), not the legacy module (`A-10C`).
 
 Missions should follow the SOPs where possible and practical to provide consistency across
 51st VFW missions. That being said, mission designers are always free to deviate from these
@@ -266,15 +266,15 @@ the DCS Mission Editor to achieve the default KIAS at the default altitude in ca
 
 |Tanker|Airframes|Altitude|Speed (KIAS)|Speed (GS, ME)|Purpose|
 |---|:---:|:---:|:---:|:---:|---|
-|KC-135|F-16C|FL250|300|475|Boom, High Speed
-|KC-135|A-10C|FL150|220|276|Boom, Low Speed
-|KC-135 MPRS|AV8-B, F-14B, F/A-18C|FL200|285|384|Probe & Drogue, Low Speed
-|KC-130J MPRS|AV8-B|FL170|240|336|Probe & Drogue, Low Speed
+|KC-135|F-16C|FL250|300|475|Probe & Boom<br>High Speed
+|KC-135|A-10C|FL150|220|276|Probe & Boom<br>Low Speed
+|KC-135 MPRS|AV8-B, F-14B, F/A-18C|FL200|285|384|Probe & Drogue<br>Low Speed
+|KC-130J|AV8-B|FL170|240|336|Probe & Drogue<br>Low Speed
 |S-3B Tanker|AV8-B, F-14B, F/A-18C|6000 MSL|285|309|Carrier
 
-Keep in mind that ground speed may change based on altitude, altimiter setting, or other
-factors and may need to be adjusted accordingly in the mission editor based on the specific
-scenario.
+> Keep in mind that ground speed may change based on altitude, altimiter setting, or other
+> factors and may need to be adjusted accordingly in the mission editor based on the specific
+> scenario.
 
 The
 [51st VFW MapSOP script](https://github.com/51st-Vfw/MissionEditing-Index/tree/master/51stMapSOP)
@@ -325,8 +325,8 @@ plan for these elements.
 
 The frequencies are selected to support both human and AI in AWACS and JTAC/AFAC roles. For
 AWACS/GCI, a mission that uses a human in the role would place the AWACS/GCI on the tactical
-or strike common frequency. Placing any AI AWACS/GCI on different frequencies prevents the AI
-from flooding the radio. A mission that relies on only AI AWACS/GCI would place the tactical
+or strike common frequency. Placing AI AWACS/GCI on different frequencies prevents the AI
+from flooding the radio. A mission that relies on only AI AWACS/GCI could place the tactical
 common frequncy on one of the AWACS/GCI frequencies. For JTAC/AFAC, we include both VHF and UHF
 frequencies. The VHF frequencies are preferred; UHF should only be used in the event VHF is not
 usable due to avionics limitations.
@@ -341,8 +341,7 @@ callsign "Magic"). The following table summarizes the SOP carrier AWACS units.
 |Magic 4-1<br>*CVN-74 AWACS*|274.60|AI<br>FL280| |Magic 5-1<br>*CVN-75 AWACS*|275.60|AI<br>FL280
 
 Frequencies for the carrier AWACS units generally follow the hull number of their associated
-carrier and line up with the other carrier-related frequencies like the carrier AWACS or Link4
-system.
+carrier and line up with the other carrier-related frequencies like the Link4 system.
 
 ### AAR Tankers
 
@@ -350,23 +349,21 @@ Given the tanker airspeed and altitude guidelines listed above, the SOPs include
 of AAR tanker resources that should be sufficient for many missions. The SOPs use standard
 flight names to differentiate the different taker airframes,
 
-- *Texaco* flights support Air Force units (KC-135, boom, land-based), these flights may be
-  low speed (for use by A-10C units) or high speed (for use by F-16C units)
-- *Arco* flights support Navy units (KC-135 MPRS, KC-130 MPRS, probe & drogue, land-based)
+- *Texaco* flights support Air Force units (KC-135, probe & boom, land-based), these flights
+  may be low speed (for use by A-10C units) or high speed (for use by F-16C units)
+- *Arco* flights support Navy units (KC-135 MPRS, KC-130J, probe & drogue, land-based)
 - *Shell* flights support carrier recovery for Navy units (S-3B, probe & drogue,
   carrier-based)
 
-Missions may support additional airframes (for example, KC-130), should follow the flight
-naming conventions in the SOP. The following table summarizes the standard communications plan
-for the non-recovery tankers supporting AAR.
+The following table summarizes the standard communications plan for the non-recovery tankers.
 
 |Tanker|TACAN|Frequency|Notes|   |Tanker|TACAN|Frequency|Notes|
 |---|:---:|:---:|:---|---|---|:---:|:---:|---|
-|Texaco 1-1<br>*Boom*|51Y|251.00|FL250<br>300KIAS|    |Texaco 2-1<br>*Boom*|52Y|252.00|15000 MSL<br>220KIAS
+|Texaco 1-1<br>*Probe & Boom*|51Y|251.00|FL250<br>300KIAS|    |Texaco 2-1<br>*Probe & Boom*|52Y|252.00|15000 MSL<br>220KIAS
 |Arco 1-1<br>*Probe & Drogue*|53Y|253.00|FL200<br>285KIAS|    |Arco 2-1<br>*Probe & Drogue*|54Y|254.00|FL170<br>240KIAS|
 
-To eliminate some complexity, tanker TACAN channel and frequencies for non-recovery tankers should be
-related as shown in the table above (that is, frequency is always 200 + TACAN channel).
+To eliminate some complexity, tanker TACAN channel and frequencies for non-recovery tankers
+are set up such that the frequency is always 200 + TACAN channel.
 
 To allow for multiple carriers in a mission, each carrier may have its own recovery tanker (an
 S-3B with the callsign "Shell") available. All recovery tankers orbit at 6000MSL at 285KIAS.
@@ -488,7 +485,7 @@ guidelines where necessary due to the specific mission scenario or goals.
 The A-10C Warthog is a single-seat, twin-turbofan, straight-wing, subsonic attack aircraft
 designed for close air support (CAS) and forward air controller (FAC) missions.
 
-> The SOPs support the `A-10C_2` version of the airframe, not the legacy `A-10C` version.
+> The SOPs support the modern DCS A-10C module (`A-10C_2`), not the legacy module (`A-10C`).
 
 An `.svg` version of an [A-10C Flight Card](source/51st_SOP_Card_A10.svg) that includes overview,
 comms ladder, and steerpoint information is available for use by mission designers.
