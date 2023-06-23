@@ -12,8 +12,7 @@ design to reduce the workload on mission designers and pilots.
   covers material specific to an airframe such as mission design guidelines or radio setup.
 
 SOPs are defined for all of the airframes the wing supports including: A-10C II (legacy
-A-10C version is _not_ supported), AH-64D, AV8-B, F-14B, F-15E (upon release), F-16C,
-and F/A-18C.
+A-10C version is _not_ supported), AH-64D, AV8-B, F-14B, F-15E, F-16C, and F/A-18C.
 
 > The SOPs are intented to be _guidelines_ to provide a starting point for mission designers.
 > While mission designers have the ultimate say based on the needs of their mission, we
@@ -205,7 +204,7 @@ PvE missions, for example.
 This section covers a number of standard operating procedures (SOPs) mission designers should
 employ around general mission elements such as communications, navigation, and operational
 support. These SOPs are built around the airframes the 51st VFW currently supports: A-10C II,
-AH-64D, AV-8B, F-14B, F-15E (soon), F-16C, F/A-18C, and other helicopter airframes.
+AH-64D, AV-8B, F-14B, F-15E, F-16C, F/A-18C, and other helicopter airframes.
 
 > The SOPs support the new DCS A-10C module (`A-10C_2`), not the legacy module (`A-10C`).
 
@@ -250,7 +249,7 @@ the 51st VFW operates.
 |AV-8B|240-275|FL150-FL200|
 |A-10C|220|FL150|
 |F-14B|275-285|FL300|Source has no data, assumed to match F/A-18C
-|F-15E|TBD|TBD
+|F-15E|315|FL300|Source has no data, assumed to match F-16C
 |F-16C|315|FL300|
 |F/A-18C|275-285|FL300|
 
@@ -266,7 +265,7 @@ the DCS Mission Editor to achieve the default KIAS at the default altitude in ca
 
 |Tanker|Airframes|Altitude|Speed (KIAS)|Speed (GS, ME)|Purpose|
 |---|:---:|:---:|:---:|:---:|---|
-|KC-135|F-16C|FL250|300|475|Probe & Boom<br>High Speed
+|KC-135|F-16C, F-15E|FL250|300|475|Probe & Boom<br>High Speed
 |KC-135|A-10C|FL150|220|276|Probe & Boom<br>Low Speed
 |KC-135 MPRS|AV8-B, F-14B, F/A-18C|FL200|285|384|Probe & Drogue<br>Low Speed
 |KC-130J|AV8-B|FL170|240|336|Probe & Drogue<br>Low Speed
@@ -408,6 +407,9 @@ numbered channel of the pair while the wingmen use the higher numbered channel o
 
 > AV-8B airframes will typically use Pontiac 1 and 2 for call signs in the DCS Mission Editor
 > as DCS does not currently support Spade and Shank as call signs.
+
+> F-15E airframes will typically use Ford 1 and 2 for call signs in the DCS Mission Editor
+> as DCS does not currently support Dude and Jazz as call signs.
 
 Specific missions may choose different flight callsigns as desired. When deviating from the SOPs
 though, please avoid changes that may create confusion. For example, an F-16C flight could use
@@ -594,6 +596,37 @@ comms ladder.
 | 17    | Carrier #2 Recovery AAR       | | 17    | Carrier #2 Recovery AAR
 | 18-19 | _Unassigned_                  | | 18-19 | _Unassigned_
 | 20    | Guard (UHF)                   | | 20    | Guard (VHF)
+
+## F-15E Strike Eagle
+
+The F-15E Strike Eagle is a two-seat, two-engine strike aircraft.
+
+An `.svg` version of an [TODO F-15E Flight Card](TODO) that includes overview,
+comms ladder, and steerpoint information is available for use by mission designers.
+
+### Mission Design Guidelines for the F-16C
+
+TODO: F-16C design guidelines
+
+### Comms Presets
+
+The Strike Eagle has a UHF radio (COMM1, TBD), and a UHF/VHF radio (COMM2, TODO). COMM1 radio
+has 20 presets, while COMM2 has 40. We will use the general 20-channel layout for the default
+comms adder.
+
+|COMM1 Preset<br>(UHF)|Frequency| |COMM2 Preset<br>(UHF/VHF)|Frequency|
+|:-----:|:---|---|:---:|:---|
+| 1     | Tactical Common                || 1     | Intraflight
+| 2     | Strike Common                  || 2     | _Unassigned_
+| 3     | Departure ATIS (UHF)           || 3     | Departure ATIS (VHF)
+| 4     | Departure Tower (UHF)          || 4     | Departure Tower (VHF)
+| 5     | AWACS Overlord 1-1             || 5     | _Unassigned_
+| 6     | AAR Texaco 1-1                 || 6     | _Unassigned_
+| 7     | AAR Texaco 2-1                 || 7     | _Unassigned_
+| 8     | JTAC/AFAC Darknight 1-1 (UHF)  || 8     | JTAC/AFAC Darknight 1-1 (VHF)
+| 9     | JTAC/AFAC Player (UHF)         || 9     | JTAC/AFAC Player (VHF)
+| 10-19 | _Unassigned_                   || 10-19 | _Unassigned_
+| 20    | Guard (UHF)                    || 20    | Guard (VHF)
 
 ## F-16C Viper
 
