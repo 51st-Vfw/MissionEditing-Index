@@ -604,9 +604,9 @@ The F-15E Strike Eagle is a two-seat, two-engine strike aircraft.
 An `.svg` version of an [TODO F-15E Flight Card](TODO) that includes overview,
 comms ladder, and steerpoint information is available for use by mission designers.
 
-### Mission Design Guidelines for the F-16C
+### Mission Design Guidelines for the F-15E
 
-TODO: F-16C design guidelines
+TODO: F-15E design guidelines
 
 ### Comms Presets
 
