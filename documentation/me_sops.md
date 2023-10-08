@@ -1,6 +1,6 @@
 # SOP Introduction
 
-_Revision 2.1, 4-April-2023_
+_Revision 2.2, 8-October-2023_
 
 This document covers a variety of topics that attempt to standardize some aspects of mission
 design to reduce the workload on mission designers and pilots.
@@ -12,7 +12,7 @@ design to reduce the workload on mission designers and pilots.
   covers material specific to an airframe such as mission design guidelines or radio setup.
 
 SOPs are defined for all of the airframes the wing supports including: A-10C II (legacy
-A-10C version is _not_ supported), AH-64D, AV8-B, F-14B, F-15E, F-16C, and F/A-18C.
+A-10C version is _not_ supported), AH-64D, F-15E, F-16C, and F/A-18C.
 
 > The SOPs are intented to be _guidelines_ to provide a starting point for mission designers.
 > While mission designers have the ultimate say based on the needs of their mission, we
@@ -57,7 +57,7 @@ it takes to reach a ready state.
 
 ### Sea-Based Naval Airframes
 
-The following example describes the F-14B. Other airframes are assumed to follow similar
+The following example describes the F-14B. Other naval airframes are assumed to follow similar
 timelines.
 
 The timeline is broken up into a start up phase that takes the jet from cold to on the catapult
@@ -204,7 +204,7 @@ PvE missions, for example.
 This section covers a number of standard operating procedures (SOPs) mission designers should
 employ around general mission elements such as communications, navigation, and operational
 support. These SOPs are built around the airframes the 51st VFW currently supports: A-10C II,
-AH-64D, AV-8B, F-14B, F-15E, F-16C, F/A-18C, and other helicopter airframes.
+AH-64D, F-15E, F-16C, F/A-18C, and other helicopter airframes.
 
 > The SOPs support the new DCS A-10C module (`A-10C_2`), not the legacy module (`A-10C`).
 
@@ -217,6 +217,8 @@ guidelines where ever necessary due to the specific mission scenario or goals.
 The following are the suggested SOP mission options for use in the DCS Mission Editor.
 
 ![](images/51st_SOP_ME_Options.png)
+
+Unrestricted SATNAV is set to allow REDFOR to use NATO aircraft by default.
 
 ## TACAN Channel Usage Guidelines
 
@@ -246,9 +248,7 @@ the 51st VFW operates.
 
 |Airframe|Speed (KIAS)|Altitude|Notes|
 |---|:---:|:---:|---|
-|AV-8B|240-275|FL150-FL200|
 |A-10C|220|FL150|
-|F-14B|275-285|FL300|Source has no data, assumed to match F/A-18C
 |F-15E|315|FL300|Source has no data, assumed to match F-16C
 |F-16C|315|FL300|
 |F/A-18C|275-285|FL300|
@@ -267,9 +267,11 @@ the DCS Mission Editor to achieve the default KIAS at the default altitude in ca
 |---|:---:|:---:|:---:|:---:|---|
 |KC-135|F-16C, F-15E|FL250|300|475|Probe & Boom<br>High Speed
 |KC-135|A-10C|FL150|220|276|Probe & Boom<br>Low Speed
-|KC-135 MPRS|AV8-B, F-14B, F/A-18C|FL200|285|384|Probe & Drogue<br>Low Speed
+|KC-135 MPRS|F/A-18C|FL200|285|384|Probe & Drogue<br>Low Speed
 |KC-130J|AV8-B|FL170|240|336|Probe & Drogue<br>Low Speed
-|S-3B Tanker|AV8-B, F-14B, F/A-18C|6000 MSL|285|309|Carrier
+|S-3B Tanker|F/A-18C|6000 MSL|285|309|Carrier
+
+Other airframes should be able to use one of these tankers.
 
 > Keep in mind that ground speed may change based on altitude, altimiter setting, or other
 > factors and may need to be adjusted accordingly in the mission editor based on the specific
@@ -349,7 +351,7 @@ of AAR tanker resources that should be sufficient for many missions. The SOPs us
 flight names to differentiate the different taker airframes,
 
 - *Texaco* flights support Air Force units (KC-135, probe & boom, land-based), these flights
-  may be low speed (for use by A-10C units) or high speed (for use by F-16C units)
+  may be low speed (for use by A-10C units) or high speed (for use by F-15E, F-16C units)
 - *Arco* flights support Navy units (KC-135 MPRS, KC-130J, probe & drogue, land-based)
 - *Shell* flights support carrier recovery for Navy units (S-3B, probe & drogue,
   carrier-based)
@@ -389,24 +391,21 @@ particular flight while keeping the intraflight frequency and TACAN channels. Th
 table summarizes the standard communications plan and default flight callsigns for the base
 set of wing airframes.
 
-|Flight / Arirframe|TACAN|Frequency|   |Flight / Arirframe|TACAN|Frequency|
+|Flight / Arirframe|TACAN|Frequency| |Flight / Arirframe|TACAN|Frequency|
 |---|:---:|:---:|---|---|:---:|:---:|
-|Cowboy 1<br>*F-16C*|38Y<br>101Y|138.25|    |Lobo 1<br>*F-16C*|39Y<br>102Y|138.75|
-|Enfield 1<br>*F/A-18C*|40Y<br>103Y|139.25|    |Springfield 1<br>*F/A-18C*|41Y<br>104Y|139.75|
-|Dodge 1<br>*F-14B*|42Y<br>105Y|140.25|    |Dodge 2<br>*F-14B*|43Y<br>106Y|140.75|
-|Hawg 1<br>*A-10C*|44Y<br>107Y|241.25|    |Pig 1<br>*A-10C*|45Y<br>108Y|241.75|
-|Spade 1<br>*AV-8B*|46Y<br>109Y|142.25|    |Shank 1<br>*AV-8B*|47Y<br>110Y|142.75|
-|Dude 1<br>*F-15E*|48Y<br>111Y|143.25|    |Jazz 1<br>*F-15E*|49Y<br>112Y|143.75|
-|Sioux 1<br>*AH-64D*|50Y<br>113Y|144.25|    |Gunslinger 1<br>*AH-64D*|37Y<br>100Y|144.75|
+|Cowboy 1<br>*F-16C*|38Y<br>101Y|138.25| |Lobo 1<br>*F-16C*|39Y<br>102Y|138.75|
+|Enfield 1<br>*F/A-18C*|40Y<br>103Y|139.25| |Springfield 1<br>*F/A-18C*|41Y<br>104Y|139.75|
+|Unassigned|42Y<br>105Y|140.25| |Unassigned|43Y<br>106Y|140.75|
+|Hawg 1<br>*A-10C*|44Y<br>107Y|241.25| |Pig 1<br>*A-10C*|45Y<br>108Y|241.75|
+|Unassigned|46Y<br>109Y|142.25| |Unassigned|47Y<br>110Y|142.75|
+|Dude 1<br>*F-15E*|48Y<br>111Y|143.25| |Jazz 1<br>*F-15E*|49Y<br>112Y|143.75|
+|Sioux 1<br>*AH-64D*|50Y<br>113Y|144.25| |Gunslinger 1<br>*AH-64D*|37Y<br>100Y|144.75|
 
 The TACAN pairs in this table describe the A2A yardstick setup: the lead uses the lower
 numbered channel of the pair while the wingmen use the higher numbered channel of the pair.
 
 > The A-10C has a UHF intrafight frequency due to its radio configuration. Other airframes
 > use VHF frequencies.
-
-> AV-8B airframes will typically use Pontiac 1 and 2 for call signs in the DCS Mission Editor
-> as DCS does not currently support Spade and Shank as call signs.
 
 > F-15E airframes will typically use Ford 1 and 2 for call signs in the DCS Mission Editor
 > as DCS does not currently support Dude and Jazz as call signs.
@@ -472,6 +471,48 @@ are `.svg` versions of the [SOP Comms (SVG)](source/51st_SOP_Comms.svg) and
 [SOP Comms Presets (SVG)](source/51st_SOP_Comms_Presets.svg) available as templates to
 allow customization for a particular mission.
 
+## Default Laser Code Assignment
+
+To allow multiple aircraft to employ LGBs simultaneously in the same area, the SOPs include
+a default laser code assignment based on airframe, flight, and ship. Laser codes are a
+four-digit number of the format `1[5-7][1-8][1-8]` that is set on the ordanance as well as
+avionics or designators used by ground units.
+
+Blocks of 32 laser codes are assigned to each airframe as listed in the following table,
+
+|Code | Flight (X) | Ship (Y) | Airframe |
+|:--:|:--:|:--:|--|
+| 15XY | 1-4 | 1-8 | F-15E
+|      | 5-8 | 1-8 | AH-64D
+| 16XY | 1-4 | 1-8 | F-16C
+|      | 5-8 | 1-8 | A-10C
+| 17XY | 1-4 | 1-8 | F/A-18C
+|      | 5-8 | 1-8 | Unassigned
+
+Typically, X and Y should be set according to the flight and ship number within the flight,
+respectively, as shown in the following table for the SOP call signs,
+
+| Airframe | Callsign | Flight (X)
+|:--:|:--:|:--:|
+| A-10C | Hawg | 5
+|       | Pig | 6
+| AH-64D | Sioux | 5
+|        | Gunslinger | 6
+| F-15E | Dude | 1
+|       | Jazz | 2
+| F-16C | Cowboy | 1
+|       | Lobo | 2
+| F/A-18C | Springfield | 1
+|         | Enfield | 2
+
+For example, Cowboy 1-1 and 1-3 would use laser codes 1611 and 1613; Jazz 1-2 and 1-4 would
+use laser codes 1522 and 1524. A specific mission that uses other callsigns would need to map
+those to a flight number as desired.
+
+However, as long as they coordinate with the mission designer, squadrons are free to use any
+X, Y values within their assigned X and Y blocks. For example, with a single 4-ship flight,
+F-15Es might use laser codes of 1511, 1522, 1533, and 1544 for each ship.
+
 # Airframe Specific SOPs
 
 This section covers various airframe-specific SOPs and mission design guidelines that may be
@@ -532,76 +573,11 @@ TODO: AH-64D design guidelines
 
 TODO
 
-## AV-8B Harrier II
-
-The AV-8B Harrier II is a single-seat, single-engine ground-attack aircraft, capable of
-vertical or short takeoff and landing (V/STOL). The aircraft is primarily employed on light
-attack or multi-role missions, ranging from close air support to armed reconnaissance.
-
-### Mission Design Guidelines for the AV-8B
-
-TODO: AV-8B design guidelines
-
-### Comms Presets
-
-TODO: V/UHF #1 x26, V/UHF #2 x26, V/UHF RCS x30
-
-## F-14B Tomcat
-
-The F-14B Tomcat is a two-seat, twin-engine, carrier-capable, variable-sweep wing fighter
-aircraft.
-
-An `.svg` version of an [F-14B Flight Card](source/51st_SOP_Card_F14.svg) that includes overview,
-comms ladder, and steerpoint information is available for use by mission designers.
-
-### Mission Design Guidelines for the F-14B
-
-TODO: F-14B design guidelines
-
-### INS Alignment
-
-To reduce the time necessary to align the INS in a cold start, the Tomcat should be set up to
-have an INS reference alignment stored in the jet. This can be done from the DCS ME group
-editor for a Tomcat unit as the following figure illustrates.
-
-![Tomcat INS Reference Alignment](images/TomcatINS.png)
-
-Checking the "INS Reference Alignment Stored" option in this panel as shown will ensure the
-jet has a reference alignment during cold starts allowing for faster start up from cold to
-green jet.
-
-### Comms Presets
-
-The Tomcat has a UHF radio (COMM1, AN/ARC-159) and a UHF/VHF radio (COMM2, AN/ARC-182). Both
-radios support at least 20 presets. We will use the general 20-channel layout for the default
-comms ladder.
-
-|COMM1 Preset<br>(UHF)|Frequency||COMM2 Preset<br>(UHF/VHF)|Frequency|
-|:-----:|:---|---|:-----:|:---|
-| 1     | Tactical Common               | | 1     | Intraflight
-| 2     | Departure ATIS (UHF)          | | 2     | Departure ATIS (VHF)
-| 3     | Departure Tower (UHF)         | | 3     | Departure Tower (VHF)
-| 4     | _Unassigned_                  | | 4     | _Unassigned_
-| 5     | AWACS Overlord 1-1            | | 5     | AWACS Overlord 1-1
-| 6     | AAR Arco 1-1                  | | 6     | AAR Arco 1-1
-| 7     | AAR Arco 2-1                  | | 7     | AAR Arco 2-1
-| 8     | JTAC/AFAC Darknight 1-1 (UHF) | | 8     | JTAC/AFAC Darknight 1-1 (VHF)
-| 9     | JTAC/AFAC Player (UHF)        | | 9     | JTAC/AFAC Player (VHF)
-| 10    | Carrier #1 ATC                | | 10    | Carrier #1 ATC
-| 11    | Carrier #1 Recovery AWACS     | | 11    | Carrier #1 Recovery AWACS
-| 12    | Carrier #1 Recovery AAR       | | 12    | Carrier #1 Recovery AAR
-| 13-14 | _Unassigned_                  | | 13-14 | _Unassigned_ 
-| 15    | Carrier #2 ATC                | | 15    | Carrier #2 ATC
-| 16    | Carrier #2 Recovery AWACS     | | 16    | Carrier #2 Recovery AWACS
-| 17    | Carrier #2 Recovery AAR       | | 17    | Carrier #2 Recovery AAR
-| 18-19 | _Unassigned_                  | | 18-19 | _Unassigned_
-| 20    | Guard (UHF)                   | | 20    | Guard (VHF)
-
 ## F-15E Strike Eagle
 
 The F-15E Strike Eagle is a two-seat, two-engine strike aircraft.
 
-An `.svg` version of an [TODO F-15E Flight Card](TODO) that includes overview,
+An `.svg` version of an [F-15E Flight Card](source/51st_SOP_Card_F15.svg) that includes overview,
 comms ladder, and steerpoint information is available for use by mission designers.
 
 ### Mission Design Guidelines for the F-15E
@@ -682,6 +658,101 @@ We will use the general 20-channel layout for the default comms ladder.
 | 2     | Strike Common                 | | 2     | _Unassigned_
 | 3     | Departure ATIS (UHF)          | | 3     | Departure ATIS (VHF)
 | 4     | Departure Tower (UHF)         | | 4     | Departure Tower (VHF)
+| 5     | AWACS Overlord 1-1            | | 5     | AWACS Overlord 1-1
+| 6     | AAR Arco 1-1                  | | 6     | AAR Arco 1-1
+| 7     | AAR Arco 2-1                  | | 7     | AAR Arco 2-1
+| 8     | JTAC/AFAC Darknight 1-1 (UHF) | | 8     | JTAC/AFAC Darknight 1-1 (VHF)
+| 9     | JTAC/AFAC Player (UHF)        | | 9     | JTAC/AFAC Player (VHF)
+| 10    | Carrier #1 ATC                | | 10    | Carrier #1 ATC
+| 11    | Carrier #1 Recovery AWACS     | | 11    | Carrier #1 Recovery AWACS
+| 12    | Carrier #1 Recovery AAR       | | 12    | Carrier #1 Recovery AAR
+| 13-14 | _Unassigned_                  | | 13-14 | _Unassigned_ 
+| 15    | Carrier #2 ATC                | | 15    | Carrier #2 ATC
+| 16    | Carrier #2 Recovery AWACS     | | 16    | Carrier #2 Recovery AWACS
+| 17    | Carrier #2 Recovery AAR       | | 17    | Carrier #2 Recovery AAR
+| 18-19 | _Unassigned_                  | | 18-19 | _Unassigned_
+| 20    | Guard (UHF)                   | | 20    | Guard (VHF)
+
+
+
+
+
+# Legacy Airframes
+
+ In mid-2023 the 51st retired the AV-8B and F-14B airframes from active use in the wing for a
+ variety of reasons. At that point, these airframes were removed from the SOPs. In the event
+ those airframes return someday, this section preserves the SOPs relevant to the AV-8B and
+ F-14B.
+
+## AV-8B Harrier II
+
+The AV-8B Harrier II is a single-seat, single-engine ground-attack aircraft, capable of
+vertical or short takeoff and landing (V/STOL). The aircraft is primarily employed on light
+attack or multi-role missions, ranging from close air support to armed reconnaissance.
+
+### Mission Design Guidelines for the AV-8B
+
+TODO: AV-8B design guidelines
+
+### Baseline COMMS/TACAN Setup
+
+The following table lists the inter-flight and TACAN setups for the AV-8B,
+
+|Flight / Arirframe|TACAN|Frequency|   |Flight / Arirframe|TACAN|Frequency|
+|---|:---:|:---:|---|---|:---:|:---:|
+|Spade 1<br>*AV-8B*|46Y<br>109Y|142.25|    |Shank 1<br>*AV-8B*|47Y<br>110Y|142.75|
+
+> AV-8B airframes will typically use Pontiac 1 and 2 for call signs in the DCS Mission Editor
+> as DCS does not currently support Spade and Shank as call signs.
+
+### Comms Presets
+
+TODO: V/UHF #1 x26, V/UHF #2 x26, V/UHF RCS x30
+
+## F-14B Tomcat
+
+The F-14B Tomcat is a two-seat, twin-engine, carrier-capable, variable-sweep wing fighter
+aircraft.
+
+An `.svg` version of an [F-14B Flight Card](source/51st_SOP_Card_F14.svg) that includes overview,
+comms ladder, and steerpoint information is available for use by mission designers.
+
+### Mission Design Guidelines for the F-14B
+
+TODO: F-14B design guidelines
+
+### INS Alignment
+
+To reduce the time necessary to align the INS in a cold start, the Tomcat should be set up to
+have an INS reference alignment stored in the jet. This can be done from the DCS ME group
+editor for a Tomcat unit as the following figure illustrates.
+
+![Tomcat INS Reference Alignment](images/TomcatINS.png)
+
+Checking the "INS Reference Alignment Stored" option in this panel as shown will ensure the
+jet has a reference alignment during cold starts allowing for faster start up from cold to
+green jet.
+
+### Baseline COMMS/TACAN Setup
+
+The following table lists the inter-flight and TACAN setups for the F-14B
+
+|Flight / Arirframe|TACAN|Frequency|   |Flight / Arirframe|TACAN|Frequency|
+|---|:---:|:---:|---|---|:---:|:---:|
+|Dodge 1<br>*F-14B*|42Y<br>105Y|140.25|    |Dodge 2<br>*F-14B*|43Y<br>106Y|140.75|
+
+### Comms Presets
+
+The Tomcat has a UHF radio (COMM1, AN/ARC-159) and a UHF/VHF radio (COMM2, AN/ARC-182). Both
+radios support at least 20 presets. We will use the general 20-channel layout for the default
+comms ladder.
+
+|COMM1 Preset<br>(UHF)|Frequency||COMM2 Preset<br>(UHF/VHF)|Frequency|
+|:-----:|:---|---|:-----:|:---|
+| 1     | Tactical Common               | | 1     | Intraflight
+| 2     | Departure ATIS (UHF)          | | 2     | Departure ATIS (VHF)
+| 3     | Departure Tower (UHF)         | | 3     | Departure Tower (VHF)
+| 4     | _Unassigned_                  | | 4     | _Unassigned_
 | 5     | AWACS Overlord 1-1            | | 5     | AWACS Overlord 1-1
 | 6     | AAR Arco 1-1                  | | 6     | AAR Arco 1-1
 | 7     | AAR Arco 2-1                  | | 7     | AAR Arco 2-1
