@@ -458,6 +458,10 @@ The 51st VFW main 'Fox3' and 'CoolCat' servers are configured with DCS-gRPC and 
 *Version 20231217.1* 
 * Fix DCS/MOOSE things (DCS 2.9.1.48335), some code cleanup.
 
+*Version 20240811.1*
+* Fix DCS/MOOSE things (DCS 2.9.7.58293) including AWACS datalink, some code cleanup.
+* Tested/included MOOSE version bump.
+
 ### Known issues:
 * A paused server will not unpause unless a client enters a (valid) aircraft slot.
 * Extra Non-SOP Shell/Magic units act like land-based Tankers/AWACS.
