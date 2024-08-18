@@ -38,8 +38,8 @@ To use the workflow,
 - Launch a `cmd.exe` shell and change directories to the mission directory you created in the
   previous step.
 - If you are creating a new mission, run "`scripts\setup.cmd --map <map>`" in the shell. Here,
-  `<map>` is either "CAU" (Caucuses), "MAR" (Marianas), "NTTR" (NTTR), "PG" (Persian Gulf), "SAT"
-  (South Atlantic) or "SYR" (Syria) depending on the map your mission uses, see
+  `<map>` is either "CAU" (Caucuses), "MAR" (Marianas), "NTTR" (NTTR), "PG" (Persian Gulf), "SNA"
+  (Sinai), or "SYR" (Syria) depending on the map your mission uses, see
   [Creating a Mission That Uses the Workflow](#Creating-a-Mission-That-Uses-the-Workflow).
 - Run `scripts\build.cmd` in the shell to rebuild the mission and synchronize the mission
   directory with the `.miz` package, see
@@ -52,9 +52,9 @@ two...
 # Workflow Capabilities
 
 The workflow supports mission designers by providing better management of external mission
-resources, such as scripts or kneeboards, by providing automation to setup of properties like
+resources, such as scripts or kneeboards, through automation to setup of properties like
 radio presets or waypoints across multiple units, and providing better integration with
-source control systems to allow more efficient collaboartion.
+source control systems like GitHub to allow more efficient collaboartion.
 
 The workflow assmebles a `.miz` file for the mission from the associated source files. In
 addition, it supports the automatic generation of mission variants that differ from the base
@@ -63,7 +63,7 @@ or mission contents).
 
 During assembly, the workflow can make edits to internal mission state on a unit or group
 basis. This allows for easier setup of radio presets, mission steerpoints, or group loadouts
-without requiring the mission designer to make the same edits to multiple units or groups
+without requiring the mission designer to make similar edits to multiple units or groups
 in the mission. In addition, the workflow supports dynamic generate of kneeboards, such as
 comms cards, that reflect mission setup and can automatically change as the setup changes.
 
@@ -100,11 +100,10 @@ generate kneeboards.
 In addition to these tools, you may also want to install,
 
 - [Visual Studio Code](https://code.visualstudio.com/) is a free Microsoft IDE that supports
-  Lua development. You should also install the Lua plug-in from VSC to get syntax checking
-  and other nice things if you want to script in Lua in your mission.
-- [GitHub](https://desktop.github.com/) is a desktop `git` client to allow access to
-  the 51st VFW repositories and enable collaboration between multiple designers on a
-  shared mission.
+  Lua development. You should also install the Lua and PowerShell plug-ins from VSC to get
+  Lua syntax checking and other nice things if you want to script in Lua in your mission.
+- [GitHub](https://desktop.github.com/) is a desktop `git` client to allow access to the 51st
+  VFW repositories and enable collaboration between multiple designers on a shared mission.
 
 The `7-zip` and `Lua` programs linked above are not packaged with Windows installers and must
 be installed manually. Typically, you can extract the downloaded files to a directory such as
@@ -148,7 +147,7 @@ Due to scripting limitations, the _full_ path to a mission directory **MUST** on
 alphanumeric, "-", and "_" characters. For example, the directory
 
 ```
-C:\Users\Raven\51st VFW DCS Missions\Reactor #5 Strike
+C:\Users\Raven\51st VFW DCS Missions\Reactor 69 Strike
 ```
 
 is **NOT** a valid mission directory name.
@@ -220,7 +219,7 @@ invoke the Lua scripts directly.
 You invoke a script from a Windows shell such as `cmd.exe`. For example,
 
 ```
-scripts\build.cmd --dynamic --verbose
+scripts\build.cmd --dynamic --base --verbose
 ```
 
 > Scripts are **ALWAYS** run from the **ROOT** of the mission directory. Invoking a script from
@@ -264,8 +263,8 @@ an existing mission to use the workflow.
 ## Creating a New Mission From a Mission Template
 
 The `VFW51_Core_Mission` directory includes basic mission templates for all of the maps that
-the wing supports: Caucuses (CAU), Marianas (MAR), NTTR (NTTR), Persian Gulf (PG), South
-Atlantic (SAT), and Syria (SYR).
+the wing supports: Caucuses (CAU), Marianas (MAR), NTTR (NTTR), Persian Gulf (PG), Sinai (SNA),
+and Syria (SYR).
 
 > While the `VFW51_Core_Mission` only provides templates for wing-supported maps, the workflow
 > itself can handle missions on any map.
@@ -314,7 +313,7 @@ we use the `setup.cmd` script to incorporate the original `Breaking_Bad.miz` int
 directory.
 
 ```
-scripts\setup.cmd --miz C:\Stuff\Breaking_bad.miz
+scripts\setup.cmd --miz C:\Stuff\Breaking_Bad.miz
 ```
 
 The workflow will copy `C:\Stuff\Breaking_Bad.miz` to `Breaking_Bad.miz` in the mission
@@ -328,9 +327,9 @@ package.
 Once this script completes, the mission directory is only partially built. After the first
 run of `setup.cmd` is complete, the `src\miz_core\` subdirectory will contain the files
 extracted from the `.miz` package. Files such as scripts, kneeboards, or briefing panels
-will need to be manually moved into their correct locations in the mission directory for use
-by the workflow. Once this manual step is complete, run `setup.cmd` again with `--finalize`
-to complete the setup.
+will need to be manually moved from `src\miz_core\` into their correct locations in the
+mission directory for use by the workflow. Once this manual step is complete, run `setup.cmd`
+again with `--finalize` to complete the setup.
 
 ```
 scripts\setup.cmd --finalize
@@ -432,6 +431,7 @@ The main command line arguments of `build.cmd` include,
 - `--base` builds the base mission package only and does not build any other variants the
   mission directory might specify, see
   [Mission Variants](#Mission-Variants) for further details.
+- `--version` TODO
 - `--verbose` turns on logging information.
 
 Because `build.cmd` depends on the contents of `src\<dcs>` and `src\<dcs>` may not be consistent
@@ -441,14 +441,14 @@ this fashion).
 
 You must run `build.cmd` after making changes to any information in the `src\` hierarchy (with
 one exception we discuss shortly). Because `build.cmd` creates new `.miz` packages for the
-mission, it is important to avoid having any mission `.miz` packages open when running
-`build.cmd` (this also ensures `sync.cmd` functions correctly in the case where `build.cmd`
-runs that script).
+mission, it is important to avoid having any mission `.miz` packages open in the DCS Mission
+Editor when running `build.cmd` (this also ensures `sync.cmd` functions correctly in the case
+where `build.cmd` runs that script).
 
 > Running `build.cmd` while the base mission `.miz` package is open in DCS ME can lead to
 > edits being lost. Further, keep in mind that DCS ME does not see changes others make to a
 > `.miz` package it has open and is editing.
-
+>
 > As a general rule, quit out of the DCS ME (though not DCS) before running `build.cmd`.
 
 If the mission is assembled with the `--dynamic` command line argument, you may make changes to
