@@ -1,9 +1,9 @@
 -- 51st MapSOP
-MAPSOP_VERSION = "20240818.1"
+MAPSOP_VERSION = "20241215.1"
 -- Initial version by Blackdog Jan 2022
 --
 -- Tested against MOOSE GITHUB Commit Hash ID:
--- 2024-08-10T18:54:12+02:00-e768ec3c17352e67545eb9b4174aacb8cca89a66
+-- 2024-12-15T13:35:03+01:00-278f1db9a9915aed8ec6dd03e9355d7ce50596df
 --
 -- Version 20220101.1 - Blackdog initial version
 -- Version 20220115.1 - Fix: Tanker speeds adjusted to be close KIAS from SOP + better starting altitudes.
@@ -89,6 +89,8 @@ MAPSOP_VERSION = "20240818.1"
 -- Version 20240811.1 - Fix DCS/MOOSE things (DCS 2.9.7.58293) including AWACS datalink, some code cleanup.
 --                    - Tested/included MOOSE version bump.
 -- Version 20240818.1 - Address MOOSE TTS provider function changes to prevent error on servers with gRPC.
+-- Version 20241215.1 - If no coalition support base designated, select coalition airbase with most biggest parking spots as the default.
+--                    - Tested/included MOOSE version bump.
 
 --                    
 -- Known issues/limitations:
@@ -255,15 +257,16 @@ CURRENTUNITTRACK = {}
 
 local SupportBeacons = {}
 
--- If no "Support Airbase" exists, then use a default airbase for each map
-local DEFAULTSUPPORTAIRBASES = { 
-    AIRBASE.Caucasus.Batumi,
-    AIRBASE.Nevada.Nellis_AFB,
-    AIRBASE.PersianGulf.Al_Dhafra_AB,
-    AIRBASE.Syria.Incirlik,
-    AIRBASE.MarianaIslands.Andersen_AFB,
-    AIRBASE.SouthAtlantic.Mount_Pleasant
-}
+-- Deprecated in favor of a search for largest airbase belonging to a coalition
+-- -- If no "Support Airbase" exists, then use a default airbase for each map
+-- local DEFAULTSUPPORTAIRBASES = { 
+--     AIRBASE.Caucasus.Batumi,
+--     AIRBASE.Nevada.Nellis_AFB,
+--     AIRBASE.PersianGulf.Al_Dhafra_AB,
+--     AIRBASE.Syria.Incirlik,
+--     AIRBASE.MarianaIslands.Andersen_AFB,
+--     AIRBASE.SouthAtlantic.Mount_Pleasant
+-- }
 
 function TEMPLATE.SetPayload(Template, Fuel, Flare, Chaff, Gun, Pylons, UnitNum)
     Template["units"][UnitNum or 1]["payload"]["fuel"] = tostring(Fuel or 0)
@@ -282,66 +285,6 @@ function UTILS.GetCallsignName(Callsign,CallsignCategory)
 
   local CallsignCat = CallsignCategory or CALLSIGN.Aircraft
 
-  for name, value in pairs(CallsignCat) do
-    if value==Callsign then
-      return name
-    end
-  end
-
-  for name, value in pairs(CallsignCat) do
-    if value==Callsign then
-      return name
-    end
-  end
-
-  for name, value in pairs(CallsignCat) do
-    if value==Callsign then
-      return name
-    end
-  end
-
-  for name, value in pairs(CallsignCat) do
-    if value==Callsign then
-      return name
-    end
-  end
-  
-  for name, value in pairs(CallsignCat) do
-    if value==Callsign then
-      return name
-    end
-  end
-  
-  for name, value in pairs(CallsignCat) do
-    if value==Callsign then
-      return name
-    end
-  end
-  
-  for name, value in pairs(CallsignCat) do
-    if value==Callsign then
-      return name
-    end
-  end
-  
-  for name, value in pairs(CallsignCat) do
-    if value==Callsign then
-      return name
-    end
-  end
-  
-  for name, value in pairs(CallsignCat) do
-    if value==Callsign then
-      return name
-    end
-  end
-  
-  for name, value in pairs(CallsignCat) do
-    if value==Callsign then
-      return name
-    end
-  end
-  
   for name, value in pairs(CallsignCat) do
     if value==Callsign then
       return name
@@ -1206,23 +1149,61 @@ function InitSupportBases()
       end
     end
 
-    if not AirbaseName then
-        for _,CheckAirbase in ipairs(Airbases) do
-            local CheckAirbaseName = CheckAirbase:GetName()
-            for _,DefaultAirbase in ipairs(DEFAULTSUPPORTAIRBASES) do
-                if DefaultAirbase == CheckAirbaseName then
-                    AirbaseName = DefaultAirbase
-                    break
-                end
-            end
-            if AirbaseName then break end
+    -- -- Legacy default airbase code
+    -- if not AirbaseName then
+    --     for _,CheckAirbase in ipairs(Airbases) do
+    --         local CheckAirbaseName = CheckAirbase:GetName()
+    --         for _,DefaultAirbase in ipairs(DEFAULTSUPPORTAIRBASES) do
+    --             if DefaultAirbase == CheckAirbaseName then
+    --                 AirbaseName = DefaultAirbase
+    --                 break
+    --             end
+    --         end
+    --         if AirbaseName then break end
+    --     end
+    -- end
+
+    function FindBestSupportAirbase(airbase_coalition)
+      local parking_score = 0
+      local best_airbase = nil
+      for _,_airbase in pairs(AIRBASE.GetAllAirbases(airbase_coalition,Airbase.Category.AIRDROME)) do
+        local new_parking_score = (_airbase:GetFreeParkingSpotsNumber(AIRBASE.TerminalType.OpenBig, true) * 100) + _airbase:GetFreeParkingSpotsNumber(AIRBASE.TerminalType.OpenMed, true)
+        if new_parking_score > parking_score then
+          parking_score = new_parking_score
+          best_airbase = _airbase
         end
+      end
+      return best_airbase
     end
 
-    local SupportBase = AIRBASE:Register(AirbaseName)
+    if AirbaseName == nil then
+      local best_airbase = FindBestSupportAirbase(coalition.side.BLUE)
+      if best_airbase ~= nil then
+        AirbaseName = best_airbase:GetName()
+        env.info("No Blue support base explicitly configured, auto-selected " .. AirbaseName .. ".")
+      end
+    end
+
+    if RedAirbaseName == nil then
+      local best_airbase = FindBestSupportAirbase(coalition.side.RED)
+      if best_airbase ~= nil then
+        RedAirbaseName = best_airbase:GetName()
+        env.info("No Red support base explicitly configured, auto-selected " .. RedAirbaseName .. ".")
+      end
+    end
+
+    local SupportBase = nil
+    if AirbaseName ~= nil then
+      SupportBase = AIRBASE:Register(AirbaseName)
+    else
+      BASE:E("No suitable Blue support base could be auto-selected.")
+    end
+    
     local RedSupportBase = nil
-    if RedAirbaseName then
+    if RedAirbaseName ~= nil then
       RedSupportBase = AIRBASE:Register(RedAirbaseName)
+    else
+      BASE:E("No suitable Red support base found could be auto-selected.")
     end
 
     local CarrierShips = AIRBASE.GetAllAirbases(coalition.side.BLUE, Airbase.Category.SHIP)
