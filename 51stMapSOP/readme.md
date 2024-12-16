@@ -465,6 +465,10 @@ The 51st VFW main 'Fox3' and 'CoolCat' servers are configured with DCS-gRPC and 
 *Version 20240818.1* 
 * Address MOOSE TTS provider function changes to prevent error on servers with gRPC.
 
+*Version 20241215.1*
+* If no coalition support base designated, select coalition airbase with most biggest parking spots as the default.
+* Tested/included MOOSE version bump.
+
 ### Known issues:
 * A paused server will not unpause unless a client enters a (valid) aircraft slot.
 * Extra Non-SOP Shell/Magic units act like land-based Tankers/AWACS.
