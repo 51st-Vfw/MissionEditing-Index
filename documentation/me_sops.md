@@ -263,11 +263,11 @@ to provide speeds with 10-20kt of these speeds). As the DCS Mission Editor speci
 speeds using ground speed, not KIAS, the following table lists the ground speeds necessary in
 the DCS Mission Editor to achieve the default KIAS at the default altitude in calm conditions.
 
-|Tanker|Airframes|Altitude|Speed (KIAS)|Speed (GS, ME)|Purpose|
+|Tanker|Airframes <br>(ppm xfer rate)|Altitude|Speed (KIAS)|Speed (GS, ME)|Purpose|
 |---|:---:|:---:|:---:|:---:|---|
-|KC-135|F-16C, F-15E|FL250|300|475|Probe & Boom<br>High Speed
-|KC-135|A-10C|FL150|220|276|Probe & Boom<br>Low Speed
-|KC-135 MPRS|F/A-18C|FL200|285|384|Probe & Drogue<br>Low Speed
+|KC-135|F-16C(2,857) <br>F-15E|FL250|300|475|Probe & Boom<br>High Speed
+|KC-135|A-10C(1,578)|FL150|220|276|Probe & Boom<br>Low Speed
+|KC-135 MPRS|F/A-18C(2,857)|FL200|285|384|Probe & Drogue<br>Low Speed
 |KC-130J|AV8-B|FL170|240|336|Probe & Drogue<br>Low Speed
 |S-3B Tanker|F/A-18C|6000 MSL|285|309|Carrier
 
